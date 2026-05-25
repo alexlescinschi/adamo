@@ -19,14 +19,11 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/category/telefoane" className="text-sm text-slate-600 hover:text-slate-900">
+          <Link href="/category/phones" className="text-sm text-slate-600 hover:text-slate-900">
             Telefoane
           </Link>
-          <Link href="/category/laptopuri" className="text-sm text-slate-600 hover:text-slate-900">
+          <Link href="/category/laptops" className="text-sm text-slate-600 hover:text-slate-900">
             Laptopuri
-          </Link>
-          <Link href="/category/accesorii" className="text-sm text-slate-600 hover:text-slate-900">
-            Accesorii
           </Link>
         </nav>
 
@@ -79,14 +76,11 @@ export function Header() {
       {menuOpen && (
         <div className="border-t border-slate-200 px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
-            <Link href="/category/telefoane" className="text-sm text-slate-600" onClick={() => setMenuOpen(false)}>
+            <Link href="/category/phones" className="text-sm text-slate-600" onClick={() => setMenuOpen(false)}>
               Telefoane
             </Link>
-            <Link href="/category/laptopuri" className="text-sm text-slate-600" onClick={() => setMenuOpen(false)}>
+            <Link href="/category/laptops" className="text-sm text-slate-600" onClick={() => setMenuOpen(false)}>
               Laptopuri
-            </Link>
-            <Link href="/category/accesorii" className="text-sm text-slate-600" onClick={() => setMenuOpen(false)}>
-              Accesorii
             </Link>
           </nav>
         </div>
