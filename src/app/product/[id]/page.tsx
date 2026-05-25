@@ -70,9 +70,9 @@ export default function ProductPage() {
       </Link>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           {images.length > 0 ? (
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
+            <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-slate-100">
               <Image
                 src={images[selectedImage]?.url}
                 alt={product.name}
