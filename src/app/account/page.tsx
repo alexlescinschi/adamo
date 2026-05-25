@@ -36,7 +36,7 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 text-center">
+      <div className="py-12 text-center">
         <h1 className="text-2xl font-bold">Nu ești autentificat</h1>
         <p className="mt-2 text-slate-500">Autentifică-te pentru a vedea contul tău.</p>
         <Link href="/login" className="mt-4 inline-block rounded-lg bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">
@@ -47,7 +47,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="py-8">
       <h1 className="text-2xl font-bold mb-2">Contul meu</h1>
       <p className="text-slate-500 mb-6">{user.email || user.phone}</p>
       <div className="grid gap-4 md:grid-cols-3">

@@ -35,7 +35,7 @@ export default function ProductPage() {
 
   if (!product || product.error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+      <div className="py-16 text-center">
         <h1 className="text-2xl font-bold">Produsul nu a fost găsit</h1>
         <p className="mt-2 text-slate-500">Produsul căutat nu există sau a fost eliminat.</p>
         <Link href="/" className="mt-6 inline-block rounded-lg bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">
@@ -63,7 +63,7 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="py-8">
       <Link href="/" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 mb-6">
         <ChevronLeft className="h-4 w-4" />
         Înapoi la produse

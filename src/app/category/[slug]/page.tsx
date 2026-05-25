@@ -35,7 +35,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="py-6">
       <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
         <Link href="/" className="hover:text-slate-900">Acasă</Link>
         <ChevronRight className="h-4 w-4" />

@@ -34,7 +34,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+      <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
         <h1 className="mt-4 text-2xl font-bold">Coșul tău este gol</h1>
         <p className="mt-2 text-slate-500">Adaugă produse înainte de checkout.</p>
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="py-8">
       <Link href="/cart" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 mb-6">
         <ChevronLeft className="h-4 w-4" />
         Înapoi la coș

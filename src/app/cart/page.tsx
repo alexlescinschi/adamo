@@ -10,7 +10,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+      <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
         <h1 className="mt-4 text-2xl font-bold">Coșul tău este gol</h1>
         <p className="mt-2 text-slate-500">Adaugă produse pentru a continua.</p>
@@ -22,7 +22,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="py-8">
       <h1 className="text-2xl font-bold mb-6">Coș de cumpărături</h1>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2 space-y-4">

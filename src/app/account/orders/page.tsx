@@ -38,7 +38,7 @@ function OrdersContent() {
   }, [router]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="py-8">
       {success && (
         <div className="mb-6 rounded-lg bg-green-50 p-4 flex items-center gap-3">
           <CheckCircle className="h-5 w-5 text-green-600" />
