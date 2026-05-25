@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createContact } from "@/lib/crm-api";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
@@ -15,6 +16,17 @@ export async function POST(request: NextRequest) {
     const data = await res.json();
     if (!res.ok) {
       return NextResponse.json(data, { status: res.status });
+    }
+
+    try {
+      await createContact({
+        first_name: body.first_name,
+        last_name: body.last_name,
+        phone: body.phone,
+        email: body.email,
+      });
+    } catch {
+      // Non-critical: contact creation failure shouldn't block registration
     }
 
     const response = NextResponse.json(data);

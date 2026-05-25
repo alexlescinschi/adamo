@@ -143,3 +143,10 @@ export async function updateOrderPaymentStatus(orderId: number, status: string) 
     body: JSON.stringify({ status }),
   });
 }
+
+export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string }) {
+  return crmFetch(`/contacts`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
