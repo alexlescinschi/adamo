@@ -13,7 +13,7 @@ interface LoginResponse {
 }
 
 async function getAccessToken(): Promise<string> {
-  if (process.env.UPSTASH_REDIS_REST_URL) {
+  if (redis) {
     try {
       const cached = await redis.get<string>(TOKEN_CACHE_KEY);
       if (cached) return cached;
@@ -35,7 +35,7 @@ async function getAccessToken(): Promise<string> {
 
   const data: LoginResponse = await res.json();
 
-  if (process.env.UPSTASH_REDIS_REST_URL) {
+  if (redis) {
     try {
       await redis.set(TOKEN_CACHE_KEY, data.accessToken, { ex: 12 * 60 });
     } catch {
