@@ -72,12 +72,12 @@ export default function ProductPage() {
       <div className="grid gap-8 md:grid-cols-2">
         <div>
           {images.length > 0 ? (
-            <div className="relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100" style={{ minHeight: 320 }}>
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
               <Image
                 src={images[selectedImage]?.url}
                 alt={product.name}
                 fill
-                className="object-contain p-2"
+                className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
