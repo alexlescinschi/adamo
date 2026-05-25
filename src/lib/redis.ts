@@ -1,12 +1,20 @@
 import { Redis } from "@upstash/redis";
 
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || "",
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || "",
-});
+function createRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL || "";
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || "";
+  if (!url.startsWith("https://")) return null;
+  try {
+    return new Redis({ url, token });
+  } catch {
+    return null;
+  }
+}
+
+export const redis = createRedis();
 
 export async function getCached<T>(key: string, fetcher: () => Promise<T>, ttlSeconds = 60): Promise<T> {
-  if (!process.env.UPSTASH_REDIS_REST_URL) {
+  if (!redis) {
     return fetcher();
   }
 
