@@ -2,8 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getProductById } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
 
+function normalizeSpecs(specs: any): Record<string, string> {
+  if (!Array.isArray(specs)) return {};
+  const result: Record<string, string> = {};
+  for (const spec of specs) {
+    if (spec.label && spec.valueLabel) {
+      result[spec.label] = spec.valueLabel;
+    }
+  }
+  return result;
+}
+
 function transformProduct(data: any) {
-  // Rich storefront product
+  const specs = normalizeSpecs(data.specs);
+
   if (data?.offerSummary) {
     return {
       id: data.id,
@@ -14,7 +26,7 @@ function transformProduct(data: any) {
       old_price: data.discount?.originalPrice || undefined,
       image_url: data.images?.[0]?.url || null,
       images: data.images || [],
-      specs: data.specs || {},
+      specs,
       availability: data.offerSummary?.availability || "OutOfStock",
     };
   }
@@ -30,7 +42,7 @@ function transformProduct(data: any) {
     old_price: oldPrice > price ? oldPrice : undefined,
     image_url: data.previewImageUrl || null,
     images: data.previewImageUrl ? [{ url: data.previewImageUrl }] : [],
-    specs: {},
+    specs,
     availability: "OutOfStock",
   };
 }
