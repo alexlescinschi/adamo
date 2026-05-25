@@ -12,7 +12,7 @@ function transformProduct(item: any) {
     slug: item.slug,
     price,
     old_price: oldPrice > price ? oldPrice : undefined,
-    image_url: item.previewImageUrl || null,
+    image_url: item.imageUrl || item.previewImageUrl || null,
     unit_id: item.id,
     category_id: item.category_id,
     is_published: item.is_published,
