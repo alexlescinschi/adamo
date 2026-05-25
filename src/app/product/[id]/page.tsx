@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { Loader2, ChevronLeft, ShoppingCart, CheckCircle } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, ShoppingCart, CheckCircle } from "lucide-react";
 
 export default function ProductPage() {
   const params = useParams();
@@ -70,9 +70,9 @@ export default function ProductPage() {
       </Link>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="space-y-3">
-          <div className="relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100" style={{ minHeight: 320 }}>
-            {images.length > 0 ? (
+        <div>
+          {images.length > 0 ? (
+            <div className="relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100" style={{ minHeight: 320 }}>
               <Image
                 src={images[selectedImage]?.url}
                 alt={product.name}
@@ -81,21 +81,26 @@ export default function ProductPage() {
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-            ) : (
-              <div className="flex h-80 items-center justify-center text-slate-400">Fără imagine</div>
-            )}
-          </div>
+              {images.length > 1 && (
+                <>
+                  <button onClick={() => setSelectedImage((selectedImage - 1 + images.length) % images.length)} className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow hover:bg-white">
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button onClick={() => setSelectedImage((selectedImage + 1) % images.length)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-1.5 shadow hover:bg-white">
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                  <span className="absolute bottom-2 right-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">{selectedImage + 1} / {images.length}</span>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="flex h-80 items-center justify-center rounded-lg bg-slate-100 text-slate-400">Fără imagine</div>
+          )}
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory">
+            <div className="mt-2 flex gap-1.5 overflow-x-auto">
               {images.map((img: any, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedImage(i)}
-                  className={`relative h-20 w-20 flex-shrink-0 snap-start overflow-hidden rounded-md border-2 transition-colors ${
-                    i === selectedImage ? "border-slate-900" : "border-slate-200 hover:border-slate-400"
-                  }`}
-                >
-                  <Image src={img.url} alt="" fill className="object-cover" sizes="80px" />
+                <button key={i} onClick={() => setSelectedImage(i)} className={`relative h-12 w-12 flex-shrink-0 overflow-hidden rounded border-2 ${i === selectedImage ? "border-slate-900" : "border-transparent opacity-60 hover:opacity-100"}`}>
+                  <Image src={img.url} alt="" fill className="object-cover" sizes="48px" />
                 </button>
               ))}
             </div>
