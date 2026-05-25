@@ -14,6 +14,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -69,18 +70,35 @@ export default function ProductPage() {
       </Link>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
-          {images.length > 0 ? (
-            <Image
-              src={images[0].url}
-              alt={product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-slate-400">Fără imagine</div>
+        <div className="space-y-3">
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
+            {images.length > 0 ? (
+              <Image
+                src={images[selectedImage]?.url}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-slate-400">Fără imagine</div>
+            )}
+          </div>
+          {images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto">
+              {images.map((img: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedImage(i)}
+                  className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                    i === selectedImage ? "border-slate-900" : "border-slate-200 hover:border-slate-400"
+                  }`}
+                >
+                  <Image src={img.url} alt="" fill className="object-cover" sizes="64px" />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
