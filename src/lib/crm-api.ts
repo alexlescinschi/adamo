@@ -136,3 +136,10 @@ export async function createOrder(payload: CheckoutPayload) {
 export async function getOrderInvoice(orderId: number, token: string) {
   return crmFetch(`/ecommerce/checkout/orders/${orderId}/invoice?token=${token}`);
 }
+
+export async function updateOrderPaymentStatus(orderId: number, status: string) {
+  return crmFetch(`/ecommerce/checkout/orders/${orderId}/payment`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}

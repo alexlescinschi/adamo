@@ -3,12 +3,15 @@ import { getPublishedProducts, getPopularProducts, getPromotions, getNewProducts
 import { getCached } from "@/lib/redis";
 
 function transformProduct(item: any) {
+  const price = item.offerSummary?.minPrice || item.minPrice || item.price || 0;
+  const oldPrice = item.discount?.originalPrice || item.oldPrice || item.old_price;
+
   return {
     id: item.id,
     name: item.storefrontName || item.name,
     slug: item.slug,
-    price: 0,
-    old_price: item.ecommerce_discount_percent ? 0 : undefined,
+    price,
+    old_price: oldPrice > price ? oldPrice : undefined,
     image_url: item.previewImageUrl || null,
     unit_id: item.id,
     category_id: item.category_id,

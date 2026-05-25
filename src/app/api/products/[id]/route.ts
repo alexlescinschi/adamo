@@ -18,13 +18,16 @@ function transformProduct(data: any) {
       availability: data.offerSummary?.availability || "OutOfStock",
     };
   }
-  // Basic product from /products/{id}
+  const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
+  const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
+
   return {
     id: data.id,
     name: data.storefrontName || data.name,
     slug: data.slug,
     description: data.translations?.find((t: any) => t.locale === "ro")?.description || "",
-    price: 0,
+    price,
+    old_price: oldPrice > price ? oldPrice : undefined,
     image_url: data.previewImageUrl || null,
     images: data.previewImageUrl ? [{ url: data.previewImageUrl }] : [],
     specs: {},
