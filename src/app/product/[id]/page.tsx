@@ -71,18 +71,18 @@ export default function ProductPage() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-slate-100">
+          <div className="relative flex items-center justify-center overflow-hidden rounded-lg bg-slate-100" style={{ minHeight: 320 }}>
             {images.length > 0 ? (
               <Image
                 src={images[selectedImage]?.url}
                 alt={product.name}
                 fill
-                className="object-contain"
+                className="object-contain p-2"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-slate-400">Fără imagine</div>
+              <div className="flex h-80 items-center justify-center text-slate-400">Fără imagine</div>
             )}
           </div>
           {images.length > 1 && (
