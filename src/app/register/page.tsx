@@ -30,7 +30,7 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Înregistrare eșuată");
+      if (!res.ok) throw new Error(data.error || data.message || data.detail || "Înregistrare eșuată");
 
       router.push("/account");
     } catch (err: any) {

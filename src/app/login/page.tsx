@@ -24,7 +24,7 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Autentificare eșuată");
+      if (!res.ok) throw new Error(data.error || data.message || data.detail || "Autentificare eșuată");
 
       router.push("/account");
     } catch (err: any) {
