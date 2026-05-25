@@ -10,8 +10,8 @@
    ```
 4. Adaugă variabilele de mediu în dashboard-ul Vercel:
    - `CRM_API_URL` = `https://api.crm.adamo.md/v1`
-   - `CRM_API_LOGIN` = `Serghei`
-   - `CRM_API_PASSWORD` = `Adamocrm2026`
+   - `CRM_API_LOGIN` = `<login-ul-tău>`
+   - `CRM_API_PASSWORD` = `<parola-ta>`
    - `UPSTASH_REDIS_REST_URL` (opțional)
    - `UPSTASH_REDIS_REST_TOKEN` (opțional)
    - `MAIB_API_KEY` (când primești de la maib)
