@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Adamo Vitrină — E-commerce Storefront
 
-## Getting Started
+Next.js 16 + Tailwind CSS + shadcn/ui storefront connected to Adamo CRM.
 
-First, run the development server:
+## Features
+
+- **Products** — fetched from CRM (popular, promotions, new, search)
+- **Categories** — dynamic category pages with product grids
+- **Cart** — localStorage-based cart with add/remove/update quantity
+- **Checkout** — form creates orders in CRM directly
+- **Customer Auth** — register/login via CRM e-commerce auth
+- **Account** — order history from CRM
+- **maib merchants** — payment integration structure ready
+
+## Architecture
+
+- `src/app/api/*` — proxy API routes that authenticate with CRM using JWT
+- `src/lib/crm-api.ts` — server-only CRM client with auto-login & token caching
+- `src/hooks/use-cart.tsx` — React context for cart state in localStorage
+
+## Environment Variables
+
+Copy `.env.local` and fill in your values:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+CRM_API_URL=https://api.crm.adamo.md/v1
+CRM_API_LOGIN=your_crm_login
+CRM_API_PASSWORD=your_crm_password
+
+# Optional Redis caching
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# maib merchants (required for online payments)
+MAIB_API_URL=https://api.maibmerchants.md/v1
+MAIB_MERCHANT_ID=
+MAIB_API_KEY=
+MAIB_WEBHOOK_SECRET=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build
 
-## Learn More
+```bash
+npm run build
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See `DEPLOY.md` for Vercel/Netlify instructions.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- CRM products must be published to storefront to appear on the site
+- Customer auth uses CRM `/ecommerce/e-commerce-auth/*` endpoints
+- Internal CRM auth (for API routes) auto-refreshes JWT every 12 minutes
