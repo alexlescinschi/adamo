@@ -104,13 +104,14 @@ function StaticBanner({ banner }: { banner: any }) {
   );
 }
 
-export default async function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const [popular, promotions, newProducts, carousel, staticBanners] = await Promise.all([
-    fetchProducts("popular"),
-    fetchProducts("promotions"),
-    fetchProducts("new"),
-    fetchCarousel(),
-    fetchStaticBanners(),
+    fetchProducts("popular", locale),
+    fetchProducts("promotions", locale),
+    fetchProducts("new", locale),
+    fetchCarousel(locale),
+    fetchStaticBanners(locale),
   ]);
 
   const { wide, tile1, tile2 } = staticBanners;

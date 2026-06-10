@@ -6,9 +6,6 @@ import { Suspense } from "react";
 
 export const revalidate = 60;
 
-const SLUG = "laptops";
-const LOCALE = "ro";
-
 function extractBase(item: any) {
   return {
     id: item.id,
@@ -25,7 +22,9 @@ function extractSpecs(data: any): Record<string, string> {
   if (!data?.specs || !Array.isArray(data.specs)) return {};
   const result: Record<string, string> = {};
   for (const spec of data.specs) {
-    if (spec.label && spec.valueLabel) result[spec.label] = spec.valueLabel;
+    if (spec.label && spec.valueLabel) {
+      result[spec.label] = spec.valueLabel;
+    }
   }
   return result;
 }
@@ -40,11 +39,11 @@ function enrichStock(detail: any) {
   return detail?.offerSummary?.inventoryUnitCount || detail?.units_on_warehouse || 0;
 }
 
-async function enrichWithSpecs(products: any[]) {
+async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> {
   const enriched = await Promise.allSettled(
     products.map(async (p) => {
       try {
-        const detail = await getProductById(p.id, LOCALE);
+        const detail = await getProductById(p.id, locale);
         return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs: extractSpecs(detail) };
       } catch {
         return { ...p, specs: {} };
@@ -54,18 +53,23 @@ async function enrichWithSpecs(products: any[]) {
   return enriched.map((r) => (r.status === "fulfilled" ? r.value : { ...r.reason, specs: {} }));
 }
 
-export default async function LaptopuriPage() {
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ slug: string; locale: string }>;
+}) {
+  const { slug, locale } = await params;
   const PER_PAGE = 8;
 
   const [cat, allProductsData] = await Promise.all([
-    getCategoryBySlug(SLUG, LOCALE),
-    getPublishedProducts(LOCALE, 500),
+    getCategoryBySlug(slug, locale),
+    getPublishedProducts(locale, 500),
   ]);
   const categoryId = cat?.id;
   const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
   const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
-  const products = await enrichWithSpecs(items.map(extractBase));
-  const categoryName = cat?.name || cat?.translation?.name || SLUG;
+  const products = await enrichWithSpecs(items.map(extractBase), locale);
+  const categoryName = cat?.name || cat?.translation?.name || slug;
 
   return (
     <div className="py-6">
