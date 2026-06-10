@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
-import { getCached } from "@/lib/redis";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
@@ -30,7 +29,7 @@ function extractImage(product: any): { url: string }[] {
 }
 
 async function getProduct(id: string, locale = "ro") {
-  const data = await getCached(`product:${id}:${locale}`, () => getProductById(id, locale), 120);
+  const data = await getProductById(id, locale);
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
   const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
   const specs = Array.isArray(data.specs)
@@ -55,7 +54,7 @@ async function getProduct(id: string, locale = "ro") {
 
 async function getSimilar(slug: string, currentId: number, locale = "ro") {
   try {
-    const catData = await getCached(`cat-prod:${slug}:${locale}:8`, () => getCategoryProducts(slug, locale, 8), 120);
+    const catData = await getCategoryProducts(slug, locale, 8);
     const items = Array.isArray(catData) ? catData : catData?.items || [];
     return items.filter((p: any) => p.id !== currentId).slice(0, 4).map((p: any) => ({
       id: p.id,

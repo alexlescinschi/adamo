@@ -1,50 +1,35 @@
 import "server-only";
-import { redis } from "./redis";
+import { unstable_cache } from "next/cache";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 const CRM_LOGIN = process.env.CRM_API_LOGIN || "";
 const CRM_PASSWORD = process.env.CRM_API_PASSWORD || "";
-
-const TOKEN_CACHE_KEY = "crm:access_token";
 
 interface LoginResponse {
   accessToken: string;
   expiresIn: string;
 }
 
-async function getAccessToken(): Promise<string> {
-  if (redis) {
-    try {
-      const cached = await redis.get<string>(TOKEN_CACHE_KEY);
-      if (cached) return cached;
-    } catch {
-      // ignore
+const getAccessToken = unstable_cache(
+  async (): Promise<string> => {
+    const res = await fetch(`${CRM_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ login: CRM_LOGIN, password: CRM_PASSWORD }),
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`CRM login failed ${res.status}: ${text}`);
     }
-  }
 
-  const res = await fetch(`${CRM_BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ login: CRM_LOGIN, password: CRM_PASSWORD }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`CRM login failed ${res.status}: ${text}`);
-  }
-
-  const data: LoginResponse = await res.json();
-
-  if (redis) {
-    try {
-      await redis.set(TOKEN_CACHE_KEY, data.accessToken, { ex: 12 * 60 });
-    } catch {
-      // ignore
-    }
-  }
-
-  return data.accessToken;
-}
+    const data: LoginResponse = await res.json();
+    return data.accessToken;
+  },
+  ["crm-access-token"],
+  { revalidate: 12 * 60 * 60 }
+);
 
 async function crmFetch(path: string, options?: RequestInit) {
   const token = await getAccessToken();
