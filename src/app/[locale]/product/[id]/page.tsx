@@ -39,11 +39,14 @@ async function getProduct(id: string, locale = "ro") {
   const specs = Array.isArray(data.specs)
     ? Object.fromEntries(data.specs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]))
     : {};
+  const localeTranslation = Array.isArray(data.translations)
+    ? data.translations.find((t: any) => t.locale === locale)
+    : null;
   return {
     id: data.id,
-    name: data.name || data.translation?.storefrontName,
+    name: localeTranslation?.storefrontName || data.name || data.translation?.storefrontName,
     slug: data.slug,
-    description: data.translation?.description || "",
+    description: localeTranslation?.description || data.translation?.description || "",
     price,
     old_price: oldPrice > price ? oldPrice : undefined,
     image_url: data.images?.[0]?.url || data.previewImageUrl || null,
