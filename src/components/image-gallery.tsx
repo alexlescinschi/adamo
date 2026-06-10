@@ -35,7 +35,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
       {images.length > 1 && (
         <div className="mt-[10px] flex gap-[10px] overflow-x-auto">
           {images.map((img: any, i: number) => (
-            <button key={i} onClick={() => setSelected(i)} className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[12px] border-2 transition-colors ${i === selected ? "border-[#0071e3]" : "border-transparent opacity-50 hover:opacity-100"}`}>
+            <button key={i} onClick={() => setSelected(i)} className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[12px] border-2 transition-colors ${i === selected ? "border-[#63ad36]" : "border-transparent opacity-50 hover:opacity-100"}`}>
               <Image src={img.url} alt="" fill className="object-cover" sizes="56px" />
             </button>
           ))}

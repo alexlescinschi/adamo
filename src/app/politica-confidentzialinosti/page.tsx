@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <h2 className="text-base font-semibold text-[#1d1d1f] mt-6">Contact</h2>
         <p>
           Pentru întrebări legate de confidențialitate, ne puteți contacta la 
-          <a href="mailto:adamomoldova@gmail.com" className="text-[#0066cc] hover:underline"> adamomoldova@gmail.com</a>.
+          <a href="mailto:adamomoldova@gmail.com" className="text-[#4e8f28] hover:underline"> adamomoldova@gmail.com</a>.
         </p>
       </div>
     </div>

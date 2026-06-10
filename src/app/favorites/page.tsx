@@ -16,7 +16,7 @@ export default function FavoritesPage() {
         <Heart className="mx-auto h-10 w-10 text-[#cccfcf]" />
         <h1 className="mt-4 text-[28px] font-semibold text-[#1d1d1f]">Favorite</h1>
         <p className="mt-2 text-sm text-[#6b6c6c]">Nu ai produse favorite încă.</p>
-        <Link href="/" className="mt-6 inline-block rounded-[28px] bg-[#0071e3] px-6 py-3 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors">
+        <Link href="/" className="mt-6 inline-block rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
           Descoperă produse
         </Link>
       </div>
@@ -37,7 +37,7 @@ export default function FavoritesPage() {
               )}
             </Link>
             <div className="mt-3 flex flex-1 flex-col px-1">
-              <Link href={`/product/${item.product_id}`} className="text-sm font-medium text-[#1d1d1f] line-clamp-2 hover:text-[#0066cc] transition-colors">
+              <Link href={`/product/${item.product_id}`} className="text-sm font-medium text-[#1d1d1f] line-clamp-2 hover:text-[#4e8f28] transition-colors">
                 {item.name}
               </Link>
               <div className="mt-2 flex items-baseline gap-2">
@@ -51,7 +51,7 @@ export default function FavoritesPage() {
                 <button
                   onClick={() => addItem({ product_id: item.product_id, unit_id: item.product_id, name: item.name, price: item.price, qty: 1, image: item.image_url, stock: 0 })}
                   disabled={item.price <= 0}
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[28px] bg-[#0071e3] py-2 text-xs font-medium text-white hover:bg-[#0066cc] transition-colors disabled:opacity-50"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-2 text-xs font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
                 >
                   <ShoppingCart className="h-3.5 w-3.5" />
                   Coș

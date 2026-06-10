@@ -103,12 +103,12 @@ export function CategoryFilter({ products, categoryName, page, perPage }: Catego
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">{categoryName}</h1>
         <div className="flex items-center gap-3">
           {hasFilters && (
-            <button onClick={clearFilters} className="text-sm text-[#0066cc] hover:underline">
+            <button onClick={clearFilters} className="text-sm text-[#4e8f28] hover:underline">
               Resetează
             </button>
           )}
           {specOptions.length > 0 && (
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`rounded-[28px] border px-4 py-2 text-sm transition-colors md:hidden ${sidebarOpen ? "border-[#0071e3] bg-[#0071e3] text-white" : "border-[#cccfcf] text-[#1d1d1f]"}`}>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`rounded-[28px] border px-4 py-2 text-sm transition-colors md:hidden ${sidebarOpen ? "border-[#63ad36] bg-[#63ad36] text-white" : "border-[#cccfcf] text-[#1d1d1f]"}`}>
               Filtre
             </button>
           )}
@@ -120,7 +120,7 @@ export function CategoryFilter({ products, categoryName, page, perPage }: Catego
           <>
             <div className={`flex-shrink-0 w-56 space-y-5 ${sidebarOpen ? "block" : "hidden"} md:block`}>
               {hasFilters && (
-                <button onClick={clearFilters} className="text-sm text-[#0066cc] hover:underline hidden md:block">
+                <button onClick={clearFilters} className="text-sm text-[#4e8f28] hover:underline hidden md:block">
                   Resetează filtrele
                 </button>
               )}

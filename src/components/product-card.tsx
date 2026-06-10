@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
       <div className="mt-3 flex flex-1 flex-col px-1">
-        <Link href={`/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`} className="text-sm font-medium text-[#1d1d1f] line-clamp-2 hover:text-[#0066cc] transition-colors">
+        <Link href={`/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`} className="text-sm font-medium text-[#1d1d1f] line-clamp-2 hover:text-[#4e8f28] transition-colors">
           {product.name}
         </Link>
         <div className="mt-2 flex items-baseline gap-2">
@@ -54,7 +54,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
         <button
           onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock || 0 })}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[28px] bg-[#0071e3] px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0066cc] disabled:opacity-50"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-2.5 text-sm font-medium text-white transition-all hover:from-[#63ad36] hover:to-[#4e8f28] disabled:opacity-50"
           disabled={!hasPrice}
         >
           <ShoppingCart className="h-4 w-4" />

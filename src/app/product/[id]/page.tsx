@@ -66,7 +66,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <div className="py-16 text-center">
         <h1 className="text-2xl font-bold text-[#1d1d1f]">Produsul nu a fost găsit</h1>
         <p className="mt-2 text-[#6b6c6c]">Produsul căutat nu există sau a fost eliminat.</p>
-        <Link href="/" className="mt-6 inline-block rounded-[28px] bg-[#0071e3] px-6 py-3 text-white hover:bg-[#0066cc] transition-colors">
+        <Link href="/" className="mt-6 inline-block rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
           Înapoi la produse
         </Link>
       </div>
@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="py-8">
-      <Link href="/" className="inline-flex items-center gap-1 text-sm text-[#0066cc] hover:underline mb-6">
+      <Link href="/" className="inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline mb-6">
         <ChevronLeft className="h-4 w-4" />
         Înapoi la produse
       </Link>

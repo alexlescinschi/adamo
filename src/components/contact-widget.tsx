@@ -39,7 +39,7 @@ export function ContactWidget() {
       )}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0071e3] text-white shadow-lg transition-transform hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#7cc44e] to-[#63ad36] text-white shadow-lg transition-transform hover:scale-105"
       >
         {open ? <ChevronUp className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </button>

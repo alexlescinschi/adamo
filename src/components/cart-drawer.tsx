@@ -43,7 +43,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 text-center">
             <p className="text-[#6b6c6c]">Coșul tău este gol.</p>
-            <button onClick={onClose} className="rounded-[28px] bg-[#0071e3] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors">
+            <button onClick={onClose} className="rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-2.5 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
               Continuă cumpărăturile
             </button>
           </div>
@@ -61,7 +61,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                       )}
                     </div>
                     <div className="flex flex-1 flex-col justify-between min-w-0">
-                      <Link href={`/product/${item.product_id}`} onClick={onClose} className="text-sm font-medium text-[#1d1d1f] hover:text-[#0066cc] transition-colors line-clamp-2">
+                      <Link href={`/product/${item.product_id}`} onClick={onClose} className="text-sm font-medium text-[#1d1d1f] hover:text-[#4e8f28] transition-colors line-clamp-2">
                         {item.name}
                       </Link>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -110,7 +110,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               <Link
                 href="/checkout"
                 onClick={onClose}
-                className="flex w-full items-center justify-center rounded-[28px] bg-[#0071e3] py-3 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors"
+                className="flex w-full items-center justify-center rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
               >
                 Checkout
               </Link>

@@ -104,7 +104,7 @@ export default function RegisterPage() {
               required
               value={form.first_name}
               onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:outline-none"
+              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
             />
           </div>
           <div>
@@ -113,7 +113,7 @@ export default function RegisterPage() {
               required
               value={form.last_name}
               onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:outline-none"
+              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
             />
           </div>
         </div>
@@ -124,7 +124,7 @@ export default function RegisterPage() {
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:outline-none"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
           />
         </div>
         <div>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
             required
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:outline-none"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
           />
         </div>
         <div>
@@ -145,13 +145,13 @@ export default function RegisterPage() {
             minLength={8}
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#0071e3] focus:outline-none"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[28px] bg-[#0071e3] py-3 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors disabled:opacity-50"
+          className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
         >
           {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Înregistrare"}
         </button>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-sm text-[#6b6c6c]">
         Ai deja cont?{" "}
-        <Link href="/login" className="text-[#0066cc] hover:underline">
+        <Link href="/login" className="text-[#4e8f28] hover:underline">
           Autentifică-te
         </Link>
       </p>

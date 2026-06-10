@@ -27,7 +27,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
   return (
     <div>
       {product.category_slug && (
-        <Link href={`/category/${product.category_slug}`} className="text-sm text-[#0066cc] hover:underline mb-2 block">
+        <Link href={`/category/${product.category_slug}`} className="text-sm text-[#4e8f28] hover:underline mb-2 block">
           {product.category_name || product.category_slug}
         </Link>
       )}
@@ -61,7 +61,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <button
         onClick={handleAddToCart}
         disabled={!hasPrice || product.availability === "OutOfStock"}
-        className="mt-[70px] flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-[#0071e3] px-6 py-3.5 text-[17px] font-medium text-white hover:bg-[#0066cc] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-[70px] flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3.5 text-[17px] font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {added ? (
           <><CheckCircle className="h-5 w-5" /> Adăugat în coș</>

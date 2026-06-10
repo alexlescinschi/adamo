@@ -95,7 +95,7 @@ export default function LoginPage() {
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#0071e3] focus:outline-none"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
           />
         </div>
         <div>
@@ -105,13 +105,13 @@ export default function LoginPage() {
             required
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#0071e3] focus:outline-none"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-[28px] bg-[#0071e3] py-3 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors disabled:opacity-50"
+          className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
         >
           {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Autentificare"}
         </button>
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-[#6b6c6c]">
         Nu ai cont?{" "}
-        <Link href="/register" className="text-[#0066cc] hover:underline">
+        <Link href="/register" className="text-[#4e8f28] hover:underline">
           Înregistrează-te
         </Link>
       </p>

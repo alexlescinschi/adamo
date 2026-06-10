@@ -9,7 +9,7 @@ export default function WarrantyPage() {
         <div className="rounded-[28px] border border-[#cccfcf]/50 p-6">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-[#f3f6f6] p-2.5">
-              <Truck className="h-5 w-5 text-[#0071e3]" />
+              <Truck className="h-5 w-5 text-[#63ad36]" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-[#1d1d1f]">Care este costul si termenii de livrare?</h2>
@@ -32,7 +32,7 @@ export default function WarrantyPage() {
         <div className="rounded-[28px] border border-[#cccfcf]/50 p-6">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-[#f3f6f6] p-2.5">
-              <ShieldCheck className="h-5 w-5 text-[#0071e3]" />
+              <ShieldCheck className="h-5 w-5 text-[#63ad36]" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-[#1d1d1f]">Există o garanție pentru produse și ce include aceasta?</h2>
@@ -49,7 +49,7 @@ export default function WarrantyPage() {
         <div className="rounded-[28px] border border-[#cccfcf]/50 p-6">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-[#f3f6f6] p-2.5">
-              <BadgePercent className="h-5 w-5 text-[#0071e3]" />
+              <BadgePercent className="h-5 w-5 text-[#63ad36]" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-[#1d1d1f]">De ce aveți prețuri atât de bune?</h2>
@@ -71,7 +71,7 @@ export default function WarrantyPage() {
         <div className="rounded-[28px] border border-[#cccfcf]/50 p-6">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-[#f3f6f6] p-2.5">
-              <Star className="h-5 w-5 text-[#0071e3]" />
+              <Star className="h-5 w-5 text-[#63ad36]" />
             </div>
             <div>
               <h2 className="text-base font-semibold text-[#1d1d1f]">Oferte speciale</h2>

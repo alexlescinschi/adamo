@@ -46,7 +46,7 @@ export function Header() {
             <button onClick={() => setCartOpen(true)} className="relative rounded-full p-2 text-[#1d1d1f] hover:bg-white/50 transition-colors" aria-label="Coș">
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#0071e3] text-[10px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#63ad36] text-[10px] font-bold text-white">
                   {cartCount}
                 </span>
               )}
@@ -75,7 +75,7 @@ export function Header() {
                 name="q"
                 type="text"
                 placeholder="Caută produse..."
-                className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#0071e3] focus:outline-none"
+                className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
                 autoFocus
               />
             </form>

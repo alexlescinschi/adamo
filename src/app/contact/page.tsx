@@ -11,7 +11,7 @@ export default function ContactPage() {
           <div className="rounded-[28px] border border-[#cccfcf]/50 p-6 space-y-6">
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-[#f3f6f6] p-2.5">
-                <MapPin className="h-5 w-5 text-[#0071e3]" />
+                <MapPin className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Adresa oficiului</h2>
@@ -23,11 +23,11 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-[#f3f6f6] p-2.5">
-                <Phone className="h-5 w-5 text-[#0071e3]" />
+                <Phone className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Telefon</h2>
-                <a href="tel:+37379966909" className="mt-1 block text-sm text-[#0066cc] hover:underline">
+                <a href="tel:+37379966909" className="mt-1 block text-sm text-[#4e8f28] hover:underline">
                   +373 79966909
                 </a>
               </div>
@@ -35,11 +35,11 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-[#f3f6f6] p-2.5">
-                <Mail className="h-5 w-5 text-[#0071e3]" />
+                <Mail className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Email</h2>
-                <a href="mailto:adamomoldova@gmail.com" className="mt-1 block text-sm text-[#0066cc] hover:underline">
+                <a href="mailto:adamomoldova@gmail.com" className="mt-1 block text-sm text-[#4e8f28] hover:underline">
                   adamomoldova@gmail.com
                 </a>
               </div>
@@ -47,7 +47,7 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-[#f3f6f6] p-2.5">
-                <Clock className="h-5 w-5 text-[#0071e3]" />
+                <Clock className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Orar de lucru</h2>
@@ -58,11 +58,11 @@ export default function ContactPage() {
 
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-[#f3f6f6] p-2.5">
-                <Phone className="h-5 w-5 text-[#0071e3]" />
+                <Phone className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Service centru</h2>
-                <a href="tel:+37379966909" className="mt-1 block text-sm text-[#0066cc] hover:underline">
+                <a href="tel:+37379966909" className="mt-1 block text-sm text-[#4e8f28] hover:underline">
                   +373 79966909
                 </a>
                 <p className="mt-1 text-sm text-[#6b6c6c]">Apelați pentru service și reparații</p>
@@ -72,7 +72,7 @@ export default function ContactPage() {
 
           <div className="rounded-[28px] border border-[#cccfcf]/50 p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <Building2 className="h-5 w-5 text-[#0071e3]" />
+              <Building2 className="h-5 w-5 text-[#63ad36]" />
               <h2 className="text-base font-semibold text-[#1d1d1f]">Rechizite bancare</h2>
             </div>
             <div className="text-sm text-[#6b6c6c] space-y-1">
@@ -83,8 +83,8 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <Link href="/politica-confidentzialinosti" className="flex items-center gap-3 rounded-[28px] border border-[#cccfcf]/50 p-6 hover:border-[#0071e3] transition-colors">
-            <Shield className="h-5 w-5 text-[#0071e3]" />
+          <Link href="/politica-confidentzialinosti" className="flex items-center gap-3 rounded-[28px] border border-[#cccfcf]/50 p-6 hover:border-[#63ad36] transition-colors">
+            <Shield className="h-5 w-5 text-[#63ad36]" />
             <div>
               <p className="text-sm font-semibold text-[#1d1d1f]">Politica de confidențialitate</p>
               <p className="text-xs text-[#6b6c6c]">Date despre consumatori</p>
