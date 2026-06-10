@@ -31,7 +31,7 @@ interface Props {
 }
 
 export function RateCalculator({ price, productName }: Props) {
-  const tr = useTranslations();
+  const { rates: tr } = useTranslations();
   const [selectedMonths, setSelectedMonths] = useState(8);
   const [open, setOpen] = useState(false);
   const [withAdvance, setWithAdvance] = useState(false);
@@ -67,7 +67,7 @@ export function RateCalculator({ price, productName }: Props) {
         {/* Badge + price row */}
         <div className="flex items-center justify-between mb-3">
           <span className="rounded-[6px] bg-[#63ad36] px-[10px] py-[4px] text-[11px] font-black uppercase tracking-wide text-white">
-            Preț Rate ADAMO
+            {tr.badge}
           </span>
           <span className="text-[22px] font-extrabold text-[#1d1d1f]">{fmt(price)} <span className="text-[15px] font-semibold text-[#6b6c6c]">lei</span></span>
         </div>
@@ -87,7 +87,7 @@ export function RateCalculator({ price, productName }: Props) {
           </select>
           <span className="text-[#6b6c6c] text-[13px]">→</span>
           <span className="text-[18px] font-extrabold text-[#34781f]">
-            {fmt(amount)} <span className="text-[13px] font-semibold text-[#6b6c6c]">lei / lună</span>
+            {fmt(amount)} <span className="text-[13px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
           </span>
         </div>
 
@@ -97,7 +97,7 @@ export function RateCalculator({ price, productName }: Props) {
           className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#63ad36] bg-white px-5 py-3 text-[14px] font-bold text-[#34781f] transition-colors hover:bg-[#edf7e8]"
         >
           <Building2 className="h-5 w-5" />
-          Cumpără în rate
+          {tr.buyInRates}
         </button>
       </div>
 
@@ -114,7 +114,7 @@ export function RateCalculator({ price, productName }: Props) {
 
             {/* Product header */}
             <div className="mb-5 pr-8">
-              <p className="text-[13px] text-[#6b6c6c]">Cumpărare în rate</p>
+              <p className="text-[13px] text-[#6b6c6c]">{tr.modalSubtitle}</p>
               <h3 className="mt-1 text-[16px] font-bold text-[#1d1d1f] leading-tight">{productName}</h3>
               <p className="mt-1 text-[22px] font-extrabold text-[#1d1d1f]">{fmt(price)} <span className="text-[14px] font-semibold text-[#6b6c6c]">lei</span></p>
             </div>
@@ -124,17 +124,17 @@ export function RateCalculator({ price, productName }: Props) {
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#edf7e8]">
                   <ChevronRight className="h-7 w-7 text-[#34781f]" />
                 </div>
-                <p className="text-[16px] font-bold text-[#1d1d1f]">Cererea a fost trimisă!</p>
-                <p className="mt-1 text-[14px] text-[#6b6c6c]">Te vom contacta în scurt timp.</p>
+                <p className="text-[16px] font-bold text-[#1d1d1f]">{tr.successTitle}</p>
+                <p className="mt-1 text-[14px] text-[#6b6c6c]">{tr.successSub}</p>
                 <button onClick={() => { setOpen(false); setSent(false); }} className="mt-5 rounded-[10px] bg-[#63ad36] px-6 py-2.5 text-[14px] font-bold text-white hover:bg-[#4e8f28]">
-                  Închide
+                  {tr.close}
                 </button>
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2">
                 {/* Plans grid */}
                 <div>
-                  <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">Selectează planul</p>
+                  <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">{tr.selectPlan}</p>
                   <div className="grid grid-cols-3 gap-2">
                     {PLANS.map((p) => {
                       const amt = monthly(price, p.months, p.rate);
@@ -156,7 +156,7 @@ export function RateCalculator({ price, productName }: Props) {
                           </span>
                           <p className="text-[15px] font-extrabold text-[#1d1d1f] leading-none">{fmt(amt)}</p>
                           <p className="mt-0.5 text-[11px] text-[#6b6c6c]">lei</p>
-                          <p className="mt-1 text-[11px] font-semibold text-[#6b6c6c]">{p.months} plăți</p>
+                          <p className="mt-1 text-[11px] font-semibold text-[#6b6c6c]">{p.months} {tr.months}</p>
                         </button>
                       );
                     })}
@@ -164,19 +164,19 @@ export function RateCalculator({ price, productName }: Props) {
 
                   {/* Total */}
                   <div className="mt-3 rounded-[10px] bg-[#f7f9f7] px-4 py-3">
-                    <p className="text-[13px] text-[#6b6c6c]">Total lunar</p>
+                    <p className="text-[13px] text-[#6b6c6c]">{tr.monthlyTotal}</p>
                     <p className="text-[20px] font-extrabold text-[#34781f]">{fmt(monthly(price, selectedMonths, best.rate))} lei</p>
-                    <p className="text-[11px] text-[#6b6c6c] mt-1">* Datele sunt informative. Rata finală se stabilește la aprobare.</p>
+                    <p className="text-[11px] text-[#6b6c6c] mt-1">{tr.disclaimer}</p>
                   </div>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                  <p className="text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">Completează formularul</p>
+                  <p className="text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">{tr.fillForm}</p>
 
                   {/* With advance toggle */}
                   <label className="flex cursor-pointer items-center justify-between rounded-[10px] border border-[#e4e8e4] px-4 py-3">
-                    <span className="text-[13px] font-semibold text-[#1d1d1f]">Cu avans</span>
+                    <span className="text-[13px] font-semibold text-[#1d1d1f]">{tr.withAdvance}</span>
                     <div
                       onClick={() => setWithAdvance((v) => !v)}
                       className={`relative h-6 w-11 rounded-full transition-colors ${withAdvance ? "bg-[#63ad36]" : "bg-[#e4e8e4]"}`}
@@ -187,14 +187,14 @@ export function RateCalculator({ price, productName }: Props) {
 
                   <input
                     required
-                    placeholder="Prenume"
+                    placeholder={tr.firstName}
                     value={form.firstName}
                     onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
                     className="rounded-[10px] border border-[#e4e8e4] px-4 py-3 text-[14px] text-[#1d1d1f] placeholder:text-[#a0a8a0] focus:border-[#63ad36] focus:outline-none"
                   />
                   <input
                     required
-                    placeholder="Nume"
+                    placeholder={tr.lastName}
                     value={form.lastName}
                     onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
                     className="rounded-[10px] border border-[#e4e8e4] px-4 py-3 text-[14px] text-[#1d1d1f] placeholder:text-[#a0a8a0] focus:border-[#63ad36] focus:outline-none"
@@ -203,7 +203,7 @@ export function RateCalculator({ price, productName }: Props) {
                     <span className="flex items-center border-r border-[#e4e8e4] bg-[#f7f9f7] px-3 text-[13px] font-semibold text-[#6b6c6c]">+373</span>
                     <input
                       required
-                      placeholder="0000-0000"
+                      placeholder={tr.phonePlaceholder}
                       value={form.phone}
                       onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                       className="min-w-0 flex-1 bg-white px-3 py-3 text-[14px] text-[#1d1d1f] placeholder:text-[#a0a8a0] focus:outline-none"
@@ -215,7 +215,7 @@ export function RateCalculator({ price, productName }: Props) {
                     className="mt-2 flex items-center justify-center gap-2 rounded-[12px] bg-[#63ad36] px-5 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-[#4e8f28]"
                   >
                     <Building2 className="h-5 w-5" />
-                    Trimite cererea
+                    {tr.submit}
                   </button>
                 </form>
               </div>
