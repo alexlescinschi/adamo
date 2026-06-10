@@ -1,13 +1,13 @@
 import { ProductCard } from "./product-card";
 
 interface Product {
-  id: number | string;
+  id: number;
   name: string;
   slug: string;
   price: number;
   old_price?: number;
-  image_url?: string | null;
-  unit_id: number | string;
+  image_url?: string;
+  unit_id: number;
 }
 
 interface ProductSectionProps {
