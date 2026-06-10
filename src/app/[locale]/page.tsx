@@ -2,6 +2,7 @@ import { ProductCard } from "@/components/product-card";
 import { HomeCarousel } from "@/components/home-carousel";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
+import { getDict } from "@/lib/translations";
 import Image from "next/image";
 
 export const revalidate = 60;
@@ -106,6 +107,7 @@ function StaticBanner({ banner }: { banner: any }) {
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const tr = getDict(locale);
   const [popular, promotions, newProducts, carousel, staticBanners] = await Promise.all([
     fetchProducts("popular", locale),
     fetchProducts("promotions", locale),
@@ -115,6 +117,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ]);
 
   const { wide, tile1, tile2 } = staticBanners;
+
+  const benefits = [
+    { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub },
+    { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub },
+    { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub },
+    { Icon: Package, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub },
+    { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub },
+  ];
 
   return (
     <div>
@@ -126,13 +136,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <section className="py-8 md:py-12">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-5">
-          {[
-            { Icon: ShieldCheck, title: "Garanție", sub: "12 luni" },
-            { Icon: Truck, title: "Livrare gratuită", sub: "în toată Moldova" },
-            { Icon: Percent, title: "Rate 0%", sub: "fără dobândă" },
-            { Icon: Package, title: "Achitare", sub: "la primire" },
-            { Icon: Wrench, title: "Service", sub: "centru propriu" },
-          ].map((item) => (
+          {benefits.map((item) => (
             <div key={item.title} className="flex items-center gap-3 rounded-[12px] bg-white px-4 py-5 shadow-[0_2px_12px_rgba(31,41,55,0.07)]">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#edf7e8]">
                 <item.Icon className="h-5 w-5 text-[#34781f]" />
@@ -147,8 +151,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       </section>
 
       <section className="py-[70px] text-center">
-        <h1 className="text-[44px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f]">Magazinul Adamo</h1>
-        <p className="mt-3 text-[17px] text-[#6b6c6c]">Produse de calitate la prețuri bune.</p>
+        <h1 className="text-[44px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f]">{tr.home.title}</h1>
+        <p className="mt-3 text-[17px] text-[#6b6c6c]">{tr.home.subtitle}</p>
       </section>
 
       {wide && (
@@ -157,8 +161,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title="Produse populare" products={popular} viewAllHref="/minipc" />
-      <Section title="Promoții" products={promotions} viewAllHref="/minipc" />
+      <Section title={tr.home.popular} products={popular} viewAllHref="/minipc" />
+      <Section title={tr.home.promotions} products={promotions} viewAllHref="/minipc" />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -169,7 +173,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title="Noutăți" products={newProducts} viewAllHref="/laptopuri" />
+      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
     </div>
   );
 }

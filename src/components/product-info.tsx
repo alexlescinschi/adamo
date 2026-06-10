@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 import { ShoppingCart, CheckCircle, Heart } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ProductInfoProps {
   product: any;
@@ -13,6 +14,7 @@ interface ProductInfoProps {
 export function ProductInfo({ product }: ProductInfoProps) {
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const tr = useTranslations();
   const [added, setAdded] = useState(false);
 
   const hasPrice = product.price > 0;
@@ -66,7 +68,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         {added ? (
           <><CheckCircle className="h-5 w-5" /> Adăugat în coș</>
         ) : (
-          <><ShoppingCart className="h-5 w-5" /> {hasPrice ? "Adaugă în coș" : "Indisponibil"}</>
+          <><ShoppingCart className="h-5 w-5" /> {hasPrice ? tr.product.addToCart : tr.product.unavailable}</>
         )}
       </button>
 

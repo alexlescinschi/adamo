@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
+import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
@@ -74,6 +75,7 @@ async function getSimilar(slug: string, currentId: number, locale = "ro") {
 export default async function ProductPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const { id: rawId, locale } = await params;
   const id = rawId.split("-")[0];
+  const tr = getDict(locale);
   let product: any = null;
 
   try {
@@ -83,10 +85,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!product) {
     return (
       <div className="py-16 text-center">
-        <h1 className="text-2xl font-bold text-[#1d1d1f]">Produsul nu a fost găsit</h1>
-        <p className="mt-2 text-[#6b6c6c]">Produsul căutat nu există sau a fost eliminat.</p>
+        <h1 className="text-2xl font-bold text-[#1d1d1f]">{tr.product.notFound}</h1>
+        <p className="mt-2 text-[#6b6c6c]">{tr.product.notFoundSub}</p>
         <Link href="/" className="mt-6 inline-block rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
-          Înapoi la produse
+          {tr.product.back}
         </Link>
       </div>
     );
@@ -98,7 +100,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     <div className="py-8">
       <Link href="/" className="inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline mb-6">
         <ChevronLeft className="h-4 w-4" />
-        Înapoi la produse
+        {tr.product.back}
       </Link>
 
       <div className="grid gap-[70px] md:grid-cols-2">
@@ -112,7 +114,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       {similar.length > 0 && (
         <div className="mt-[70px]">
-          <h2 className="text-xl font-semibold mb-6 text-[#1d1d1f]">Produse asemănătoare</h2>
+          <h2 className="text-xl font-semibold mb-6 text-[#1d1d1f]">{tr.product.similar}</h2>
           <div className="grid grid-cols-2 gap-[14px] md:grid-cols-4">
             {similar.map((p: any) => (
               <ProductCard key={p.id} product={p} />

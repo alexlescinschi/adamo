@@ -1,41 +1,65 @@
 "use client";
 
 import { usePathname, useParams } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, Globe } from "lucide-react";
 
 const LOCALES = [
-  { code: "ro", label: "RO" },
-  { code: "ru", label: "RU" },
-  { code: "en", label: "EN" },
+  { code: "ro", label: "Română" },
+  { code: "ru", label: "Русский" },
+  { code: "en", label: "English" },
 ];
 
 export function LocaleSwitcher() {
   const pathname = usePathname();
   const params = useParams();
+  const router = useRouter();
   const currentLocale = (params?.locale as string) || "ro";
+  const current = LOCALES.find((l) => l.code === currentLocale) || LOCALES[0];
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   function hrefFor(locale: string) {
-    // pathname is like /ro/product/123 — replace first segment
     const segments = pathname.split("/");
     segments[1] = locale;
     return segments.join("/") || "/";
   }
 
   return (
-    <div className="flex items-center gap-1">
-      {LOCALES.map(({ code, label }) => (
-        <Link
-          key={code}
-          href={hrefFor(code)}
-          className={`px-2 py-1 text-[13px] font-semibold rounded transition-colors ${
-            currentLocale === code
-              ? "bg-[#edf7e8] text-[#1e4b17]"
-              : "text-[#6b6c6c] hover:text-[#1d1d1f]"
-          }`}
-        >
-          {label}
-        </Link>
-      ))}
+    <div ref={ref} className="relative mr-1">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 rounded-[9px] border border-[#e4e8e4] px-[10px] py-[7px] text-[13px] font-semibold text-[#444545] transition-colors hover:border-[#63ad36] hover:text-[#1d1d1f]"
+      >
+        <Globe className="h-3.5 w-3.5 text-[#63ad36]" />
+        {currentLocale.toUpperCase()}
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 min-w-[130px] rounded-[10px] border border-[#e4e8e4] bg-white py-1 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+          {LOCALES.map(({ code, label }) => (
+            <button
+              key={code}
+              onClick={() => { setOpen(false); router.push(hrefFor(code)); }}
+              className={`flex w-full items-center gap-2 px-4 py-2 text-[13px] font-semibold transition-colors hover:bg-[#f3f6f6] ${
+                code === currentLocale ? "text-[#1e4b17] bg-[#edf7e8]" : "text-[#444545]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

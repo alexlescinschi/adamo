@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, Mail, Clock } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "@/hooks/use-translations";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "+373 799 669 09";
@@ -13,6 +14,7 @@ export function Footer() {
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
   const l = (path: string) => `/${locale}${path}`;
+  const tr = useTranslations();
   return (
     <footer className="mt-[70px] border-t border-[#e4e8e4] bg-[#f7f9f7]">
       <div className="mx-auto max-w-7xl px-4 py-12">
@@ -23,9 +25,7 @@ export function Footer() {
             <Link href={l("/")} className="mb-4 flex items-center">
               <Image src="/logo.svg" alt="Adamo" width={120} height={28} className="h-6 w-auto" />
             </Link>
-            <p className="mt-4 text-[14px] leading-[1.55] text-[#536070]">
-              Magazin specializat în mini-PC și laptopuri. Import direct, garanție 12 luni, livrare gratuită în Moldova.
-            </p>
+            <p className="mt-4 text-[14px] leading-[1.55] text-[#536070]">{tr.footer.description}</p>
             {/* Social circles */}
             <div className="mt-5 flex gap-[10px]">
               {[
@@ -50,30 +50,30 @@ export function Footer() {
 
           {/* Menu */}
           <div>
-            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Magazin</h3>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">{tr.footer.shop}</h3>
             <div className="flex flex-col gap-[10px]">
-              <Link href={l("/minipc")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Mini-PC</Link>
-              <Link href={l("/laptopuri")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Laptopuri</Link>
-              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Contacte</Link>
+              <Link href={l("/minipc")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.minipc}</Link>
+              <Link href={l("/laptopuri")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.laptops}</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.warranty}</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.contact}</Link>
             </div>
           </div>
 
           {/* Info */}
           <div>
-            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Informații</h3>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">{tr.footer.info}</h3>
             <div className="flex flex-col gap-[10px]">
-              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Livrare și plată</Link>
-              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Retur</Link>
-              <Link href={l("/politica-confidentzialinosti")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Confidențialitate</Link>
-              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Termeni și condiții</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.delivery}</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.warranty}</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.returns}</Link>
+              <Link href={l("/politica-confidentzialinosti")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.privacy}</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.terms}</Link>
             </div>
           </div>
 
           {/* Contacts */}
           <div>
-            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Contacte</h3>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">{tr.footer.contacts}</h3>
             <div className="flex flex-col gap-[10px] text-[14px] leading-[1.45] text-[#536070]">
               <p>mun. Chișinău, Rîșcani<br />str. Dumitru Rîșcanu 11</p>
               <a href={`tel:${PHONE}`} className="font-bold text-[#263142] hover:text-[#34781f] transition-colors">{PHONE_DISPLAY}</a>
@@ -84,12 +84,12 @@ export function Footer() {
 
           {/* Subscribe */}
           <div>
-            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Abonează-te</h3>
-            <p className="mb-4 text-[14px] leading-[1.45] text-[#536070]">Primește oferte și noutăți direct pe email</p>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">{tr.footer.subscribe}</h3>
+            <p className="mb-4 text-[14px] leading-[1.45] text-[#536070]">{tr.footer.subscribeSub}</p>
             <form className="flex overflow-hidden rounded-[9px] border border-[#e4e8e4] bg-white focus-within:border-[#63ad36] transition-colors">
               <input
                 type="email"
-                placeholder="Emailul tău"
+                placeholder={tr.footer.emailPlaceholder}
                 className="min-w-0 flex-1 border-0 bg-transparent px-[14px] py-[10px] text-[14px] text-[#1d1d1f] placeholder:text-[#a0a8a0] outline-none"
               />
               <button
@@ -106,9 +106,9 @@ export function Footer() {
 
       <div className="border-t border-[#e4e8e4]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 md:flex-row">
-          <span className="text-[12px] text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo — Toate drepturile rezervate. Creat în Moldova.</span>
+          <span className="text-[12px] text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo — {tr.footer.rights}</span>
           <Link href={l("/politica-confidentzialinosti")} className="text-[12px] text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">
-            Politica de confidențialitate
+            {tr.footer.privacyPolicy}
           </Link>
         </div>
       </div>
