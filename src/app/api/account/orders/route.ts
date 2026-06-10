@@ -11,9 +11,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/account/deals`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();

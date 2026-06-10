@@ -40,7 +40,7 @@ export default function CartPage() {
                   {item.name}
                 </Link>
                 <p className="text-sm text-slate-500">
-                  {item.price > 0 ? `${item.price.toFixed(2)} MDL / buc` : "Preț la cerere"}
+                  {item.price > 0 ? `${item.price.toFixed(0)} MDL` : "Preț la cerere"}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -64,7 +64,7 @@ export default function CartPage() {
           <h2 className="text-lg font-bold mb-4">Sumar comandă</h2>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-slate-600">Subtotal</span>
-            <span className="font-medium">{total.toFixed(2)} MDL</span>
+            <span className="font-medium">{total.toFixed(0)} MDL</span>
           </div>
           <div className="flex justify-between text-sm mb-4">
             <span className="text-slate-600">Livrare</span>
@@ -72,7 +72,7 @@ export default function CartPage() {
           </div>
           <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
             <span>Total</span>
-            <span>{total.toFixed(2)} MDL</span>
+            <span>{total.toFixed(0)} MDL</span>
           </div>
           <Link
             href="/checkout"

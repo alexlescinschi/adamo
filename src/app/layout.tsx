@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { ContactWidget } from "@/components/contact-widget";
 import { CartProvider } from "@/hooks/use-cart";
-
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
+import { FavoritesProvider } from "@/hooks/use-favorites";
 
 export const metadata: Metadata = {
   title: "Adamo - Magazin Online",
@@ -21,12 +17,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ro" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans bg-white text-slate-900">
+    <html lang="ro" className="h-full">
+      <body className="min-h-full flex flex-col font-sans bg-white text-[#1d1d1f]">
         <CartProvider>
-          <Header />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4">{children}</main>
-          <Footer />
+          <FavoritesProvider>
+            <Header />
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4">{children}</main>
+            <Footer />
+            <ContactWidget />
+          </FavoritesProvider>
         </CartProvider>
       </body>
     </html>

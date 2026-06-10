@@ -69,8 +69,8 @@ export default function AccountPage() {
           </div>
         </div>
         <button
-          onClick={() => {
-            document.cookie = "ecommerceAccessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          onClick={async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
             router.push("/");
           }}
           className="flex items-center gap-4 rounded-lg border border-slate-200 p-6 hover:border-red-300 hover:bg-red-50 transition-colors text-left"

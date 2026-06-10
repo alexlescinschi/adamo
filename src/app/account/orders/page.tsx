@@ -88,7 +88,7 @@ function OrdersContent() {
               </div>
               <div className="mt-3 border-t border-slate-100 pt-3 flex justify-between">
                 <span className="text-sm text-slate-600">{order.items?.length || 0} produse</span>
-                <span className="font-bold">{order.total?.toFixed(2) || "0.00"} MDL</span>
+                <span className="font-bold">{order.total?.toFixed(0) || "0"} MDL</span>
               </div>
             </div>
           ))}

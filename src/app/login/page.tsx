@@ -1,31 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", password: "" });
+  const googleBtnRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !googleBtnRef.current || (window as any).google?.accounts?.id) return;
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+      });
+      (window as any).google.accounts.id.renderButton(googleBtnRef.current, {
+        type: "standard",
+        shape: "pill",
+        theme: "outline",
+        size: "large",
+        text: "signin_with",
+        width: 320,
+      });
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  const handleGoogleCredential = async (response: any) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || "Autentificare Google eșuată");
+      router.push("/account");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || data.detail || "Autentificare eșuată");
-
       router.push("/account");
     } catch (err: any) {
       setError(err.message);
@@ -35,41 +78,48 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-12">
-      <h1 className="text-2xl font-bold text-center mb-6">Autentificare</h1>
-      {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+    <div className="mx-auto max-w-md py-[70px]">
+      <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] text-center mb-8">Autentificare</h1>
+
+      {error && <div className="mb-4 rounded-[28px] bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+
+      {GOOGLE_CLIENT_ID && (
+        <div className="flex justify-center mb-6" ref={googleBtnRef} />
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
+          <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Email</label>
           <input
             type="email"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#0071e3] focus:outline-none"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Parolă</label>
+          <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Parolă</label>
           <input
             type="password"
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:outline-none"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#0071e3] focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-slate-900 py-2.5 text-white hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-[28px] bg-[#0071e3] py-3 text-sm font-medium text-white hover:bg-[#0066cc] transition-colors disabled:opacity-50"
         >
           {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Autentificare"}
         </button>
       </form>
-      <p className="mt-4 text-center text-sm text-slate-600">
+
+      <p className="mt-6 text-center text-sm text-[#6b6c6c]">
         Nu ai cont?{" "}
-        <Link href="/register" className="text-slate-900 hover:underline">
+        <Link href="/register" className="text-[#0066cc] hover:underline">
           Înregistrează-te
         </Link>
       </p>

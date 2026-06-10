@@ -1,6 +1,30 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --color-midnight: #1d1d1f;
+  --color-cloud: #6b6c6c;
+  --color-frost: #f3f6f6;
+  --color-steel: #cccfcf;
+  --color-alabaster: #e8e8ed;
+  --color-ocean: #0066cc;
+  --color-vivid: #0071e3;
+  --color-flame: #b64400;
+  --radius-card: 28px;
+  --radius-btn: 28px;
+  --radius-default: 12px;
+  --gap-section: 70px;
+  --gap-card: 14px;
+  --gap-element: 10px;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+a, button, input[type="submit"], input[type="button"], label[for] {
+  cursor: pointer;
 }

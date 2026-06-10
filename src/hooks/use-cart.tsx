@@ -9,6 +9,7 @@ export interface CartItem {
   price: number;
   qty: number;
   image?: string;
+  stock: number;
 }
 
 interface CartContextValue {
@@ -44,13 +45,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         (i) => i.product_id === item.product_id && i.unit_id === item.unit_id
       );
       if (existing) {
+        const newQty = Math.min(existing.qty + item.qty, existing.stock);
         return prev.map((i) =>
           i.product_id === item.product_id && i.unit_id === item.unit_id
-            ? { ...i, qty: i.qty + item.qty }
+            ? { ...i, qty: newQty }
             : i
         );
       }
-      return [...prev, item];
+      const qty = Math.min(item.qty, item.stock || 99);
+      return [...prev, { ...item, qty }];
     });
   }, []);
 
@@ -67,7 +70,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     setItems((prev) =>
       prev.map((i) =>
-        i.product_id === product_id && i.unit_id === unit_id ? { ...i, qty } : i
+        i.product_id === product_id && i.unit_id === unit_id
+          ? { ...i, qty: Math.min(qty, i.stock || 99) }
+          : i
       )
     );
   }, [removeItem]);

@@ -4,6 +4,9 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
 
+const SLUG = "minipc";
+const LOCALE = "ro";
+
 function extractBase(item: any) {
   return {
     id: item.id,
@@ -20,9 +23,7 @@ function extractSpecs(data: any): Record<string, string> {
   if (!data?.specs || !Array.isArray(data.specs)) return {};
   const result: Record<string, string> = {};
   for (const spec of data.specs) {
-    if (spec.label && spec.valueLabel) {
-      result[spec.label] = spec.valueLabel;
-    }
+    if (spec.label && spec.valueLabel) result[spec.label] = spec.valueLabel;
   }
   return result;
 }
@@ -37,11 +38,11 @@ function enrichStock(detail: any) {
   return detail?.offerSummary?.inventoryUnitCount || detail?.units_on_warehouse || 0;
 }
 
-async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> {
+async function enrichWithSpecs(products: any[]) {
   const enriched = await Promise.allSettled(
     products.map(async (p) => {
       try {
-        const detail = await getCached(`product:${p.id}:${locale}`, () => getProductById(p.id, locale), 120);
+        const detail = await getCached(`product:${p.id}:${LOCALE}`, () => getProductById(p.id, LOCALE), 120);
         return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs: extractSpecs(detail) };
       } catch {
         return { ...p, specs: {} };
@@ -51,32 +52,28 @@ async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> 
   return enriched.map((r) => (r.status === "fulfilled" ? r.value : { ...r.reason, specs: {} }));
 }
 
-export default async function CategoryPage({
-  params,
+export default async function MiniPcPage({
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  const { slug } = await params;
   const { page } = await searchParams;
   const currentPage = Math.max(1, parseInt(page || "1", 10) || 1);
-  const locale = "ro";
   const PER_PAGE = 8;
 
-  const [category, products] = await getCached(`cat-page:${slug}:${locale}`, async () => {
+  const [category, products] = await getCached(`cat-page:${SLUG}:${LOCALE}`, async () => {
     const [cat, allProductsData] = await Promise.all([
-      getCategoryBySlug(slug, locale),
-      getPublishedProducts(locale, 500),
+      getCategoryBySlug(SLUG, LOCALE),
+      getPublishedProducts(LOCALE, 500),
     ]);
     const categoryId = cat?.id;
     const allItems = Array.isArray(allProductsData) ? allProductsData : allProductsData?.items || [];
     const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
     const baseProducts = items.map(extractBase);
-    return [cat, await enrichWithSpecs(baseProducts, locale)] as const;
+    return [cat, await enrichWithSpecs(baseProducts)] as const;
   }, 180);
 
-  const categoryName = category?.name || category?.translation?.name || slug;
+  const categoryName = category?.name || category?.translation?.name || SLUG;
 
   return (
     <div className="py-6">

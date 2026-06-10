@@ -127,8 +127,8 @@ export default function CheckoutPage() {
 
       <h1 className="text-2xl font-bold mb-8">Checkout</h1>
 
-      <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-8">
+      <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3 w-full min-w-0">
+        <div className="lg:col-span-2 space-y-8 min-w-0">
           <section className="rounded-lg border border-slate-200 p-6">
             <h2 className="text-lg font-bold mb-4">Date de contact</h2>
             <div className="grid gap-4">
@@ -263,7 +263,7 @@ export default function CheckoutPage() {
           </section>
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 min-w-0">
           <div className="rounded-lg border border-slate-200 p-6 sticky top-24">
             <h2 className="text-lg font-bold mb-4">Comanda ta</h2>
             <div className="space-y-3 mb-4">
@@ -280,13 +280,13 @@ export default function CheckoutPage() {
                     <p className="text-sm font-medium truncate">{item.name}</p>
                     <p className="text-xs text-slate-500">x{item.qty}</p>
                   </div>
-                  <p className="text-sm font-medium">{(item.price * item.qty).toFixed(2)} MDL</p>
+                  <p className="text-sm font-medium">{(item.price * item.qty).toFixed(0)} MDL</p>
                 </div>
               ))}
             </div>
             <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
               <span>Total</span>
-              <span>{total.toFixed(2)} MDL</span>
+              <span>{total.toFixed(0)} MDL</span>
             </div>
 
             {error && <p className="mt-4 text-sm text-red-600">{error}</p>}

@@ -28,6 +28,8 @@ function transformProduct(data: any) {
       images: data.images || [],
       specs,
       availability: data.offerSummary?.availability || "OutOfStock",
+      category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
+      category_name: data.category?.translation?.name || data.category?.name || null,
     };
   }
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
@@ -44,6 +46,8 @@ function transformProduct(data: any) {
     images: data.previewImageUrl ? [{ url: data.previewImageUrl }] : [],
     specs,
     availability: "OutOfStock",
+    category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
+    category_name: data.category?.translation?.name || data.category?.name || null,
   };
 }
 
