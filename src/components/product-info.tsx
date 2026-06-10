@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { useFavorites } from "@/hooks/use-favorites";
-import { ShoppingCart, CheckCircle, Heart } from "lucide-react";
+import { ShoppingCart, CheckCircle } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 
@@ -14,7 +13,6 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const { addItem } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
   const tr = useTranslations();
   const [added, setAdded] = useState(false);
 
@@ -34,12 +32,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           {product.category_name || product.category_slug}
         </Link>
       )}
-      <div className="flex items-start gap-3">
-        <h1 className="text-[34px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f] flex-1">{product.name}</h1>
-        <button onClick={() => toggleFavorite({ product_id: product.id, name: product.name, price: product.price, image_url: product.image_url })} className="mt-1 flex-shrink-0 rounded-full p-2 transition-colors hover:bg-[#f3f6f6]">
-          <Heart className={`h-6 w-6 transition-colors ${isFavorite(product.id) ? "fill-[#b64400] text-[#b64400]" : "text-[#cccfcf]"}`} />
-        </button>
-      </div>
+      <h1 className="text-[34px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f]">{product.name}</h1>
       {product.availability === "OutOfStock" && (
         <span className="mt-3 inline-block text-xs font-medium text-[#b64400]">{tr.product.outOfStock}</span>
       )}
@@ -62,7 +55,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <button
         onClick={handleAddToCart}
         disabled={!hasPrice || product.availability === "OutOfStock"}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3.5 text-[17px] font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-4 text-[16px] md:text-[17px] font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {added ? (
           <><CheckCircle className="h-5 w-5" /> {tr.product.addedToCart}</>
