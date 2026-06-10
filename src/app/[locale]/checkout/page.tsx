@@ -346,7 +346,7 @@ export default function CheckoutPage() {
                 <div className="space-y-2 text-[13px]">
                   {[
                     [tr.checkout.beneficiary, ADAMO_COMPANY.name],
-                    ["IDNO", ADAMO_COMPANY.idno],
+                    ["IDNO", ADAMO_COMPANY.regNumber],
                     [tr.checkout.bank, ADAMO_COMPANY.bank],
                     [tr.checkout.bicSwift, ADAMO_COMPANY.bic],
                   ].map(([label, value]) => (
