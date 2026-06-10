@@ -1,25 +1,17 @@
 import { ProductSection } from "@/components/product-section";
-import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts } from "@/lib/crm-api";
+import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, transformProduct } from "@/lib/crm-api";
+import { getCached } from "@/lib/redis";
 
 export const revalidate = 60;
 
-function transformProduct(item: any) {
-  const price = item.offerSummary?.minPrice || item.minPrice || item.price || 0;
-  const oldPrice = item.discount?.originalPrice || item.oldPrice || item.old_price;
-  return {
-    id: Number(item.id),
-    name: item.storefrontName || item.name,
-    slug: item.slug,
-    price,
-    old_price: oldPrice > price ? oldPrice : undefined,
-    image_url: item.imageUrl || item.previewImageUrl || undefined,
-    unit_id: Number(item.id),
-  };
-}
-
-async function fetchSection(fetcher: () => Promise<any>, fallback: () => Promise<any>) {
+async function fetchSection(
+  cacheKey: string,
+  fetcher: () => Promise<any>,
+  fallbackKey: string,
+  fallback: () => Promise<any>
+) {
   try {
-    const data = await fetcher();
+    const data = await getCached(cacheKey, fetcher, 120);
     const items = data?.items || data || [];
     const products = Array.isArray(items) ? items.map(transformProduct) : [];
     if (products.length > 0) return products;
@@ -27,7 +19,7 @@ async function fetchSection(fetcher: () => Promise<any>, fallback: () => Promise
     // ignore
   }
   try {
-    const data = await fallback();
+    const data = await getCached(fallbackKey, fallback, 120);
     const items = data?.items || data || [];
     return Array.isArray(items) ? items.map(transformProduct) : [];
   } catch {
@@ -36,12 +28,13 @@ async function fetchSection(fetcher: () => Promise<any>, fallback: () => Promise
 }
 
 export default async function Home() {
+  const fallbackKey = "published:ro:8";
   const published = () => getPublishedProducts("ro", 8);
 
   const [popular, promotions, newProducts] = await Promise.all([
-    fetchSection(() => getPopularProducts("ro", 8), published),
-    fetchSection(() => getPromotions("ro", 8), published),
-    fetchSection(() => getNewProducts("ro", 8), published),
+    fetchSection("products:popular:ro:8", () => getPopularProducts("ro", 8), fallbackKey, published),
+    fetchSection("products:promotions:ro:8", () => getPromotions("ro", 8), fallbackKey, published),
+    fetchSection("products:new:ro:8", () => getNewProducts("ro", 8), fallbackKey, published),
   ]);
 
   return (

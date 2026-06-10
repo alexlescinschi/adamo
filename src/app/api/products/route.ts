@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublishedProducts, getPopularProducts, getPromotions, getNewProducts } from "@/lib/crm-api";
+import { getPublishedProducts, getPopularProducts, getPromotions, getNewProducts, transformProduct } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
-
-function transformProduct(item: any) {
-  const price = item.offerSummary?.minPrice || item.minPrice || item.price || 0;
-  const oldPrice = item.discount?.originalPrice || item.oldPrice || item.old_price;
-
-  return {
-    id: item.id,
-    name: item.storefrontName || item.name,
-    slug: item.slug,
-    price,
-    old_price: oldPrice > price ? oldPrice : undefined,
-    image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
-    category_id: item.category_id,
-    is_published: item.is_published,
-  };
-}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

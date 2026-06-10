@@ -68,6 +68,30 @@ async function crmFetch(path: string, options?: RequestInit) {
   return res.json();
 }
 
+export interface StorefrontProduct {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  old_price?: number;
+  image_url?: string;
+  unit_id: number;
+}
+
+export function transformProduct(item: any): StorefrontProduct {
+  const price = item.offerSummary?.minPrice || item.minPrice || item.price || 0;
+  const oldPrice = item.discount?.originalPrice || item.oldPrice || item.old_price;
+  return {
+    id: Number(item.id),
+    name: item.storefrontName || item.name,
+    slug: item.slug,
+    price,
+    old_price: oldPrice > price ? oldPrice : undefined,
+    image_url: item.imageUrl || item.previewImageUrl || undefined,
+    unit_id: Number(item.id),
+  };
+}
+
 export async function getPublishedProducts(locale = "ro", limit = 12) {
   return crmFetch(`/products?locale=${locale}&limit=${limit}`);
 }
