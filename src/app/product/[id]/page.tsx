@@ -6,6 +6,23 @@ import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
 
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch("https://api.crm.adamo.md/v1/ecommerce/products/ids?locale=ro", {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const ids: number[] = data.ids || [];
+    const slugs: string[] = data.slugs || [];
+    return ids.map((id, i) => ({ id: slugs[i] ? `${id}-${slugs[i]}` : String(id) }));
+  } catch {
+    return [];
+  }
+}
+
 function extractImage(product: any): { url: string }[] {
   if (product.images?.length) return product.images;
   if (product.image_url) return [{ url: product.image_url }];

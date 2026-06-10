@@ -3,6 +3,9 @@ import { getCached } from "@/lib/redis";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
+import { Suspense } from "react";
+
+export const revalidate = 60;
 
 function extractBase(item: any) {
   return {
@@ -85,7 +88,9 @@ export default async function CategoryPage({
         <ChevronRight className="h-4 w-4" />
         <span className="text-[#1d1d1f]">{categoryName}</span>
       </div>
-      <CategoryFilter products={products} categoryName={categoryName} page={currentPage} perPage={PER_PAGE} />
+      <Suspense fallback={null}>
+        <CategoryFilter products={products} categoryName={categoryName} page={currentPage} perPage={PER_PAGE} />
+      </Suspense>
     </div>
   );
 }
