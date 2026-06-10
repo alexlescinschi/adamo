@@ -6,10 +6,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 import { Loader2, ShoppingCart, ChevronLeft } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, total, clearCart } = useCart();
+  const tr = useTranslations();
 
   const [contact, setContact] = useState({ full_name: "", phone: "", email: "" });
   const [deliveryMethod, setDeliveryMethod] = useState<"PICKUP" | "COURIER">("PICKUP");
@@ -36,10 +38,10 @@ export default function CheckoutPage() {
     return (
       <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
-        <h1 className="mt-4 text-2xl font-bold">Coșul tău este gol</h1>
-        <p className="mt-2 text-slate-500">Adaugă produse înainte de checkout.</p>
+        <h1 className="mt-4 text-2xl font-bold">{tr.cart.empty}</h1>
+        <p className="mt-2 text-slate-500">{tr.checkout.emptyCartSub}</p>
         <Link href="/" className="mt-6 inline-block rounded-lg bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">
-          Continuă cumpărăturile
+          {tr.cart.continueShopping}
         </Link>
       </div>
     );
@@ -77,7 +79,7 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Checkout failed");
+        throw new Error(err.error || tr.checkout.genericError);
       }
 
       const order = await res.json();
@@ -113,7 +115,7 @@ export default function CheckoutPage() {
         router.push(`/account/orders?success=true&orderId=${orderId}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "A apărut o eroare");
+      setError(err instanceof Error ? err.message : tr.checkout.genericError);
       setSubmitting(false);
     }
   };
@@ -122,19 +124,19 @@ export default function CheckoutPage() {
     <div className="py-8">
       <Link href="/cart" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 mb-6">
         <ChevronLeft className="h-4 w-4" />
-        Înapoi la coș
+        {tr.checkout.backToCart}
       </Link>
 
-      <h1 className="text-2xl font-bold mb-8">Checkout</h1>
+      <h1 className="text-2xl font-bold mb-8">{tr.checkout.title}</h1>
 
       <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3 w-full min-w-0">
         <div className="lg:col-span-2 space-y-8 min-w-0">
           <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Date de contact</h2>
+            <h2 className="text-lg font-bold mb-4">{tr.checkout.contactDetails}</h2>
             <div className="grid gap-4">
               <input
                 type="text"
-                placeholder="Numele complet"
+                placeholder={tr.checkout.fullName}
                 required
                 value={contact.full_name}
                 onChange={(e) => setContact({ ...contact, full_name: e.target.value })}
@@ -142,7 +144,7 @@ export default function CheckoutPage() {
               />
               <input
                 type="tel"
-                placeholder="Telefon"
+                placeholder={tr.checkout.phone}
                 required
                 value={contact.phone}
                 onChange={(e) => setContact({ ...contact, phone: e.target.value })}
@@ -150,7 +152,7 @@ export default function CheckoutPage() {
               />
               <input
                 type="email"
-                placeholder="Email (opțional)"
+                placeholder={tr.checkout.emailOptional}
                 value={contact.email}
                 onChange={(e) => setContact({ ...contact, email: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
@@ -159,7 +161,7 @@ export default function CheckoutPage() {
           </section>
 
           <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Metoda de livrare</h2>
+            <h2 className="text-lg font-bold mb-4">{tr.checkout.deliveryMethod}</h2>
             <div className="flex gap-4 mb-4">
               <button
                 type="button"
@@ -170,7 +172,7 @@ export default function CheckoutPage() {
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                Ridicare personală
+                {tr.checkout.pickup}
               </button>
               <button
                 type="button"
@@ -181,7 +183,7 @@ export default function CheckoutPage() {
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                Curier
+                {tr.checkout.courier}
               </button>
             </div>
 
@@ -191,21 +193,21 @@ export default function CheckoutPage() {
                 onChange={(e) => setWarehouseId(Number(e.target.value))}
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
               >
-                <option value="" disabled>Selectează punctul de ridicare</option>
+                <option value="" disabled>{tr.checkout.selectPickup}</option>
                 {warehouses.map((w: any) => (
                   <option key={w.id} value={w.id}>
                     {w.name || w.address}
                   </option>
                 ))}
                 {warehouses.length === 0 && (
-                  <option value="" disabled>Nu sunt puncte de ridicare disponibile</option>
+                  <option value="" disabled>{tr.checkout.noPickups}</option>
                 )}
               </select>
             ) : (
               <div className="grid gap-4">
                 <input
                   type="text"
-                  placeholder="Oraș"
+                  placeholder={tr.checkout.city}
                   required
                   value={delivery.city}
                   onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
@@ -213,7 +215,7 @@ export default function CheckoutPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Adresa"
+                  placeholder={tr.checkout.address}
                   required
                   value={delivery.address}
                   onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
@@ -224,7 +226,7 @@ export default function CheckoutPage() {
           </section>
 
           <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Metoda de plată</h2>
+            <h2 className="text-lg font-bold mb-4">{tr.checkout.paymentMethod}</h2>
             <div className="flex gap-4">
               <button
                 type="button"
@@ -235,7 +237,7 @@ export default function CheckoutPage() {
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                Plată online (maib)
+                {tr.checkout.payOnline}
               </button>
               <button
                 type="button"
@@ -246,18 +248,18 @@ export default function CheckoutPage() {
                     : "border-slate-200 hover:border-slate-300"
                 }`}
               >
-                Transfer bancar
+                {tr.checkout.bankTransfer}
               </button>
             </div>
           </section>
 
           <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Comentariu (opțional)</h2>
+            <h2 className="text-lg font-bold mb-4">{tr.checkout.commentOptional}</h2>
             <textarea
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Orice informație suplimentară..."
+              placeholder={tr.checkout.commentPlaceholder}
               className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none resize-none"
             />
           </section>
@@ -265,7 +267,7 @@ export default function CheckoutPage() {
 
         <div className="lg:col-span-1 min-w-0">
           <div className="rounded-lg border border-slate-200 p-6 sticky top-24">
-            <h2 className="text-lg font-bold mb-4">Comanda ta</h2>
+            <h2 className="text-lg font-bold mb-4">{tr.checkout.yourOrder}</h2>
             <div className="space-y-3 mb-4">
               {items.map((item) => (
                 <div key={`${item.product_id}-${item.unit_id}`} className="flex gap-3">
@@ -285,7 +287,7 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
-              <span>Total</span>
+              <span>{tr.cart.total}</span>
               <span>{total.toFixed(0)} MDL</span>
             </div>
 
@@ -297,15 +299,15 @@ export default function CheckoutPage() {
               className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 py-3 text-white hover:bg-slate-800 disabled:opacity-50"
             >
               {submitting ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Se procesează...</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {tr.checkout.processing}</>
               ) : (
-                "Plasează comanda"
+                tr.checkout.placeOrder
               )}
             </button>
 
             {paymentMethod === "BANK_TRANSFER" && (
               <p className="mt-3 text-xs text-slate-500 text-center">
-                Vei primi detaliile de plată după plasarea comenzii.
+                {tr.checkout.bankTransferNote}
               </p>
             )}
           </div>

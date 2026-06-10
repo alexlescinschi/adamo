@@ -5,10 +5,12 @@ import Image from "next/image";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Heart, Trash2, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function FavoritesPage() {
   const { items, removeFavorite } = useFavorites();
   const { addItem } = useCart();
+  const tr = useTranslations();
 
   if (items.length === 0) {
     return (
@@ -44,7 +46,7 @@ export default function FavoritesPage() {
                 {item.price > 0 ? (
                   <span className="text-base font-semibold text-[#1d1d1f]">{item.price.toFixed(0)} MDL</span>
                 ) : (
-                  <span className="text-sm font-medium text-[#6b6c6c]">Preț la cerere</span>
+                  <span className="text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</span>
                 )}
               </div>
               <div className="mt-3 flex gap-2">

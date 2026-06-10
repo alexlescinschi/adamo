@@ -5,9 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, removeItem, updateQty, total } = useCart();
+  const tr = useTranslations();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [stockMsg, setStockMsg] = useState<number | null>(null);
 
@@ -34,7 +36,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         }`}
       >
         <div className="flex items-center justify-between border-b border-[#cccfcf]/50 px-5 py-4">
-          <h2 className="text-lg font-semibold text-[#1d1d1f]">Coș de cumpărături</h2>
+          <h2 className="text-lg font-semibold text-[#1d1d1f]">{tr.cart.title}</h2>
           <button onClick={onClose} className="rounded-full p-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
             <X className="h-5 w-5" />
           </button>
@@ -42,9 +44,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
         {items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 text-center">
-            <p className="text-[#6b6c6c]">Coșul tău este gol.</p>
+            <p className="text-[#6b6c6c]">{tr.cart.empty}</p>
             <button onClick={onClose} className="rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-2.5 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
-              Continuă cumpărăturile
+              {tr.cart.continueShopping}
             </button>
           </div>
         ) : (
@@ -86,7 +88,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                             </button>
                             {stockMsg === item.product_id && (
                               <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[8px] bg-[#1d1d1f] px-2.5 py-1 text-xs text-white shadow-lg">
-                                Nu mai sunt în stoc
+                                {tr.cart.noStock}
                               </span>
                             )}
                           </div>
@@ -104,7 +106,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
             <div className="border-t border-[#cccfcf]/50 px-5 py-4 space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-[#6b6c6c]">Subtotal</span>
+                <span className="text-[#6b6c6c]">{tr.cart.subtotal}</span>
                 <span className="font-semibold text-[#1d1d1f]">{total.toFixed(0)} MDL</span>
               </div>
               <Link
@@ -112,7 +114,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 onClick={onClose}
                 className="flex w-full items-center justify-center rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
               >
-                Checkout
+                {tr.cart.checkout}
               </Link>
             </div>
           </>

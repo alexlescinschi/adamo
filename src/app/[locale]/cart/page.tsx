@@ -4,18 +4,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 import { Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function CartPage() {
   const { items, removeItem, updateQty, total } = useCart();
+  const tr = useTranslations();
 
   if (items.length === 0) {
     return (
       <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
-        <h1 className="mt-4 text-2xl font-bold">Coșul tău este gol</h1>
-        <p className="mt-2 text-slate-500">Adaugă produse pentru a continua.</p>
+        <h1 className="mt-4 text-2xl font-bold">{tr.cart.empty}</h1>
+        <p className="mt-2 text-slate-500">{tr.cart.emptySub}</p>
         <Link href="/" className="mt-6 inline-block rounded-lg bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">
-          Continuă cumpărăturile
+          {tr.cart.continueShopping}
         </Link>
       </div>
     );
@@ -23,7 +25,7 @@ export default function CartPage() {
 
   return (
     <div className="py-8">
-      <h1 className="text-2xl font-bold mb-6">Coș de cumpărături</h1>
+      <h1 className="text-2xl font-bold mb-6">{tr.cart.title}</h1>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2 space-y-4">
           {items.map((item) => (
@@ -32,7 +34,7 @@ export default function CartPage() {
                 {item.image ? (
                   <Image src={item.image} alt={item.name} fill className="object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-slate-400">Fără imagine</div>
+                  <div className="flex h-full items-center justify-center text-xs text-slate-400">{tr.cart.noImage}</div>
                 )}
               </div>
               <div className="flex-1">
@@ -40,7 +42,7 @@ export default function CartPage() {
                   {item.name}
                 </Link>
                 <p className="text-sm text-slate-500">
-                  {item.price > 0 ? `${item.price.toFixed(0)} MDL` : "Preț la cerere"}
+                  {item.price > 0 ? `${item.price.toFixed(0)} MDL` : tr.product.priceOnRequest}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -61,24 +63,24 @@ export default function CartPage() {
           ))}
         </div>
         <div className="rounded-lg border border-slate-200 p-6 h-fit">
-          <h2 className="text-lg font-bold mb-4">Sumar comandă</h2>
+          <h2 className="text-lg font-bold mb-4">{tr.cart.summary}</h2>
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-600">Subtotal</span>
+            <span className="text-slate-600">{tr.cart.subtotal}</span>
             <span className="font-medium">{total.toFixed(0)} MDL</span>
           </div>
           <div className="flex justify-between text-sm mb-4">
-            <span className="text-slate-600">Livrare</span>
-            <span className="font-medium">Se calculează</span>
+            <span className="text-slate-600">{tr.cart.delivery}</span>
+            <span className="font-medium">{tr.cart.deliveryCalc}</span>
           </div>
           <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
-            <span>Total</span>
+            <span>{tr.cart.total}</span>
             <span>{total.toFixed(0)} MDL</span>
           </div>
           <Link
             href="/checkout"
             className="mt-6 block w-full rounded-lg bg-slate-900 py-3 text-center text-white hover:bg-slate-800"
           >
-            Continuă la checkout
+            {tr.cart.continueToCheckout}
           </Link>
         </div>
       </div>

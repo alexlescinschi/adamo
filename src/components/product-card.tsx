@@ -73,7 +73,7 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="mt-[3px] mb-[10px] text-[12.5px] text-[#6b6c6c]">{tr.product.installments}</p>
           </>
         ) : (
-          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">Preț la cerere</p>
+          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
         )}
 
         <div className="grid gap-[10px]" style={{ gridTemplateColumns: "1fr 46px" }}>
