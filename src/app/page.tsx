@@ -2,7 +2,6 @@ import { ProductCard } from "@/components/product-card";
 import { HomeCarousel } from "@/components/home-carousel";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
-import { getCached } from "@/lib/redis";
 import Image from "next/image";
 
 export const revalidate = 60;
@@ -42,21 +41,21 @@ async function fetchProducts(type: string, locale = "ro", limit = 8) {
   };
   const fetcher = fetchers[type] || getPopularProducts;
   let data;
-  try { data = await getCached(cacheKey, () => fetcher(locale, limit), 120); } catch { data = null; }
+  try { data = await fetcher(locale, limit); } catch { data = null; }
   if (!data?.items?.length) { try { data = await getPublishedProducts(locale, limit).catch(() => null); } catch {} }
   return extractProducts(data || {});
 }
 
 async function fetchCarousel(locale = "ro") {
   try {
-    const data = await getCached("home:carousel", () => getHomeCarousel(locale), 300);
+    const data = await getHomeCarousel(locale);
     return Array.isArray(data) ? data : [];
   } catch { return []; }
 }
 
 async function fetchStaticBanners(locale = "ro") {
   try {
-    const data = await getCached("home:static-banners", () => getHomeStaticBanners(locale), 300);
+    const data = await getHomeStaticBanners(locale);
     return data || {};
   } catch { return {}; }
 }

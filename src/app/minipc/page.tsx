@@ -1,8 +1,10 @@
 import { getCategoryBySlug, getPublishedProducts, getProductById } from "@/lib/crm-api";
-import { getCached } from "@/lib/redis";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
+import { Suspense } from "react";
+
+export const revalidate = 60;
 
 const SLUG = "minipc";
 const LOCALE = "ro";
@@ -42,7 +44,7 @@ async function enrichWithSpecs(products: any[]) {
   const enriched = await Promise.allSettled(
     products.map(async (p) => {
       try {
-        const detail = await getCached(`product:${p.id}:${LOCALE}`, () => getProductById(p.id, LOCALE), 120);
+        const detail = await getProductById(p.id, LOCALE);
         return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs: extractSpecs(detail) };
       } catch {
         return { ...p, specs: {} };
@@ -52,28 +54,18 @@ async function enrichWithSpecs(products: any[]) {
   return enriched.map((r) => (r.status === "fulfilled" ? r.value : { ...r.reason, specs: {} }));
 }
 
-export default async function MiniPcPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const { page } = await searchParams;
-  const currentPage = Math.max(1, parseInt(page || "1", 10) || 1);
+export default async function MiniPcPage() {
   const PER_PAGE = 8;
 
-  const [category, products] = await getCached(`cat-page:${SLUG}:${LOCALE}`, async () => {
-    const [cat, allProductsData] = await Promise.all([
-      getCategoryBySlug(SLUG, LOCALE),
-      getPublishedProducts(LOCALE, 500),
-    ]);
-    const categoryId = cat?.id;
-    const allItems = Array.isArray(allProductsData) ? allProductsData : allProductsData?.items || [];
-    const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
-    const baseProducts = items.map(extractBase);
-    return [cat, await enrichWithSpecs(baseProducts)] as const;
-  }, 180);
-
-  const categoryName = category?.name || category?.translation?.name || SLUG;
+  const [cat, allProductsData] = await Promise.all([
+    getCategoryBySlug(SLUG, LOCALE),
+    getPublishedProducts(LOCALE, 500),
+  ]);
+  const categoryId = cat?.id;
+  const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
+  const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
+  const products = await enrichWithSpecs(items.map(extractBase));
+  const categoryName = cat?.name || cat?.translation?.name || SLUG;
 
   return (
     <div className="py-6">
@@ -82,7 +74,9 @@ export default async function MiniPcPage({
         <ChevronRight className="h-4 w-4" />
         <span className="text-[#1d1d1f]">{categoryName}</span>
       </div>
-      <CategoryFilter products={products} categoryName={categoryName} page={currentPage} perPage={PER_PAGE} />
+      <Suspense fallback={null}>
+        <CategoryFilter products={products} categoryName={categoryName} page={1} perPage={PER_PAGE} />
+      </Suspense>
     </div>
   );
 }

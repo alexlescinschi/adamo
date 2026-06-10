@@ -1,8 +1,10 @@
 import { getCategoryBySlug, getPublishedProducts, getProductById } from "@/lib/crm-api";
-import { getCached } from "@/lib/redis";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
+import { Suspense } from "react";
+
+export const revalidate = 60;
 
 function extractBase(item: any) {
   return {
@@ -41,7 +43,7 @@ async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> 
   const enriched = await Promise.allSettled(
     products.map(async (p) => {
       try {
-        const detail = await getCached(`product:${p.id}:${locale}`, () => getProductById(p.id, locale), 120);
+        const detail = await getProductById(p.id, locale);
         return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs: extractSpecs(detail) };
       } catch {
         return { ...p, specs: {} };
@@ -53,30 +55,22 @@ async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> 
 
 export default async function CategoryPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ page?: string }>;
 }) {
   const { slug } = await params;
-  const { page } = await searchParams;
-  const currentPage = Math.max(1, parseInt(page || "1", 10) || 1);
   const locale = "ro";
   const PER_PAGE = 8;
 
-  const [category, products] = await getCached(`cat-page:${slug}:${locale}`, async () => {
-    const [cat, allProductsData] = await Promise.all([
-      getCategoryBySlug(slug, locale),
-      getPublishedProducts(locale, 500),
-    ]);
-    const categoryId = cat?.id;
-    const allItems = Array.isArray(allProductsData) ? allProductsData : allProductsData?.items || [];
-    const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
-    const baseProducts = items.map(extractBase);
-    return [cat, await enrichWithSpecs(baseProducts, locale)] as const;
-  }, 180);
-
-  const categoryName = category?.name || category?.translation?.name || slug;
+  const [cat, allProductsData] = await Promise.all([
+    getCategoryBySlug(slug, locale),
+    getPublishedProducts(locale, 500),
+  ]);
+  const categoryId = cat?.id;
+  const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
+  const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
+  const products = await enrichWithSpecs(items.map(extractBase), locale);
+  const categoryName = cat?.name || cat?.translation?.name || slug;
 
   return (
     <div className="py-6">
@@ -85,7 +79,9 @@ export default async function CategoryPage({
         <ChevronRight className="h-4 w-4" />
         <span className="text-[#1d1d1f]">{categoryName}</span>
       </div>
-      <CategoryFilter products={products} categoryName={categoryName} page={currentPage} perPage={PER_PAGE} />
+      <Suspense fallback={null}>
+        <CategoryFilter products={products} categoryName={categoryName} page={1} perPage={PER_PAGE} />
+      </Suspense>
     </div>
   );
 }
