@@ -57,7 +57,7 @@ async function crmFetch(path: string, options?: RequestInit) {
       "Content-Type": "application/json",
       ...(options?.headers || {}),
     },
-    cache: "no-store",
+    next: { revalidate: 60 },
   });
 
   if (!res.ok) {

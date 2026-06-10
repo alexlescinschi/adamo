@@ -1,47 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { ProductCard } from "./product-card";
-import { Loader2 } from "lucide-react";
+
+interface Product {
+  id: number | string;
+  name: string;
+  slug: string;
+  price: number;
+  old_price?: number;
+  image_url?: string | null;
+  unit_id: number | string;
+}
 
 interface ProductSectionProps {
   title: string;
-  type: "popular" | "promotions" | "new";
+  products: Product[];
 }
 
-export function ProductSection({ title, type }: ProductSectionProps) {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`/api/products?type=${type}&locale=ro&limit=8`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setProducts(data);
-        } else if (data && Array.isArray(data.items)) {
-          setProducts(data.items);
-        } else if (data && Array.isArray(data.products)) {
-          setProducts(data.products);
-        } else {
-          setProducts([]);
-        }
-      })
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
-  }, [type]);
-
-  if (loading) {
-    return (
-      <section className="py-8">
-        <h2 className="mb-4 text-xl font-bold">{title}</h2>
-        <div className="flex h-40 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-        </div>
-      </section>
-    );
-  }
-
+export function ProductSection({ title, products }: ProductSectionProps) {
   if (products.length === 0) return null;
 
   return (
