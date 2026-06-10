@@ -1,82 +1,107 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Phone, MessageCircle, MessageSquare, Mail, MapPin } from "lucide-react";
+import { Phone, MapPin, Mail, Clock } from "lucide-react";
 
 const PHONE = "+37379966909";
+const PHONE_DISPLAY = "+373 799 669 09";
+const EMAIL = "adamocomputers@gmail.com";
 
 export function Footer() {
   return (
-    <footer className="mt-[70px] border-t border-[#cccfcf]/50 bg-[#f3f6f6]">
+    <footer className="mt-[70px] border-t border-[#e4e8e4] bg-[#f7f9f7]">
       <div className="mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
 
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center">
+          {/* Brand column */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="mb-4 flex items-center">
               <Image src="/logo.svg" alt="Adamo" width={120} height={28} className="h-6 w-auto" />
             </Link>
-            <p className="text-sm text-[#6b6c6c] leading-relaxed">
-              Produse de calitate la prețuri bune. Garanție 12 luni, livrare gratuită în toată Moldova.
+            <p className="mt-4 text-[14px] leading-[1.55] text-[#536070]">
+              Magazin specializat în mini-PC și laptopuri. Import direct, garanție 12 luni, livrare gratuită în Moldova.
             </p>
-            <div className="space-y-2">
-              <a href={`tel:${PHONE}`} className="flex items-center gap-2 text-sm text-[#444545] hover:text-[#1d1d1f] transition-colors">
-                <Phone className="h-4 w-4 text-[#6b6c6c]" /> {PHONE}
-              </a>
-              <a href={`viber://chat?number=${PHONE}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-[#444545] hover:text-[#1d1d1f] transition-colors">
-                <MessageCircle className="h-4 w-4 text-[#7360f2]" /> Viber
-              </a>
-              <a href={`https://wa.me/${PHONE}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-[#444545] hover:text-[#1d1d1f] transition-colors">
-                <MessageSquare className="h-4 w-4 text-[#25d366]" /> WhatsApp
-              </a>
+            {/* Social circles */}
+            <div className="mt-5 flex gap-[10px]">
+              {[
+                { label: "Facebook", href: "https://facebook.com/adamo.md", abbr: "f" },
+                { label: "Instagram", href: "https://instagram.com/adamo.md", abbr: "ig" },
+                { label: "TikTok", href: "https://tiktok.com/@adamo.md", abbr: "tt" },
+                { label: "YouTube", href: "https://youtube.com/@adamo.md", abbr: "yt" },
+              ].map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-[#e4e8e4] text-[12px] font-bold text-[#536070] transition-colors hover:border-[#63ad36] hover:text-[#34781f]"
+                >
+                  {s.abbr}
+                </a>
+              ))}
             </div>
           </div>
 
+          {/* Menu */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-[#1d1d1f]">Magazin</h3>
-            <div className="flex flex-col gap-3">
-              <Link href="/minipc" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Mini-PC</Link>
-              <Link href="/laptopuri" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Laptopuri</Link>
-              <Link href="/warranty" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href="/contact" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Contacte</Link>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Magazin</h3>
+            <div className="flex flex-col gap-[10px]">
+              <Link href="/minipc" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Mini-PC</Link>
+              <Link href="/laptopuri" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Laptopuri</Link>
+              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
+              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Contacte</Link>
             </div>
           </div>
 
+          {/* Info */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-[#1d1d1f]">Informații</h3>
-            <div className="flex flex-col gap-3">
-              <Link href="/warranty" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Livrare și plată</Link>
-              <Link href="/warranty" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href="/politica-confidentzialinosti" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Confidențialitate</Link>
-              <Link href="/contact" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Retur</Link>
-              <Link href="/contact" className="text-sm text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">Termeni și condiții</Link>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Informații</h3>
+            <div className="flex flex-col gap-[10px]">
+              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Livrare și plată</Link>
+              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
+              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Retur</Link>
+              <Link href="/politica-confidentzialinosti" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Confidențialitate</Link>
+              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Termeni și condiții</Link>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-[#1d1d1f]">Adresa</h3>
-            <div className="flex items-start gap-2 text-sm text-[#6b6c6c]">
-              <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#6b6c6c]" />
-              <span>Chișinău, str. Alexandru cel Bun, 1</span>
+          {/* Contacts */}
+          <div>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Contacte</h3>
+            <div className="flex flex-col gap-[10px] text-[14px] leading-[1.45] text-[#536070]">
+              <p>mun. Chișinău, Rîșcani<br />str. Dumitru Rîșcanu 11</p>
+              <a href={`tel:${PHONE}`} className="font-bold text-[#263142] hover:text-[#34781f] transition-colors">{PHONE_DISPLAY}</a>
+              <a href={`mailto:${EMAIL}`} className="hover:text-[#1d1d1f] transition-colors break-all">{EMAIL}</a>
+              <p>Luni – Vineri: 09:00 – 18:00<br />Sâmbătă: 10:00 – 16:00</p>
             </div>
-            <div className="overflow-hidden rounded-[14px] border border-[#cccfcf]/50">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d21778.848116171145!2d28.8354!3d47.0225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97c0350b8b3b7%3A0x1a1b1c1d1e1f1a1b!2sChi%C8%99in%C4%83u!5e0!3m2!1sro!2s!4v1"
-                width="100%"
-                height="150"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Adamo pe hartă"
+          </div>
+
+          {/* Subscribe */}
+          <div>
+            <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Abonează-te</h3>
+            <p className="mb-4 text-[14px] leading-[1.45] text-[#536070]">Primește oferte și noutăți direct pe email</p>
+            <form className="flex overflow-hidden rounded-[9px] border border-[#e4e8e4] bg-white focus-within:border-[#63ad36] transition-colors">
+              <input
+                type="email"
+                placeholder="Emailul tău"
+                className="min-w-0 flex-1 border-0 bg-transparent px-[14px] py-[10px] text-[14px] text-[#1d1d1f] placeholder:text-[#a0a8a0] outline-none"
               />
-            </div>
+              <button
+                type="submit"
+                className="border-l border-[#e4e8e4] bg-[#63ad36] px-4 text-[13px] font-extrabold text-white transition-colors hover:bg-[#4e8f28]"
+              >
+                Go
+              </button>
+            </form>
           </div>
+
         </div>
       </div>
 
-      <div className="border-t border-[#cccfcf]/50">
+      <div className="border-t border-[#e4e8e4]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 md:flex-row">
-          <span className="text-xs text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo. Toate drepturile rezervate.</span>
-          <Link href="/politica-confidentzialinosti" className="text-xs text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">
+          <span className="text-[12px] text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo — Toate drepturile rezervate. Creat în Moldova.</span>
+          <Link href="/politica-confidentzialinosti" className="text-[12px] text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">
             Politica de confidențialitate
           </Link>
         </div>

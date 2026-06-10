@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useFavorites } from "@/hooks/use-favorites";
 
 interface Product {
   id: number;
@@ -14,16 +15,27 @@ interface Product {
   unit_id?: number;
   slug?: string;
   stock?: number;
+  badge?: string;
+  badge_type?: "green" | "blue";
+  specs?: string[];
 }
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const unitId = product.unit_id || product.id;
   const hasPrice = product.price > 0;
+  const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
   return (
-    <div className="group relative flex flex-col rounded-[28px] bg-white p-[14px] transition-shadow hover:shadow-sm">
-      <Link href={`/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`} className="relative aspect-square overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]">
+    <article className="group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)]">
+      {product.badge && (
+        <span className={`mb-2 inline-block self-start rounded-[7px] px-[9px] py-[4px] text-[10px] font-black uppercase leading-none tracking-wide ${product.badge_type === "blue" ? "bg-[#eaf2ff] text-[#1769e8]" : "bg-[#edf7e8] text-[#34781f]"}`}>
+          {product.badge}
+        </span>
+      )}
+
+      <Link href={href} className="relative mb-[10px] block h-[140px] overflow-hidden rounded-[7px] bg-[#f3f6f6]">
         {product.image_url ? (
           <Image
             src={product.image_url}
@@ -36,31 +48,50 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">Fără imagine</div>
         )}
       </Link>
-      <div className="mt-3 flex flex-1 flex-col px-1">
-        <Link href={`/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`} className="text-sm font-medium text-[#1d1d1f] line-clamp-2 hover:text-[#4e8f28] transition-colors">
-          {product.name}
-        </Link>
-        <div className="mt-2 flex items-baseline gap-2">
-          {hasPrice ? (
-            <>
-              <span className="text-base font-semibold text-[#1d1d1f]">{product.price.toFixed(0)} MDL</span>
-              {product.old_price && product.old_price > product.price && (
-                <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
-              )}
-            </>
-          ) : (
-            <span className="text-sm font-medium text-[#6b6c6c]">Preț la cerere</span>
-          )}
+
+      <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
+        {product.name}
+      </Link>
+
+      {product.specs && product.specs.length > 0 && (
+        <ul className="mb-[8px] ml-[17px] list-disc p-0 text-[12px] leading-[1.42] text-[#526071]">
+          {product.specs.map((s, i) => <li key={i}>{s}</li>)}
+        </ul>
+      )}
+
+      <div className="mt-auto pt-2">
+        {hasPrice ? (
+          <>
+            <strong className="block text-[22px] font-extrabold leading-none text-[#34781f]">
+              {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
+            </strong>
+            {product.old_price && product.old_price > product.price && (
+              <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
+            )}
+            <p className="mt-[3px] mb-[10px] text-[12.5px] text-[#6b6c6c]">de la 0% în rate</p>
+          </>
+        ) : (
+          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">Preț la cerere</p>
+        )}
+
+        <div className="grid gap-[10px]" style={{ gridTemplateColumns: "1fr 46px" }}>
+          <button
+            onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock || 0 })}
+            className="flex items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+            disabled={!hasPrice}
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {hasPrice ? "Adaugă în coș" : "Indisponibil"}
+          </button>
+          <button
+            onClick={() => toggleFavorite({ product_id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
+            className="flex items-center justify-center rounded-[7px] border-[1.5px] border-[#e4e8e4] text-[#2d3542] transition-colors hover:border-[#63ad36] hover:text-[#63ad36]"
+            aria-label="Adaugă la favorite"
+          >
+            <Heart className={`h-5 w-5 transition-colors ${isFavorite(product.id) ? "fill-[#b64400] text-[#b64400]" : ""}`} />
+          </button>
         </div>
-        <button
-          onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock || 0 })}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-2.5 text-sm font-medium text-white transition-all hover:from-[#63ad36] hover:to-[#4e8f28] disabled:opacity-50"
-          disabled={!hasPrice}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {hasPrice ? "Adaugă în coș" : "Indisponibil"}
-        </button>
       </div>
-    </div>
+    </article>
   );
 }

@@ -7,6 +7,18 @@ import Image from "next/image";
 
 export const revalidate = 60;
 
+function extractSpecs(item: any): string[] {
+  if (item.cardSpecs) {
+    return String(item.cardSpecs).split("|").map((s: string) => s.trim()).filter(Boolean).slice(0, 5);
+  }
+  const raw = item.specs || item.shortSpecs || item.attributes || [];
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((s: any) => s.label && s.valueLabel)
+    .slice(0, 5)
+    .map((s: any) => `${s.label}: ${s.valueLabel}`);
+}
+
 function extractProducts(data: any): any[] {
   const items = data?.items || data || [];
   return Array.isArray(items) ? items.map((item: any) => ({
@@ -14,9 +26,10 @@ function extractProducts(data: any): any[] {
     name: item.storefrontName || item.name,
     slug: item.slug,
     price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
-    old_price: item.discount?.originalPrice || item.oldPrice || item.old_price,
+    old_price: item.discount?.compareAtPrice || item.discount?.originalPrice || item.oldPrice || item.old_price,
     image_url: item.imageUrl || item.previewImageUrl || null,
     unit_id: item.id,
+    specs: extractSpecs(item),
   })) : [];
 }
 
@@ -48,11 +61,18 @@ async function fetchStaticBanners(locale = "ro") {
   } catch { return {}; }
 }
 
-function Section({ title, products }: { title: string; products: any[] }) {
+function Section({ title, products, viewAllHref }: { title: string; products: any[]; viewAllHref?: string }) {
   if (products.length === 0) return null;
   return (
     <section className="py-[70px]">
-      <h2 className="mb-6 text-xl font-semibold text-[#1d1d1f]">{title}</h2>
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-[22px] font-extrabold text-[#1d1d1f]">{title}</h2>
+        {viewAllHref && (
+          <a href={viewAllHref} className="text-[14px] font-semibold text-[#34781f] hover:underline transition-colors">
+            Vezi toate
+          </a>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-[14px] md:grid-cols-3 lg:grid-cols-4">
         {products.map((product: any) => (
           <ProductCard key={product.id} product={product} />
@@ -105,19 +125,22 @@ export default async function Home() {
       )}
 
       <section className="py-8 md:py-12">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-5">
           {[
-            { Icon: ShieldCheck, label: "Garanție 12 luni" },
-            { Icon: Truck, label: "Livrare Gratuită toată Moldova" },
-            { Icon: Percent, label: "Rate 0% fără dobândă" },
-            { Icon: Package, label: "Achitare la primire" },
-            { Icon: Wrench, label: "Service centru propriu" },
+            { Icon: ShieldCheck, title: "Garanție", sub: "12 luni" },
+            { Icon: Truck, title: "Livrare gratuită", sub: "în toată Moldova" },
+            { Icon: Percent, title: "Rate 0%", sub: "fără dobândă" },
+            { Icon: Package, title: "Achitare", sub: "la primire" },
+            { Icon: Wrench, title: "Service", sub: "centru propriu" },
           ].map((item) => (
-            <div key={item.label} className="flex flex-col items-center gap-3 rounded-[28px] bg-[#f3f6f6] px-4 py-6 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1d1d1f]">
-                <item.Icon className="h-6 w-6 text-white" />
+            <div key={item.title} className="flex items-center gap-3 rounded-[12px] bg-white px-4 py-5 shadow-[0_2px_12px_rgba(31,41,55,0.07)]">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#edf7e8]">
+                <item.Icon className="h-5 w-5 text-[#34781f]" />
               </div>
-              <span className="text-sm font-medium text-[#1d1d1f]">{item.label}</span>
+              <div className="grid leading-[1.2]">
+                <b className="text-[13px] font-bold text-[#1d1d1f]">{item.title}</b>
+                <span className="text-[12px] text-[#6b6c6c]">{item.sub}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -134,8 +157,8 @@ export default async function Home() {
         </section>
       )}
 
-      <Section title="Produse populare" products={popular} />
-      <Section title="Promoții" products={promotions} />
+      <Section title="Produse populare" products={popular} viewAllHref="/minipc" />
+      <Section title="Promoții" products={promotions} viewAllHref="/minipc" />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -146,7 +169,7 @@ export default async function Home() {
         </section>
       )}
 
-      <Section title="Noutăți" products={newProducts} />
+      <Section title="Noutăți" products={newProducts} viewAllHref="/laptopuri" />
     </div>
   );
 }
