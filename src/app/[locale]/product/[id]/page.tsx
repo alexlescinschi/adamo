@@ -16,7 +16,10 @@ export async function generateStaticParams() {
     const data = await res.json();
     const ids: number[] = data.ids || [];
     const slugs: string[] = data.slugs || [];
-    return ids.map((id, i) => ({ id: slugs[i] ? `${id}-${slugs[i]}` : String(id) }));
+    const locales = ["ro", "ru", "en"];
+    return locales.flatMap((locale) =>
+      ids.map((id, i) => ({ locale, id: slugs[i] ? `${id}-${slugs[i]}` : String(id) }))
+    );
   } catch {
     return [];
   }
@@ -68,13 +71,13 @@ async function getSimilar(slug: string, currentId: number, locale = "ro") {
   }
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const raw = (await params).id;
-  const id = raw.split("-")[0];
+export default async function ProductPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
+  const { id: rawId, locale } = await params;
+  const id = rawId.split("-")[0];
   let product: any = null;
 
   try {
-    product = await getProduct(id);
+    product = await getProduct(id, locale);
   } catch {}
 
   if (!product) {
@@ -89,7 +92,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  const similar = product.category_slug ? await getSimilar(product.category_slug, product.id) : [];
+  const similar = product.category_slug ? await getSimilar(product.category_slug, product.id, locale) : [];
 
   return (
     <div className="py-8">

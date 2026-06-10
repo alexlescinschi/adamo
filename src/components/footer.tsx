@@ -1,12 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, MapPin, Mail, Clock } from "lucide-react";
+import { useParams } from "next/navigation";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "+373 799 669 09";
 const EMAIL = "adamocomputers@gmail.com";
 
 export function Footer() {
+  const params = useParams();
+  const locale = (params?.locale as string) || "ro";
+  const l = (path: string) => `/${locale}${path}`;
   return (
     <footer className="mt-[70px] border-t border-[#e4e8e4] bg-[#f7f9f7]">
       <div className="mx-auto max-w-7xl px-4 py-12">
@@ -14,7 +20,7 @@ export function Footer() {
 
           {/* Brand column */}
           <div className="lg:col-span-1">
-            <Link href="/" className="mb-4 flex items-center">
+            <Link href={l("/")} className="mb-4 flex items-center">
               <Image src="/logo.svg" alt="Adamo" width={120} height={28} className="h-6 w-auto" />
             </Link>
             <p className="mt-4 text-[14px] leading-[1.55] text-[#536070]">
@@ -46,10 +52,10 @@ export function Footer() {
           <div>
             <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Magazin</h3>
             <div className="flex flex-col gap-[10px]">
-              <Link href="/minipc" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Mini-PC</Link>
-              <Link href="/laptopuri" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Laptopuri</Link>
-              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Contacte</Link>
+              <Link href={l("/minipc")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Mini-PC</Link>
+              <Link href={l("/laptopuri")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Laptopuri</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Contacte</Link>
             </div>
           </div>
 
@@ -57,11 +63,11 @@ export function Footer() {
           <div>
             <h3 className="mb-[14px] text-[14px] font-bold uppercase tracking-wide text-[#1d1d1f]">Informații</h3>
             <div className="flex flex-col gap-[10px]">
-              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Livrare și plată</Link>
-              <Link href="/warranty" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
-              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Retur</Link>
-              <Link href="/politica-confidentzialinosti" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Confidențialitate</Link>
-              <Link href="/contact" className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Termeni și condiții</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Livrare și plată</Link>
+              <Link href={l("/warranty")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Garanție</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Retur</Link>
+              <Link href={l("/politica-confidentzialinosti")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Confidențialitate</Link>
+              <Link href={l("/contact")} className="text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Termeni și condiții</Link>
             </div>
           </div>
 
@@ -101,7 +107,7 @@ export function Footer() {
       <div className="border-t border-[#e4e8e4]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 md:flex-row">
           <span className="text-[12px] text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo — Toate drepturile rezervate. Creat în Moldova.</span>
-          <Link href="/politica-confidentzialinosti" className="text-[12px] text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">
+          <Link href={l("/politica-confidentzialinosti")} className="text-[12px] text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors">
             Politica de confidențialitate
           </Link>
         </div>

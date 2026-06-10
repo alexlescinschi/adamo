@@ -4,10 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Search, User, ShoppingBag, Menu, X, Heart, Phone } from "lucide-react";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 import { CartDrawer } from "./cart-drawer";
+import { LocaleSwitcher } from "./locale-switcher";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "+373 799 669 09";
@@ -25,6 +26,8 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const pathname = usePathname();
+  const params = useParams();
+  const locale = (params?.locale as string) || "ro";
   const { items } = useCart();
   const { items: favorites } = useFavorites();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
@@ -41,11 +44,12 @@ export function Header() {
           {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex">
             {NAV_LINKS.map(({ href, label }) => {
-              const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+              const localHref = href === "/" ? `/${locale}` : `/${locale}${href}`;
+              const active = href === "/" ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={localHref}
                   className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
                 >
                   {label}
@@ -56,6 +60,7 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-1">
+            <LocaleSwitcher />
             {/* Phone CTA — visible on md+ */}
             <a
               href={`tel:${PHONE}`}
@@ -98,7 +103,7 @@ export function Header() {
 
         {searchOpen && (
           <div className="border-t border-[#e4e8e4]/60 px-4 py-3">
-            <form action="/search" className="mx-auto max-w-7xl">
+            <form action={`/${locale}/search`} className="mx-auto max-w-7xl">
               <input
                 name="q"
                 type="text"
@@ -122,11 +127,12 @@ export function Header() {
         </div>
         <nav className="flex flex-col gap-1 px-4 py-4">
           {NAV_LINKS.map(({ href, label }) => {
-            const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+            const localHref = href === "/" ? `/${locale}` : `/${locale}${href}`;
+            const active = href === "/" ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
             return (
               <Link
                 key={href}
-                href={href}
+                href={localHref}
                 onClick={() => setMenuOpen(false)}
                 className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
               >
@@ -134,7 +140,7 @@ export function Header() {
               </Link>
             );
           })}
-          <Link href="/favorites" onClick={() => setMenuOpen(false)} className="rounded-[9px] px-4 py-3 text-sm font-semibold text-[#444545] hover:bg-[#f3f6f6] transition-colors">
+          <Link href={`/${locale}/favorites`} onClick={() => setMenuOpen(false)} className="rounded-[9px] px-4 py-3 text-sm font-semibold text-[#444545] hover:bg-[#f3f6f6] transition-colors">
             Favorite
           </Link>
           <a href={`tel:${PHONE}`} className="mt-3 flex items-center gap-2 rounded-[9px] border border-[#e4e8e4] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:border-[#63ad36]">
