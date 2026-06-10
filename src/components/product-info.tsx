@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
 import { ShoppingCart, CheckCircle, Heart } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
+import { RateCalculator } from "@/components/rate-calculator";
 
 interface ProductInfoProps {
   product: any;
@@ -55,6 +56,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <span className="text-lg font-medium text-[#6b6c6c]">Preț la cerere</span>
         )}
       </div>
+
+      <RateCalculator price={product.price} productName={product.name} />
 
       {product.description && (
         <div className="mt-6 text-[17px] leading-relaxed text-[#6b6c6c] whitespace-pre-line">{product.description}</div>

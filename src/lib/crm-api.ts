@@ -129,7 +129,7 @@ export async function updateOrderPaymentStatus(orderId: number, status: string) 
   });
 }
 
-export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string }) {
+export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string; notes?: string }) {
   return crmFetch(`/contacts`, {
     method: "POST",
     body: JSON.stringify(data),
