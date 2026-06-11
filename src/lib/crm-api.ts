@@ -35,6 +35,8 @@ async function crmFetch(path: string, options?: RequestInit) {
   const token = await getAccessToken();
   const url = `${CRM_BASE_URL}${path}`;
 
+  const isMutation = options?.method && options.method !== "GET";
+
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -42,7 +44,9 @@ async function crmFetch(path: string, options?: RequestInit) {
       "Content-Type": "application/json",
       ...(options?.headers || {}),
     },
-    next: { revalidate: 60 },
+    ...(isMutation
+      ? { cache: "no-store" }
+      : { next: { revalidate: 60 } }),
   });
 
   if (!res.ok) {
