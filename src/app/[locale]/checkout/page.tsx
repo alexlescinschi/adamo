@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
-import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2 } from "lucide-react";
+import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2, FileText } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { ADAMO_COMPANY } from "@/lib/company";
 
@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [ibanCopied, setIbanCopied] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<{ orderId: string; date: string; orderItems: typeof items; orderTotal: number } | null>(null);
 
   const isLegal = buyerType === "LEGAL";
 
@@ -48,6 +49,34 @@ export default function CheckoutPage() {
     navigator.clipboard.writeText(ADAMO_COMPANY.iban).catch(() => {});
     setIbanCopied(true);
     setTimeout(() => setIbanCopied(false), 2000);
+  }
+
+  // Invoice success screen for legal entity orders
+  if (invoiceData) {
+    const invoiceUrl = `/api/invoice?orderId=${encodeURIComponent(invoiceData.orderId)}&date=${encodeURIComponent(invoiceData.date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${invoiceData.orderTotal}&items=${encodeURIComponent(JSON.stringify(invoiceData.orderItems.map(i => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+    return (
+      <div className="py-16 text-center max-w-md mx-auto">
+        <div className="rounded-full bg-[#edf7e8] p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+          <FileText className="h-8 w-8 text-[#34781f]" />
+        </div>
+        <h1 className="text-2xl font-bold text-[#1d1d1f] mb-2">Comanda #{invoiceData.orderId} a fost plasată!</h1>
+        <p className="text-[#6b6c6c] mb-8">Descărcați contul spre plată și efectuați transferul bancar la detaliile din document.</p>
+        <a
+          href={invoiceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-8 py-4 text-[16px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
+        >
+          <FileText className="h-5 w-5" />
+          Descarcă Cont spre plată (PDF)
+        </a>
+        <div className="mt-6">
+          <Link href="/account/orders" className="text-sm text-[#4e8f28] hover:underline">
+            Vezi comenzile mele →
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (items.length === 0) {
@@ -164,7 +193,15 @@ export default function CheckoutPage() {
           router.push(`${successBase}${awbSuffix}`);
         }
       } else {
-        router.push(`${successBase}${awbSuffix}`);
+        // For legal entity + bank transfer: show invoice download before redirect
+        if (isLegal && paymentMethod === "BANK_TRANSFER") {
+          const now = new Date();
+          const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+          setInvoiceData({ orderId: String(orderId), date, orderItems: items, orderTotal: total });
+          setSubmitting(false);
+        } else {
+          router.push(`${successBase}${awbSuffix}`);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : tr.checkout.genericError);
