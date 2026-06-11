@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createOrder, type CheckoutPayload } from "@/lib/crm-api";
+import { ADAMO_COMPANY } from "@/lib/company";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +14,14 @@ export async function POST(request: NextRequest) {
       contact: body.contact,
       delivery: body.delivery,
       comment: body.comment,
+      ...(body.payment_method === "BANK_TRANSFER" && {
+        company_name:  ADAMO_COMPANY.name,
+        legal_address: ADAMO_COMPANY.legalAddress,
+        fiscal_code:   ADAMO_COMPANY.regNumber,
+        vat_code:      ADAMO_COMPANY.vatCode,
+        iban:          ADAMO_COMPANY.iban,
+        bank_code:     ADAMO_COMPANY.bic,
+      }),
     };
 
     const data = await createOrder(payload);
