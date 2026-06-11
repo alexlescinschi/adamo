@@ -20,7 +20,7 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<"PICKUP" | "COURIER">("PICKUP");
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
-  const [delivery, setDelivery] = useState({ city: "", address: "" });
+  const [delivery, setDelivery] = useState({ city: "", address: "", postalCode: "" });
   const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "BANK_TRANSFER">("ONLINE");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -108,6 +108,33 @@ export default function CheckoutPage() {
 
       clearCart();
 
+      // Create FanCourier AWB for courier deliveries (non-blocking)
+      let awbNumber = "";
+      if (deliveryMethod === "COURIER") {
+        try {
+          const awbRes = await fetch("/api/fancourier/awb", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              toName: contact.full_name,
+              toCity: delivery.city,
+              toZipcode: delivery.postalCode || "2000",
+              toPhone: contact.phone,
+              toEmail: contact.email || "",
+              orderRef: String(orderId),
+              cod: paymentMethod === "BANK_TRANSFER" ? 0 : total,
+            }),
+          });
+          if (awbRes.ok) {
+            const awbData = await awbRes.json();
+            awbNumber = awbData.awb ?? "";
+          }
+        } catch {}
+      }
+
+      const successBase = `/account/orders?success=true&orderId=${orderId}`;
+      const awbSuffix = awbNumber ? `&awb=${awbNumber}` : "";
+
       if (paymentMethod === "ONLINE") {
         const payRes = await fetch("/api/payments/maib", {
           method: "POST",
@@ -116,13 +143,13 @@ export default function CheckoutPage() {
             amount: total,
             orderId: String(orderId),
             description: `Comanda #${orderId} - Adamo`,
-            redirectUrl: `${window.location.origin}/account/orders?success=true&orderId=${orderId}`,
+            redirectUrl: `${window.location.origin}${successBase}${awbSuffix}`,
             callbackUrl: `${window.location.origin}/api/webhooks/maib`,
           }),
         });
 
         if (!payRes.ok) {
-          router.push(`/account/orders?success=true&orderId=${orderId}&paymentError=1`);
+          router.push(`${successBase}&paymentError=1${awbSuffix}`);
           return;
         }
 
@@ -130,10 +157,10 @@ export default function CheckoutPage() {
         if (payData.paymentUrl) {
           window.location.href = payData.paymentUrl;
         } else {
-          router.push(`/account/orders?success=true&orderId=${orderId}`);
+          router.push(`${successBase}${awbSuffix}`);
         }
       } else {
-        router.push(`/account/orders?success=true&orderId=${orderId}`);
+        router.push(`${successBase}${awbSuffix}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : tr.checkout.genericError);
@@ -299,6 +326,13 @@ export default function CheckoutPage() {
                   required
                   value={delivery.address}
                   onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder={tr.checkout.postalCode}
+                  value={delivery.postalCode}
+                  onChange={(e) => setDelivery({ ...delivery, postalCode: e.target.value })}
                   className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                 />
               </div>

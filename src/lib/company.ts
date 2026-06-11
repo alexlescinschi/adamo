@@ -9,4 +9,6 @@ export const ADAMO_COMPANY = {
   bic:          "MOLDMD2X365",
   branch:       'suc. "Tudor Vladimirescu"',
   legalAddress: "mun. Chișinău, str. Ciocana nr. 12, of. 59",
+  phone:        "+37379966909",
+  email:        "adamocomputers@gmail.com",
 };
