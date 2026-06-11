@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
   const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
-  const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "BANK_TRANSFER">("ONLINE");
+  const [payMode, setPayMode] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -31,7 +31,7 @@ export default function CheckoutPage() {
   const isLegal = buyerType === "LEGAL";
 
   useEffect(() => {
-    if (isLegal) setPaymentMethod("BANK_TRANSFER");
+    setPayMode(isLegal ? "BANK_TRANSFER" : "CASH");
   }, [isLegal]);
 
   useEffect(() => {
@@ -44,6 +44,12 @@ export default function CheckoutPage() {
       })
       .catch(() => {});
   }, [warehouseId]);
+
+  function buildInvoiceUrl(orderId: string) {
+    const now = new Date();
+    const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(items.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+  }
 
   function copyIban() {
     navigator.clipboard.writeText(ADAMO_COMPANY.iban).catch(() => {});
@@ -106,7 +112,7 @@ export default function CheckoutPage() {
       const payload: Record<string, unknown> = {
         items: items.map((i) => ({ product_id: i.product_id, unit_id: i.unit_id, qty: i.qty })),
         delivery_method: deliveryMethod,
-        payment_method: paymentMethod,
+        payment_method: payMode === "BANK_TRANSFER" ? "BANK_TRANSFER" : "ONLINE",
         contact: {
           full_name: contact.full_name,
           phone: contact.phone,
@@ -155,7 +161,7 @@ export default function CheckoutPage() {
               toPhone: contact.phone,
               toEmail: contact.email || "",
               orderRef: String(orderId),
-              cod: paymentMethod === "BANK_TRANSFER" ? 0 : total,
+              cod: payMode === "BANK_TRANSFER" ? 0 : total,
             }),
           });
           if (awbRes.ok) {
@@ -168,40 +174,15 @@ export default function CheckoutPage() {
       const successBase = `/account/orders?success=true&orderId=${orderId}`;
       const awbSuffix = awbNumber ? `&awb=${awbNumber}` : "";
 
-      if (paymentMethod === "ONLINE") {
-        const payRes = await fetch("/api/payments/maib", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: total,
-            orderId: String(orderId),
-            description: `Comanda #${orderId} - Adamo`,
-            redirectUrl: `${window.location.origin}${successBase}${awbSuffix}`,
-            callbackUrl: `${window.location.origin}/api/webhooks/maib`,
-          }),
-        });
-
-        if (!payRes.ok) {
-          router.push(`${successBase}&paymentError=1${awbSuffix}`);
-          return;
-        }
-
-        const payData = await payRes.json();
-        if (payData.paymentUrl) {
-          window.location.href = payData.paymentUrl;
-        } else {
-          router.push(`${successBase}${awbSuffix}`);
-        }
+      if (payMode === "BANK_TRANSFER") {
+        // Show invoice download screen for legal entity bank transfer
+        const now = new Date();
+        const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+        setInvoiceData({ orderId: String(orderId), date, orderItems: items, orderTotal: total });
+        setSubmitting(false);
       } else {
-        // For legal entity + bank transfer: show invoice download before redirect
-        if (isLegal && paymentMethod === "BANK_TRANSFER") {
-          const now = new Date();
-          const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
-          setInvoiceData({ orderId: String(orderId), date, orderItems: items, orderTotal: total });
-          setSubmitting(false);
-        } else {
-          router.push(`${successBase}${awbSuffix}`);
-        }
+        // CASH (plată la livrare) — redirect to success, no payment processing
+        router.push(`${successBase}${awbSuffix}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : tr.checkout.genericError);
@@ -408,36 +389,66 @@ export default function CheckoutPage() {
           <section className="rounded-[14px] border border-[#e4e8e4] p-6">
             <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.paymentMethod}</h2>
             <div className="flex gap-3">
-              {!isLegal && (
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("ONLINE")}
-                  className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                    paymentMethod === "ONLINE"
-                      ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
-                      : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
-                  }`}
-                >
-                  {tr.checkout.payOnline}
-                </button>
+              {isLegal ? (
+                <>
+                  {/* Legal: Transfer bancar + Card (coming soon) */}
+                  <button
+                    type="button"
+                    onClick={() => setPayMode("BANK_TRANSFER")}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                      payMode === "BANK_TRANSFER"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    {tr.checkout.bankTransfer}
+                  </button>
+                  <div className="relative flex flex-1">
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center gap-2 rounded-[10px] border-2 border-[#e4e8e4] px-4 py-3 text-sm font-semibold text-[#b0b0b0] opacity-60 cursor-not-allowed"
+                    >
+                      {tr.checkout.payWithCard}
+                    </button>
+                    <span className="absolute -top-2 right-2 rounded-full bg-[#e4e8e4] px-2 py-0.5 text-[10px] font-bold text-[#6b6c6c] uppercase tracking-wide">
+                      {tr.checkout.comingSoon}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Individual: Plată la livrare + Achitare online (coming soon) */}
+                  <button
+                    type="button"
+                    onClick={() => setPayMode("CASH")}
+                    className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                      payMode === "CASH"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    {tr.checkout.cashOnDelivery}
+                  </button>
+                  <div className="relative flex flex-1">
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center rounded-[10px] border-2 border-[#e4e8e4] px-4 py-3 text-sm font-semibold text-[#b0b0b0] opacity-60 cursor-not-allowed"
+                    >
+                      {tr.checkout.payOnline}
+                    </button>
+                    <span className="absolute -top-2 right-2 rounded-full bg-[#e4e8e4] px-2 py-0.5 text-[10px] font-bold text-[#6b6c6c] uppercase tracking-wide">
+                      {tr.checkout.comingSoon}
+                    </span>
+                  </div>
+                </>
               )}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("BANK_TRANSFER")}
-                disabled={isLegal}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
-                  paymentMethod === "BANK_TRANSFER"
-                    ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
-                    : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
-                }`}
-              >
-                <Building2 className="h-4 w-4" />
-                {tr.checkout.bankTransfer}
-              </button>
             </div>
 
             {/* Bank details card */}
-            {paymentMethod === "BANK_TRANSFER" && (
+            {payMode === "BANK_TRANSFER" && (
               <div className="mt-5 rounded-[12px] border border-[#e4e8e4] bg-[#f7f9f7] p-5">
                 <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">
                   {tr.checkout.bankDetailsTitle}
@@ -454,7 +465,6 @@ export default function CheckoutPage() {
                       <span className="font-semibold text-[#1d1d1f] text-right">{value}</span>
                     </div>
                   ))}
-                  {/* IBAN row with copy */}
                   <div className="flex items-center justify-between gap-4 pt-1">
                     <span className="text-[#6b6c6c]">IBAN</span>
                     <div className="flex items-center gap-2">
@@ -475,6 +485,18 @@ export default function CheckoutPage() {
                 <p className="mt-4 rounded-[8px] bg-[#fff9e6] border border-[#f0d060] px-3 py-2 text-[12px] text-[#7a6000]">
                   ⚠ {tr.checkout.bankTransferInstruction}
                 </p>
+                {/* Pre-order invoice download */}
+                {company.name && (
+                  <a
+                    href={buildInvoiceUrl("—")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#63ad36] bg-white px-4 py-2.5 text-sm font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {tr.checkout.downloadInvoice}
+                  </a>
+                )}
               </div>
             )}
           </section>
@@ -545,7 +567,7 @@ export default function CheckoutPage() {
               )}
             </button>
 
-            {paymentMethod === "BANK_TRANSFER" && (
+            {payMode === "BANK_TRANSFER" && (
               <p className="mt-3 text-xs text-[#6b6c6c] text-center">
                 {tr.checkout.bankTransferNote}
               </p>
