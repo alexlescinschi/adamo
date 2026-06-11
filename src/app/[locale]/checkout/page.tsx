@@ -485,6 +485,10 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+            <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm mb-3">
+              <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
+              <span className="font-bold text-[#34781f]">0 MDL</span>
+            </div>
             <div className="border-t border-[#e4e8e4] pt-4 flex justify-between text-lg font-bold text-[#1d1d1f]">
               <span>{tr.cart.total}</span>
               <span>{total.toFixed(0)} MDL</span>

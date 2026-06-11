@@ -68,9 +68,9 @@ export default function CartPage() {
             <span className="text-slate-600">{tr.cart.subtotal}</span>
             <span className="font-medium">{total.toFixed(0)} MDL</span>
           </div>
-          <div className="flex justify-between text-sm mb-4">
-            <span className="text-slate-600">{tr.cart.delivery}</span>
-            <span className="font-medium">{tr.cart.deliveryCalc}</span>
+          <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm mb-4">
+            <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
+            <span className="font-bold text-[#34781f]">0 MDL</span>
           </div>
           <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
             <span>{tr.cart.total}</span>

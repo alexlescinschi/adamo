@@ -109,6 +109,10 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 <span className="text-[#6b6c6c]">{tr.cart.subtotal}</span>
                 <span className="font-semibold text-[#1d1d1f]">{total.toFixed(0)} MDL</span>
               </div>
+              <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm">
+                <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
+                <span className="font-bold text-[#34781f]">0 MDL</span>
+              </div>
               <Link
                 href="/checkout"
                 onClick={onClose}

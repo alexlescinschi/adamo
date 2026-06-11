@@ -12,7 +12,7 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { useTranslations } from "@/hooks/use-translations";
 
 const PHONE = "+37379966909";
-const PHONE_DISPLAY = "+373 799 669 09";
+const PHONE_DISPLAY = "079 966 909";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },

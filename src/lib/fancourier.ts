@@ -44,6 +44,7 @@ export async function createFanCourierAwb(p: AwbParams): Promise<AwbResult> {
     type: "Colet",
     service_type: "Standard",
     weight: WEIGHT,
+    dimensions: process.env.FANCOURIER_DIMENSIONS ?? "20x20x10",
     content: "Electronice",
     cnt: "1",
     ...(p.orderRef ? { customer_reference: p.orderRef } : {}),
