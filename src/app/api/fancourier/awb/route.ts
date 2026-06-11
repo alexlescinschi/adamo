@@ -4,9 +4,9 @@ import { createFanCourierAwb } from "@/lib/fancourier";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { toName, toCity, toZipcode, toPhone, toEmail, orderRef, cod } = body;
+    const { toName, toCity, toZipcode, toStreet, toNr, toBl, toAp, toPhone, toEmail, orderRef, cod } = body;
 
-    if (!toName || !toCity || !toPhone) {
+    if (!toName || !toCity || !toPhone || !toStreet) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
       toName,
       toCity,
       toZipcode: toZipcode || "2000",
+      toStreet,
+      toNr,
+      toBl,
+      toAp,
       toPhone,
       toEmail,
       orderRef,

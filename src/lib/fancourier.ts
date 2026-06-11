@@ -5,6 +5,10 @@ export interface AwbParams {
   toName: string;
   toCity: string;
   toZipcode: string;
+  toStreet: string;
+  toNr?: string;
+  toBl?: string;
+  toAp?: string;
   toPhone: string;
   toEmail?: string;
   orderRef?: string;
@@ -31,6 +35,10 @@ export async function createFanCourierAwb(p: AwbParams): Promise<AwbResult> {
     to_city: p.toCity,
     to_country: "MD",
     to_zipcode: p.toZipcode || "2000",
+    to_str: p.toStreet,
+    ...(p.toNr ? { to_nr: p.toNr } : {}),
+    ...(p.toBl ? { to_bl: p.toBl } : {}),
+    ...(p.toAp ? { to_ap: p.toAp } : {}),
     to_phone: p.toPhone,
     to_email: p.toEmail ?? "",
     type: "Colet",

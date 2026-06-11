@@ -20,7 +20,7 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<"PICKUP" | "COURIER">("PICKUP");
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
-  const [delivery, setDelivery] = useState({ city: "", address: "", postalCode: "" });
+  const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
   const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "BANK_TRANSFER">("ONLINE");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -119,6 +119,10 @@ export default function CheckoutPage() {
               toName: contact.full_name,
               toCity: delivery.city,
               toZipcode: delivery.postalCode || "2000",
+              toStreet: delivery.address,
+              toNr: delivery.addressNr || undefined,
+              toBl: delivery.addressBl || undefined,
+              toAp: delivery.addressAp || undefined,
               toPhone: contact.phone,
               toEmail: contact.email || "",
               orderRef: String(orderId),
@@ -328,6 +332,30 @@ export default function CheckoutPage() {
                   onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
                   className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                 />
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressNr}
+                    required
+                    value={delivery.addressNr}
+                    onChange={(e) => setDelivery({ ...delivery, addressNr: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressBl}
+                    value={delivery.addressBl}
+                    onChange={(e) => setDelivery({ ...delivery, addressBl: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressAp}
+                    value={delivery.addressAp}
+                    onChange={(e) => setDelivery({ ...delivery, addressAp: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder={tr.checkout.postalCode}
