@@ -113,13 +113,15 @@ export interface CheckoutPayload {
   };
   delivery?: Record<string, unknown>;
   comment?: string;
-  // Required by CRM when payment_method = BANK_TRANSFER
-  company_name?: string;
-  legal_address?: string;
-  fiscal_code?: string;
-  vat_code?: string;
-  iban?: string;
-  bank_code?: string;
+  // Required by CRM when payment_method = BANK_TRANSFER (nested object)
+  bank_transfer?: {
+    company_name:  string;
+    legal_address: string;
+    fiscal_code:   string;
+    vat_code:      string;
+    iban:          string;
+    bank_code:     string;
+  };
 }
 
 export async function createOrder(payload: CheckoutPayload) {
