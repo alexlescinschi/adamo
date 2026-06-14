@@ -4,7 +4,7 @@ import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import Image from "next/image";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 function extractSpecs(item: any): string[] {
   if (item.cardSpecs) {

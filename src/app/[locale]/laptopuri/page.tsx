@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
 import { Suspense } from "react";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const SLUG = "laptops";
 
