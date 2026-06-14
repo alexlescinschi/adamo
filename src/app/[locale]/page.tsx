@@ -146,11 +146,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
-      <section className="py-[70px] text-center">
-        <h1 className="text-[44px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f]">Magazinul Adamo</h1>
-        <p className="mt-3 text-[17px] text-[#6b6c6c]">Produse de calitate la prețuri bune.</p>
-      </section>
-
       {wide && (
         <section className="pb-[70px]">
           <StaticBanner banner={wide} />
