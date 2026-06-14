@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart, CheckCircle } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 
@@ -14,16 +13,8 @@ interface ProductInfoProps {
 export function ProductInfo({ product }: ProductInfoProps) {
   const { addItem } = useCart();
   const tr = useTranslations();
-  const [added, setAdded] = useState(false);
 
   const hasPrice = product.price > 0;
-
-  const handleAddToCart = () => {
-    if (!hasPrice) return;
-    addItem({ product_id: product.id, unit_id: product.id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
-  };
 
   return (
     <div>
@@ -53,15 +44,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <RateCalculator price={product.price} productName={product.name} />
 
       <button
-        onClick={handleAddToCart}
+        onClick={() => addItem({ product_id: product.id, unit_id: product.id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total })}
         disabled={!hasPrice || product.availability === "OutOfStock"}
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-4 text-[16px] md:text-[17px] font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
       >
-        {added ? (
-          <><CheckCircle className="h-5 w-5" /> {tr.product.addedToCart}</>
-        ) : (
-          <><ShoppingCart className="h-5 w-5" /> {hasPrice ? tr.product.addToCart : tr.product.unavailable}</>
-        )}
+        <ShoppingCart className="h-4 w-4" />
+        {hasPrice ? tr.product.addToCart : tr.product.unavailable}
       </button>
 
       {product.description && (
