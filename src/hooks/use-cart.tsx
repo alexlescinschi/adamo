@@ -45,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         (i) => i.product_id === item.product_id && i.unit_id === item.unit_id
       );
       if (existing) {
-        const newQty = Math.min(existing.qty + item.qty, existing.stock);
+        const newQty = Math.min(existing.qty + item.qty, existing.stock || 99);
         return prev.map((i) =>
           i.product_id === item.product_id && i.unit_id === item.unit_id
             ? { ...i, qty: newQty }
