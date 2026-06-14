@@ -51,7 +51,7 @@ async function getProduct(id: string, locale = "ro") {
     availability: data.offerSummary?.availability || "OutOfStock",
     category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
     category_name: data.category?.translation?.name || data.category?.name || null,
-    units_total: data.offerSummary?.inventoryUnitCount || data.units_total || 0,
+    units_total: data.offerSummary?.inventoryUnitCount ?? data.units_total ?? undefined,
   };
 }
 

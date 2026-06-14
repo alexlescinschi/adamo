@@ -19,7 +19,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
   const handleAddToCart = () => {
     if (!hasPrice) return;
-    addItem({ product_id: product.id, unit_id: product.id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total || 0 });
+    addItem({ product_id: product.id, unit_id: product.id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };

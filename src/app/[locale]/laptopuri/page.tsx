@@ -36,7 +36,7 @@ function enrichPrice(base: any, detail: any) {
 }
 
 function enrichStock(detail: any) {
-  return detail?.offerSummary?.inventoryUnitCount || detail?.units_on_warehouse || 0;
+  return detail?.offerSummary?.inventoryUnitCount ?? detail?.units_on_warehouse ?? undefined;
 }
 
 async function enrichWithSpecs(products: any[], locale: string) {
