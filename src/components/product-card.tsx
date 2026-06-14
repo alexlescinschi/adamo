@@ -47,6 +47,13 @@ export function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">Fără imagine</div>
         )}
+        <button
+          onClick={(e) => { e.preventDefault(); toggleFavorite({ product_id: product.id, name: product.name, price: product.price, image_url: product.image_url }); }}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-colors hover:bg-white"
+          aria-label="Adaugă la favorite"
+        >
+          <Heart className={`h-4 w-4 transition-colors ${isFavorite(product.id) ? "fill-[#b64400] text-[#b64400]" : "text-[#6b6c6c]"}`} />
+        </button>
       </Link>
 
       <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
@@ -74,23 +81,14 @@ export function ProductCard({ product }: { product: Product }) {
           <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">Preț la cerere</p>
         )}
 
-        <div className="grid gap-[10px]" style={{ gridTemplateColumns: "1fr 46px" }}>
-          <button
-            onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock || 0 })}
-            className="flex items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
-            disabled={!hasPrice}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {hasPrice ? "Adaugă în coș" : "Indisponibil"}
-          </button>
-          <button
-            onClick={() => toggleFavorite({ product_id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
-            className="flex items-center justify-center rounded-[7px] border-[1.5px] border-[#e4e8e4] text-[#2d3542] transition-colors hover:border-[#63ad36] hover:text-[#63ad36]"
-            aria-label="Adaugă la favorite"
-          >
-            <Heart className={`h-5 w-5 transition-colors ${isFavorite(product.id) ? "fill-[#b64400] text-[#b64400]" : ""}`} />
-          </button>
-        </div>
+        <button
+          onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock || 0 })}
+          className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+          disabled={!hasPrice}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {hasPrice ? "Adaugă în coș" : "Indisponibil"}
+        </button>
       </div>
     </article>
   );
