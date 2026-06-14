@@ -61,12 +61,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <button
         onClick={handleAddToCart}
         disabled={!hasPrice || product.availability === "OutOfStock"}
-        className="mt-[70px] flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+        className="mt-[70px] flex w-full items-center justify-center gap-2 rounded-[14px] md:rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3.5 text-[17px] font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {added ? (
-          <><CheckCircle className="h-4 w-4" /> Adăugat</>
+          <><CheckCircle className="h-5 w-5" /> Adăugat în coș</>
         ) : (
-          <><ShoppingCart className="h-4 w-4" /> {hasPrice ? "Adaugă în coș" : "Indisponibil"}</>
+          <><ShoppingCart className="h-5 w-5" /> {hasPrice ? "Adaugă în coș" : "Indisponibil"}</>
         )}
       </button>
 
