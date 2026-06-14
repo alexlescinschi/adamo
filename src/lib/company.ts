@@ -1,0 +1,18 @@
+export const ADAMO_COMPANY = {
+  name:          '"Adamo Computers" SRL',
+  regNumber:     "1020600009181",
+  regDate:       "09.03.2020",
+  vatCode:       "0611606",
+  iban:          "MD11ML000000022515653322",
+  currency:      "MDL",
+  bank:          "BC Moldindconbank SA",
+  bic:           "MOLDMD2X365",
+  branch:        'suc. "Tudor Vladimirescu"',
+  legalAddress:  "Mun. Chisinau MD 2051, str. Ciocana 12, of. 59",
+  storeAddress:  "str. Dumitru Riscanu 11, of. 37B, Chisinau",
+  phoneDir:      "069302450",
+  phoneSales:    "079966909",
+  phone:         "+37379966909",
+  email:         "adamocomputers@gmail.com",
+  administrator: "Marandici Dumitru",
+};

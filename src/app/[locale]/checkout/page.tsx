@@ -5,21 +5,34 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
-import { Loader2, ShoppingCart, ChevronLeft } from "lucide-react";
+import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2, FileText } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
+import { ADAMO_COMPANY } from "@/lib/company";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, total, clearCart } = useCart();
+  const tr = useTranslations();
 
+  const [buyerType, setBuyerType] = useState<"INDIVIDUAL" | "LEGAL">("INDIVIDUAL");
+  const [company, setCompany] = useState({ name: "", idno: "" });
   const [contact, setContact] = useState({ full_name: "", phone: "", email: "" });
   const [deliveryMethod, setDeliveryMethod] = useState<"PICKUP" | "COURIER">("PICKUP");
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
-  const [delivery, setDelivery] = useState({ city: "", address: "" });
-  const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "BANK_TRANSFER">("ONLINE");
+  const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
+  const [payMode, setPayMode] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [ibanCopied, setIbanCopied] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<{ orderId: string; date: string; orderItems: typeof items; orderTotal: number } | null>(null);
+
+  const isLegal = buyerType === "LEGAL";
+
+  useEffect(() => {
+    setPayMode(isLegal ? "BANK_TRANSFER" : "CASH");
+  }, [isLegal]);
 
   useEffect(() => {
     fetch("/api/warehouses")
@@ -32,14 +45,54 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, [warehouseId]);
 
+  function buildInvoiceUrl(orderId: string) {
+    const now = new Date();
+    const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(items.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+  }
+
+  function copyIban() {
+    navigator.clipboard.writeText(ADAMO_COMPANY.iban).catch(() => {});
+    setIbanCopied(true);
+    setTimeout(() => setIbanCopied(false), 2000);
+  }
+
+  // Invoice success screen for legal entity orders
+  if (invoiceData) {
+    const invoiceUrl = `/api/invoice?orderId=${encodeURIComponent(invoiceData.orderId)}&date=${encodeURIComponent(invoiceData.date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${invoiceData.orderTotal}&items=${encodeURIComponent(JSON.stringify(invoiceData.orderItems.map(i => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+    return (
+      <div className="py-16 text-center max-w-md mx-auto">
+        <div className="rounded-full bg-[#edf7e8] p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+          <FileText className="h-8 w-8 text-[#34781f]" />
+        </div>
+        <h1 className="text-2xl font-bold text-[#1d1d1f] mb-2">Comanda #{invoiceData.orderId} a fost plasată!</h1>
+        <p className="text-[#6b6c6c] mb-8">Descărcați contul spre plată și efectuați transferul bancar la detaliile din document.</p>
+        <a
+          href={invoiceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-8 py-4 text-[16px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
+        >
+          <FileText className="h-5 w-5" />
+          Descarcă Cont spre plată (PDF)
+        </a>
+        <div className="mt-6">
+          <Link href="/account/orders" className="text-sm text-[#4e8f28] hover:underline">
+            Vezi comenzile mele →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
-        <h1 className="mt-4 text-2xl font-bold">Coșul tău este gol</h1>
-        <p className="mt-2 text-slate-500">Adaugă produse înainte de checkout.</p>
+        <h1 className="mt-4 text-2xl font-bold">{tr.cart.empty}</h1>
+        <p className="mt-2 text-slate-500">{tr.checkout.emptyCartSub}</p>
         <Link href="/" className="mt-6 inline-block rounded-lg bg-slate-900 px-6 py-3 text-white hover:bg-slate-800">
-          Continuă cumpărăturile
+          {tr.cart.continueShopping}
         </Link>
       </div>
     );
@@ -51,16 +104,21 @@ export default function CheckoutPage() {
     setError("");
 
     try {
+      const companyNote = isLegal
+        ? `[${tr.checkout.legalEntity}] ${company.name} | IDNO: ${company.idno}`
+        : "";
+      const fullComment = [companyNote, comment].filter(Boolean).join(" | ");
+
       const payload: Record<string, unknown> = {
         items: items.map((i) => ({ product_id: i.product_id, unit_id: i.unit_id, qty: i.qty })),
         delivery_method: deliveryMethod,
-        payment_method: paymentMethod,
+        payment_method: payMode === "BANK_TRANSFER" ? "BANK_TRANSFER" : "ONLINE",
         contact: {
           full_name: contact.full_name,
           phone: contact.phone,
           email: contact.email || undefined,
         },
-        comment: comment || undefined,
+        comment: fullComment || undefined,
       };
 
       if (deliveryMethod === "PICKUP") {
@@ -77,7 +135,7 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Checkout failed");
+        throw new Error(err.error || tr.checkout.genericError);
       }
 
       const order = await res.json();
@@ -85,35 +143,49 @@ export default function CheckoutPage() {
 
       clearCart();
 
-      if (paymentMethod === "ONLINE") {
-        const payRes = await fetch("/api/payments/maib", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: total,
-            orderId: String(orderId),
-            description: `Comanda #${orderId} - Adamo`,
-            redirectUrl: `${window.location.origin}/account/orders?success=true&orderId=${orderId}`,
-            callbackUrl: `${window.location.origin}/api/webhooks/maib`,
-          }),
-        });
+      // Create FanCourier AWB for courier deliveries (non-blocking)
+      let awbNumber = "";
+      if (deliveryMethod === "COURIER") {
+        try {
+          const awbRes = await fetch("/api/fancourier/awb", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              toName: contact.full_name,
+              toCity: delivery.city,
+              toZipcode: delivery.postalCode || "2000",
+              toStreet: delivery.address,
+              toNr: delivery.addressNr || undefined,
+              toBl: delivery.addressBl || undefined,
+              toAp: delivery.addressAp || undefined,
+              toPhone: contact.phone,
+              toEmail: contact.email || "",
+              orderRef: String(orderId),
+              cod: payMode === "BANK_TRANSFER" ? 0 : total,
+            }),
+          });
+          if (awbRes.ok) {
+            const awbData = await awbRes.json();
+            awbNumber = awbData.awb ?? "";
+          }
+        } catch {}
+      }
 
-        if (!payRes.ok) {
-          router.push(`/account/orders?success=true&orderId=${orderId}&paymentError=1`);
-          return;
-        }
+      const successBase = `/account/orders?success=true&orderId=${orderId}`;
+      const awbSuffix = awbNumber ? `&awb=${awbNumber}` : "";
 
-        const payData = await payRes.json();
-        if (payData.paymentUrl) {
-          window.location.href = payData.paymentUrl;
-        } else {
-          router.push(`/account/orders?success=true&orderId=${orderId}`);
-        }
+      if (payMode === "BANK_TRANSFER") {
+        // Show invoice download screen for legal entity bank transfer
+        const now = new Date();
+        const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+        setInvoiceData({ orderId: String(orderId), date, orderItems: items, orderTotal: total });
+        setSubmitting(false);
       } else {
-        router.push(`/account/orders?success=true&orderId=${orderId}`);
+        // CASH (plată la livrare) — redirect to success, no payment processing
+        router.push(`${successBase}${awbSuffix}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "A apărut o eroare");
+      setError(err instanceof Error ? err.message : tr.checkout.genericError);
       setSubmitting(false);
     }
   };
@@ -122,66 +194,127 @@ export default function CheckoutPage() {
     <div className="py-8">
       <Link href="/cart" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 mb-6">
         <ChevronLeft className="h-4 w-4" />
-        Înapoi la coș
+        {tr.checkout.backToCart}
       </Link>
 
-      <h1 className="text-2xl font-bold mb-8">Checkout</h1>
+      <h1 className="text-2xl font-bold mb-8">{tr.checkout.title}</h1>
 
       <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3 w-full min-w-0">
         <div className="lg:col-span-2 space-y-8 min-w-0">
-          <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Date de contact</h2>
+
+          {/* Buyer type */}
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.buyerType}</h2>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setBuyerType("INDIVIDUAL")}
+                className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                  buyerType === "INDIVIDUAL"
+                    ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                    : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                }`}
+              >
+                {tr.checkout.individual}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBuyerType("LEGAL")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                  buyerType === "LEGAL"
+                    ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                    : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                }`}
+              >
+                <Building2 className="h-4 w-4" />
+                {tr.checkout.legalEntity}
+              </button>
+            </div>
+          </section>
+
+          {/* Company fields — shown only for legal entity */}
+          {isLegal && (
+            <section className="rounded-[14px] border border-[#63ad36] bg-[#f7fbf4] p-6">
+              <h2 className="text-lg font-bold mb-4 text-[#1d1d1f] flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-[#34781f]" />
+                {tr.checkout.companyDetails}
+              </h2>
+              <div className="grid gap-4">
+                <input
+                  type="text"
+                  placeholder={tr.checkout.companyName}
+                  required
+                  value={company.name}
+                  onChange={(e) => setCompany({ ...company, name: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder={tr.checkout.idno}
+                  required
+                  value={company.idno}
+                  onChange={(e) => setCompany({ ...company, idno: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                />
+              </div>
+            </section>
+          )}
+
+          {/* Contact details */}
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.contactDetails}</h2>
             <div className="grid gap-4">
               <input
                 type="text"
-                placeholder="Numele complet"
+                placeholder={tr.checkout.fullName}
                 required
                 value={contact.full_name}
                 onChange={(e) => setContact({ ...contact, full_name: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
               />
               <input
                 type="tel"
-                placeholder="Telefon"
+                placeholder={tr.checkout.phone}
                 required
                 value={contact.phone}
                 onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
               />
               <input
                 type="email"
-                placeholder="Email (opțional)"
+                placeholder={tr.checkout.emailOptional}
                 value={contact.email}
                 onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
               />
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Metoda de livrare</h2>
-            <div className="flex gap-4 mb-4">
+          {/* Delivery */}
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.deliveryMethod}</h2>
+            <div className="flex gap-3 mb-4">
               <button
                 type="button"
                 onClick={() => setDeliveryMethod("PICKUP")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
                   deliveryMethod === "PICKUP"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                    : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
                 }`}
               >
-                Ridicare personală
+                {tr.checkout.pickup}
               </button>
               <button
                 type="button"
                 onClick={() => setDeliveryMethod("COURIER")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
                   deliveryMethod === "COURIER"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
+                    ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                    : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
                 }`}
               >
-                Curier
+                {tr.checkout.courier}
               </button>
             </div>
 
@@ -189,103 +322,234 @@ export default function CheckoutPage() {
               <select
                 value={warehouseId || ""}
                 onChange={(e) => setWarehouseId(Number(e.target.value))}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
               >
-                <option value="" disabled>Selectează punctul de ridicare</option>
+                <option value="" disabled>{tr.checkout.selectPickup}</option>
                 {warehouses.map((w: any) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name || w.address}
-                  </option>
+                  <option key={w.id} value={w.id}>{w.name || w.address}</option>
                 ))}
                 {warehouses.length === 0 && (
-                  <option value="" disabled>Nu sunt puncte de ridicare disponibile</option>
+                  <option value="" disabled>{tr.checkout.noPickups}</option>
                 )}
               </select>
             ) : (
               <div className="grid gap-4">
                 <input
                   type="text"
-                  placeholder="Oraș"
+                  placeholder={tr.checkout.city}
                   required
                   value={delivery.city}
                   onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                 />
                 <input
                   type="text"
-                  placeholder="Adresa"
+                  placeholder={tr.checkout.address}
                   required
                   value={delivery.address}
                   onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none"
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                />
+                <div className="grid grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressNr}
+                    required
+                    value={delivery.addressNr}
+                    onChange={(e) => setDelivery({ ...delivery, addressNr: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressBl}
+                    value={delivery.addressBl}
+                    onChange={(e) => setDelivery({ ...delivery, addressBl: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder={tr.checkout.addressAp}
+                    value={delivery.addressAp}
+                    onChange={(e) => setDelivery({ ...delivery, addressAp: e.target.value })}
+                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder={tr.checkout.postalCode}
+                  value={delivery.postalCode}
+                  onChange={(e) => setDelivery({ ...delivery, postalCode: e.target.value })}
+                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                 />
               </div>
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Metoda de plată</h2>
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("ONLINE")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                  paymentMethod === "ONLINE"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                Plată online (maib)
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentMethod("BANK_TRANSFER")}
-                className={`flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                  paymentMethod === "BANK_TRANSFER"
-                    ? "border-slate-900 bg-slate-50"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
-              >
-                Transfer bancar
-              </button>
+          {/* Payment */}
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.paymentMethod}</h2>
+            <div className="flex gap-3">
+              {isLegal ? (
+                <>
+                  {/* Legal: Transfer bancar + Card (coming soon) */}
+                  <button
+                    type="button"
+                    onClick={() => setPayMode("BANK_TRANSFER")}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                      payMode === "BANK_TRANSFER"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    {tr.checkout.bankTransfer}
+                  </button>
+                  <div className="relative flex flex-1">
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center gap-2 rounded-[10px] border-2 border-[#e4e8e4] px-4 py-3 text-sm font-semibold text-[#b0b0b0] opacity-60 cursor-not-allowed"
+                    >
+                      {tr.checkout.payWithCard}
+                    </button>
+                    <span className="absolute -top-2 right-2 rounded-full bg-[#e4e8e4] px-2 py-0.5 text-[10px] font-bold text-[#6b6c6c] uppercase tracking-wide">
+                      {tr.checkout.comingSoon}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Individual: Plată la livrare + Achitare online (coming soon) */}
+                  <button
+                    type="button"
+                    onClick={() => setPayMode("CASH")}
+                    className={`flex-1 rounded-[10px] border-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                      payMode === "CASH"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    {tr.checkout.cashOnDelivery}
+                  </button>
+                  <div className="relative flex flex-1">
+                    <button
+                      type="button"
+                      disabled
+                      className="flex w-full items-center justify-center rounded-[10px] border-2 border-[#e4e8e4] px-4 py-3 text-sm font-semibold text-[#b0b0b0] opacity-60 cursor-not-allowed"
+                    >
+                      {tr.checkout.payOnline}
+                    </button>
+                    <span className="absolute -top-2 right-2 rounded-full bg-[#e4e8e4] px-2 py-0.5 text-[10px] font-bold text-[#6b6c6c] uppercase tracking-wide">
+                      {tr.checkout.comingSoon}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* Bank details card */}
+            {payMode === "BANK_TRANSFER" && (
+              <div className="mt-5 rounded-[12px] border border-[#e4e8e4] bg-[#f7f9f7] p-5">
+                <p className="mb-3 text-[13px] font-bold uppercase tracking-wide text-[#6b6c6c]">
+                  {tr.checkout.bankDetailsTitle}
+                </p>
+                <div className="space-y-2 text-[13px]">
+                  {[
+                    [tr.checkout.beneficiary, ADAMO_COMPANY.name],
+                    ["IDNO", ADAMO_COMPANY.regNumber],
+                    [tr.checkout.bank, ADAMO_COMPANY.bank],
+                    [tr.checkout.bicSwift, ADAMO_COMPANY.bic],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-4">
+                      <span className="text-[#6b6c6c]">{label}</span>
+                      <span className="font-semibold text-[#1d1d1f] text-right">{value}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between gap-4 pt-1">
+                    <span className="text-[#6b6c6c]">IBAN</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-semibold text-[#1d1d1f] text-[12px] tracking-wide">
+                        {ADAMO_COMPANY.iban}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={copyIban}
+                        className="flex items-center gap-1 rounded-[6px] border border-[#e4e8e4] bg-white px-2 py-1 text-[11px] font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
+                      >
+                        {ibanCopied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                        {ibanCopied ? tr.checkout.copied : tr.checkout.copyIban}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 rounded-[8px] bg-[#fff9e6] border border-[#f0d060] px-3 py-2 text-[12px] text-[#7a6000]">
+                  ⚠ {tr.checkout.bankTransferInstruction}
+                </p>
+                {/* Pre-order invoice download */}
+                {company.name && (
+                  <a
+                    href={buildInvoiceUrl("—")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#63ad36] bg-white px-4 py-2.5 text-sm font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {tr.checkout.downloadInvoice}
+                  </a>
+                )}
+              </div>
+            )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 p-6">
-            <h2 className="text-lg font-bold mb-4">Comentariu (opțional)</h2>
+          {/* Comment */}
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.commentOptional}</h2>
             <textarea
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Orice informație suplimentară..."
-              className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none resize-none"
+              placeholder={tr.checkout.commentPlaceholder}
+              className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none resize-none"
             />
           </section>
         </div>
 
+        {/* Order summary */}
         <div className="lg:col-span-1 min-w-0">
-          <div className="rounded-lg border border-slate-200 p-6 sticky top-24">
-            <h2 className="text-lg font-bold mb-4">Comanda ta</h2>
+          <div className="rounded-[14px] border border-[#e4e8e4] p-6 sticky top-24">
+            <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.yourOrder}</h2>
+
+            {isLegal && company.name && (
+              <div className="mb-4 rounded-[10px] bg-[#edf7e8] px-4 py-3 text-[13px]">
+                <p className="font-semibold text-[#34781f]">{company.name}</p>
+                {company.idno && <p className="text-[#6b6c6c]">IDNO: {company.idno}</p>}
+              </div>
+            )}
+
             <div className="space-y-3 mb-4">
               {items.map((item) => (
                 <div key={`${item.product_id}-${item.unit_id}`} className="flex gap-3">
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-slate-100">
+                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-[8px] bg-[#f3f6f6]">
                     {item.image ? (
                       <Image src={item.image} alt={item.name} fill className="object-cover" />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-slate-400">N/A</div>
+                      <div className="flex h-full items-center justify-center text-xs text-[#6b6c6c]">N/A</div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-slate-500">x{item.qty}</p>
+                    <p className="text-sm font-medium truncate text-[#1d1d1f]">{item.name}</p>
+                    <p className="text-xs text-[#6b6c6c]">x{item.qty}</p>
                   </div>
-                  <p className="text-sm font-medium">{(item.price * item.qty).toFixed(0)} MDL</p>
+                  <p className="text-sm font-medium text-[#1d1d1f]">{(item.price * item.qty).toFixed(0)} MDL</p>
                 </div>
               ))}
             </div>
-            <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
-              <span>Total</span>
+            <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm mb-3">
+              <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
+              <span className="font-bold text-[#34781f]">0 MDL</span>
+            </div>
+            <div className="border-t border-[#e4e8e4] pt-4 flex justify-between text-lg font-bold text-[#1d1d1f]">
+              <span>{tr.cart.total}</span>
               <span>{total.toFixed(0)} MDL</span>
             </div>
 
@@ -294,18 +558,18 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 py-3 text-white hover:bg-slate-800 disabled:opacity-50"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3.5 text-[15px] font-bold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
             >
               {submitting ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Se procesează...</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> {tr.checkout.processing}</>
               ) : (
-                "Plasează comanda"
+                tr.checkout.placeOrder
               )}
             </button>
 
-            {paymentMethod === "BANK_TRANSFER" && (
-              <p className="mt-3 text-xs text-slate-500 text-center">
-                Vei primi detaliile de plată după plasarea comenzii.
+            {payMode === "BANK_TRANSFER" && (
+              <p className="mt-3 text-xs text-[#6b6c6c] text-center">
+                {tr.checkout.bankTransferNote}
               </p>
             )}
           </div>

@@ -35,6 +35,8 @@ async function crmFetch(path: string, options?: RequestInit) {
   const token = await getAccessToken();
   const url = `${CRM_BASE_URL}${path}`;
 
+  const isMutation = options?.method && options.method !== "GET";
+
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -42,7 +44,9 @@ async function crmFetch(path: string, options?: RequestInit) {
       "Content-Type": "application/json",
       ...(options?.headers || {}),
     },
-    next: { revalidate: 60 },
+    ...(isMutation
+      ? { cache: "no-store" }
+      : { next: { revalidate: 60 } }),
   });
 
   if (!res.ok) {
@@ -109,6 +113,15 @@ export interface CheckoutPayload {
   };
   delivery?: Record<string, unknown>;
   comment?: string;
+  // Required by CRM when payment_method = BANK_TRANSFER (nested object)
+  bank_transfer?: {
+    company_name:  string;
+    legal_address: string;
+    fiscal_code:   string;
+    vat_code:      string;
+    iban:          string;
+    bank_code:     string;
+  };
 }
 
 export async function createOrder(payload: CheckoutPayload) {
@@ -129,7 +142,7 @@ export async function updateOrderPaymentStatus(orderId: number, status: string) 
   });
 }
 
-export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string }) {
+export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string; notes?: string }) {
   return crmFetch(`/contacts`, {
     method: "POST",
     body: JSON.stringify(data),

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useFavorites } from "@/hooks/use-favorites";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface Product {
   id: number;
@@ -23,6 +24,7 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const tr = useTranslations();
   const unitId = product.unit_id || product.id;
   const hasPrice = product.price > 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
@@ -75,10 +77,10 @@ export function ProductCard({ product }: { product: Product }) {
             {product.old_price && product.old_price > product.price && (
               <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
             )}
-            <p className="mt-[3px] mb-[10px] text-[12.5px] text-[#6b6c6c]">de la 0% în rate</p>
+            <p className="mt-[3px] mb-[10px] text-[12.5px] text-[#6b6c6c]">{tr.product.installments}</p>
           </>
         ) : (
-          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">Preț la cerere</p>
+          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
         )}
 
         <button
@@ -87,7 +89,7 @@ export function ProductCard({ product }: { product: Product }) {
           disabled={!hasPrice}
         >
           <ShoppingCart className="h-4 w-4" />
-          {hasPrice ? "Adaugă în coș" : "Indisponibil"}
+          {hasPrice ? tr.product.addToCart : tr.product.unavailable}
         </button>
       </div>
     </article>
