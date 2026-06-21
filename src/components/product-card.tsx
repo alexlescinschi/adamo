@@ -61,7 +61,7 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="mt-auto pt-2">
         {hasPrice ? (
           <>
-            <div className="flex items-end justify-between gap-2">
+            <div className="flex flex-col gap-[3px] md:flex-row md:items-end md:justify-between md:gap-2">
               <div className="min-w-0">
                 <strong className="block text-[22px] font-extrabold leading-none text-[#34781f]">
                   {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
@@ -73,7 +73,7 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
               <button
                 onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
-                className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] px-3 py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+                className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] px-3 py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40 md:w-auto md:flex-shrink-0"
                 disabled={!hasPrice}
                 aria-label={tr.product.addToCart}
               >
