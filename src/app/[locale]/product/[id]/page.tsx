@@ -5,6 +5,7 @@ import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
+import { mapProductCard } from "@/lib/product-mapper";
 
 export const dynamic = "force-dynamic";
 
@@ -64,13 +65,7 @@ async function getSimilar(slug: string, currentId: number, locale = "ro") {
   try {
     const catData = await getCategoryProducts(slug, locale, 8);
     const items = Array.isArray(catData) ? catData : catData?.items || [];
-    return items.filter((p: any) => p.id !== currentId).slice(0, 4).map((p: any) => ({
-      id: p.id,
-      name: p.storefrontName || p.name,
-      price: p.offerSummary?.minPrice || p.minPrice || p.price || 0,
-      image_url: p.imageUrl || p.previewImageUrl || null,
-      unit_id: p.id,
-    }));
+    return items.filter((p: any) => p.id !== currentId).slice(0, 4).map(mapProductCard);
   } catch {
     return [];
   }

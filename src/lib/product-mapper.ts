@@ -25,20 +25,22 @@ export function extractSpecs(item: any): string[] {
     .map((s: any) => `${s.label}: ${s.valueLabel}`);
 }
 
+export function mapProductCard(item: any) {
+  const badge = extractBadge(item);
+  return {
+    id: item.id,
+    name: item.storefrontName || item.name,
+    slug: item.slug,
+    price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
+    old_price: item.discount?.compareAtPrice || item.discount?.originalPrice || item.oldPrice || item.old_price || undefined,
+    image_url: item.imageUrl || item.previewImageUrl || null,
+    unit_id: item.id,
+    specs: extractSpecs(item),
+    ...badge,
+  };
+}
+
 export function extractProducts(data: any): any[] {
   const items = data?.items || data || [];
-  return Array.isArray(items) ? items.map((item: any) => {
-    const badge = extractBadge(item);
-    return {
-      id: item.id,
-      name: item.storefrontName || item.name,
-      slug: item.slug,
-      price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
-      old_price: item.discount?.compareAtPrice || item.discount?.originalPrice || item.oldPrice || item.old_price,
-      image_url: item.imageUrl || item.previewImageUrl || null,
-      unit_id: item.id,
-      specs: extractSpecs(item),
-      ...badge,
-    };
-  }) : [];
+  return Array.isArray(items) ? items.map(mapProductCard) : [];
 }

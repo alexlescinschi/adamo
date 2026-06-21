@@ -3,56 +3,36 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
 import { Suspense } from "react";
+import { mapProductCard } from "@/lib/product-mapper";
 
 export const dynamic = "force-dynamic";
 
-function extractBase(item: any) {
+function enrichFromDetail(base: any, detail: any) {
+  const price = detail?.offerSummary?.minPrice || detail?.minPrice || detail?.price;
+  const stock = detail?.offerSummary?.inventoryUnitCount ?? detail?.units_on_warehouse ?? undefined;
+  const mapped = mapProductCard(detail);
   return {
-    id: item.id,
-    name: item.storefrontName || item.name,
-    slug: item.slug,
-    price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
-    image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
-    stock: 0,
+    ...base,
+    price: (price && (!base.price || base.price === 0)) ? price : base.price,
+    stock,
+    specs: mapped.specs,
+    badge: mapped.badge,
+    badge_type: mapped.badge_type,
   };
 }
 
-function extractSpecs(data: any): Record<string, string> {
-  if (!data?.specs || !Array.isArray(data.specs)) return {};
-  const result: Record<string, string> = {};
-  for (const spec of data.specs) {
-    if (spec.label && spec.valueLabel) {
-      result[spec.label] = spec.valueLabel;
-    }
-  }
-  return result;
-}
-
-function enrichPrice(base: any, detail: any) {
-  const fromDetail = detail?.offerSummary?.minPrice || detail?.minPrice || detail?.price;
-  if (fromDetail && (!base.price || base.price === 0)) return fromDetail;
-  return base.price;
-}
-
-function enrichStock(detail: any) {
-  return detail?.offerSummary?.inventoryUnitCount ?? detail?.units_on_warehouse ?? undefined;
-}
-
-async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> {
+async function enrichProducts(products: any[], locale: string): Promise<any[]> {
   const enriched = await Promise.allSettled(
     products.map(async (p) => {
       try {
         const detail = await getProductById(p.id, locale);
-        const specs = extractSpecs(detail);
-        const badge = Object.entries(specs).some(([k, v]) => k === "Recomandat" && v) ? "Recomandat" : undefined;
-        return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs, badge, badge_type: badge ? "green" as const : undefined };
+        return enrichFromDetail(p, detail);
       } catch {
-        return { ...p, specs: {} };
+        return p;
       }
     })
   );
-  return enriched.map((r) => (r.status === "fulfilled" ? r.value : { ...r.reason, specs: {} }));
+  return enriched.map((r) => (r.status === "fulfilled" ? r.value : r.reason));
 }
 
 export default async function CategoryPage({
@@ -70,7 +50,7 @@ export default async function CategoryPage({
   const categoryId = cat?.id;
   const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
   const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
-  const products = await enrichWithSpecs(items.map(extractBase), locale);
+  const products = await enrichProducts(items.map(mapProductCard), locale);
   const categoryName = cat?.name || cat?.translation?.name || slug;
 
   return (
