@@ -4,11 +4,11 @@ const dict = {
   ro: {
     nav: {
       home: "Acasă",
+      catalog: "Catalog",
       minipc: "Mini-PC",
       laptops: "Laptopuri",
       warranty: "Garanție",
       contact: "Contacte",
-      favorites: "Favorite",
       menu: "Meniu",
     },
     header: {
@@ -33,6 +33,9 @@ const dict = {
       empty: "Coșul tău este gol",
       emptySub: "Adaugă produse pentru a continua.",
       continueShopping: "Continuă cumpărăturile",
+      selectAll: "Selectează tot",
+      selectItem: "Selectează produsul",
+      selectAtLeastOne: "Selectează minim un produs",
       noImage: "Fără imagine",
       noStock: "Nu mai sunt în stoc",
       summary: "Sumar comandă",
@@ -176,11 +179,11 @@ const dict = {
   ru: {
     nav: {
       home: "Главная",
+      catalog: "Каталог",
       minipc: "Мини-ПК",
       laptops: "Ноутбуки",
       warranty: "Гарантия",
       contact: "Контакты",
-      favorites: "Избранное",
       menu: "Меню",
     },
     header: {
@@ -205,6 +208,9 @@ const dict = {
       empty: "Ваша корзина пуста",
       emptySub: "Добавьте товары для продолжения.",
       continueShopping: "Продолжить покупки",
+      selectAll: "Выбрать все",
+      selectItem: "Выбрать товар",
+      selectAtLeastOne: "Выберите хотя бы один товар",
       noImage: "Нет фото",
       noStock: "Больше нет в наличии",
       summary: "Итог заказа",
@@ -348,11 +354,11 @@ const dict = {
   en: {
     nav: {
       home: "Home",
+      catalog: "Catalog",
       minipc: "Mini-PC",
       laptops: "Laptops",
       warranty: "Warranty",
       contact: "Contact",
-      favorites: "Favorites",
       menu: "Menu",
     },
     header: {
@@ -377,6 +383,9 @@ const dict = {
       empty: "Your cart is empty",
       emptySub: "Add products to continue.",
       continueShopping: "Continue shopping",
+      selectAll: "Select all",
+      selectItem: "Select item",
+      selectAtLeastOne: "Select at least one item",
       noImage: "No image",
       noStock: "No more in stock",
       summary: "Order summary",

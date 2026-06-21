@@ -2,37 +2,56 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, User, ShoppingBag, Menu, X, Heart, Phone } from "lucide-react";
-import { useState } from "react";
+import { Search, User, ShoppingBag, Menu, X, Phone, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { usePathname, useParams } from "next/navigation";
 import { useCart } from "@/hooks/use-cart";
-import { useFavorites } from "@/hooks/use-favorites";
 import { CartDrawer } from "./cart-drawer";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useTranslations } from "@/hooks/use-translations";
+import type { CatalogCategory } from "@/lib/categories";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "079 966 909";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
-  { href: "/minipc", key: "minipc" },
-  { href: "/laptopuri", key: "laptops" },
   { href: "/warranty", key: "warranty" },
   { href: "/contact", key: "contact" },
 ];
 
-export function Header() {
+export function Header({ categories = [] }: { categories?: CatalogCategory[] }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
+  const catalogRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
   const tr = useTranslations();
   const { items } = useCart();
-  const { items: favorites } = useFavorites();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
+
+  // Close the desktop Catalog dropdown when clicking outside it.
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (catalogRef.current && !catalogRef.current.contains(e.target as Node)) {
+        setCatalogOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // One-time cleanup of the legacy favorites data from localStorage (the feature was removed).
+  useEffect(() => {
+    try { localStorage.removeItem("adamo-favorites"); } catch {}
+  }, []);
+
+  // A category page is active when the path starts with /[locale]/category/<slug>.
+  const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
 
   return (
     <>
@@ -46,16 +65,46 @@ export function Header() {
           {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex">
             {NAV_LINK_KEYS.map(({ href, key }) => {
-              const localHref = href === "/" ? `/${locale}` : `/${locale}${href}`;
-              const active = href === "/" ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
+              // Insert the Catalog dropdown right after "home".
+              const isHome = href === "/";
+              const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
+              const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
               return (
-                <Link
-                  key={href}
-                  href={localHref}
-                  className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
-                >
-                  {tr.nav[key as keyof typeof tr.nav]}
-                </Link>
+                <span key={href} className="contents">
+                  <Link
+                    href={localHref}
+                    className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                  >
+                    {tr.nav[key as keyof typeof tr.nav]}
+                  </Link>
+                  {isHome && categories.length > 0 && (
+                    <div ref={catalogRef} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setCatalogOpen((v) => !v)}
+                        className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                        aria-expanded={catalogOpen}
+                      >
+                        {tr.nav.catalog}
+                        <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {catalogOpen && (
+                        <div className="absolute left-0 top-full mt-1 z-50 min-w-[220px] max-h-[70vh] overflow-y-auto rounded-[12px] border border-[#e4e8e4] bg-white py-1 shadow-[0_8px_30px_rgba(31,41,55,0.12)]">
+                          {categories.map((c) => (
+                            <Link
+                              key={c.id}
+                              href={`/${locale}/category/${c.slug}`}
+                              onClick={() => setCatalogOpen(false)}
+                              className="block px-4 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
+                            >
+                              {c.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </span>
               );
             })}
           </nav>
@@ -86,14 +135,6 @@ export function Header() {
                 </span>
               )}
             </button>
-            <Link href="/favorites" className="relative rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
-              <Heart className="h-5 w-5" />
-              {favorites.length > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#b64400] text-[10px] font-bold text-white">
-                  {favorites.length}
-                </span>
-              )}
-            </Link>
             <Link href="/account" className="hidden rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:block">
               <User className="h-5 w-5" />
             </Link>
@@ -129,22 +170,48 @@ export function Header() {
         </div>
         <nav className="flex flex-col gap-1 px-4 py-4">
           {NAV_LINK_KEYS.map(({ href, key }) => {
-            const localHref = href === "/" ? `/${locale}` : `/${locale}${href}`;
-            const active = href === "/" ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
+            const isHome = href === "/";
+            const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
+            const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
             return (
-              <Link
-                key={href}
-                href={localHref}
-                onClick={() => setMenuOpen(false)}
-                className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
-              >
-                {tr.nav[key as keyof typeof tr.nav]}
-              </Link>
+              <span key={href} className="contents">
+                <Link
+                  href={localHref}
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                >
+                  {tr.nav[key as keyof typeof tr.nav]}
+                </Link>
+                {isHome && categories.length > 0 && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setMobileCatalogOpen((v) => !v)}
+                      className={`flex w-full items-center justify-between rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${isCatalogActive || mobileCatalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                      aria-expanded={mobileCatalogOpen}
+                    >
+                      {tr.nav.catalog}
+                      <ChevronDown className={`h-4 w-4 transition-transform ${mobileCatalogOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {mobileCatalogOpen && (
+                      <div className="mt-1 ml-3 flex flex-col gap-0.5 border-l border-[#e4e8e4] pl-3">
+                        {categories.map((c) => (
+                          <Link
+                            key={c.id}
+                            href={`/${locale}/category/${c.slug}`}
+                            onClick={() => { setMenuOpen(false); setMobileCatalogOpen(false); }}
+                            className="rounded-[7px] px-3 py-2 text-[13px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
+                          >
+                            {c.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </span>
             );
           })}
-          <Link href={`/${locale}/favorites`} onClick={() => setMenuOpen(false)} className="rounded-[9px] px-4 py-3 text-sm font-semibold text-[#444545] hover:bg-[#f3f6f6] transition-colors">
-            {tr.nav.favorites}
-          </Link>
           <a href={`tel:${PHONE}`} className="mt-3 flex items-center gap-2 rounded-[9px] border border-[#e4e8e4] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:border-[#63ad36]">
             <Phone className="h-4 w-4 text-[#63ad36]" /> {PHONE_DISPLAY}
           </a>

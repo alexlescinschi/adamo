@@ -111,7 +111,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <ImageGallery
             images={product.images}
             name={product.name}
-            favorite={{ productId: product.id, name: product.name, price: product.price, imageUrl: product.image_url }}
           />
         </div>
         <div>
