@@ -122,7 +122,7 @@ export default function CheckoutPage() {
         comment: fullComment || undefined,
       };
 
-      if (deliveryMethod === "PICKUP") {
+      if (deliveryMethod === "PICKUP" && warehouseId != null && warehouseId > 0) {
         payload.warehouse_id = warehouseId;
       } else {
         payload.delivery = { city: delivery.city, address: delivery.address };
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                   <option key={w.id} value={w.id}>{w.name || w.address}</option>
                 ))}
                 {warehouses.length === 0 && (
-                  <option value="" disabled>{tr.checkout.noPickups}</option>
+                  <option value="-1">mun. Chișinău, Rîșcani, str. Dumitru Rîșcanu 11</option>
                 )}
               </select>
             ) : (
