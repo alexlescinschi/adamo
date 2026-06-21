@@ -138,8 +138,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-5">
           {benefits.map((item) => (
             <div key={item.title} className="flex items-center gap-3 rounded-[12px] bg-white px-4 py-5 shadow-[0_2px_12px_rgba(31,41,55,0.07)]">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#edf7e8]">
-                <item.Icon className="h-5 w-5 text-[#34781f]" />
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7cc44e] to-[#63ad36] shadow-[0_4px_12px_rgba(99,173,54,0.25)]">
+                <item.Icon className="h-5 w-5 text-white" />
               </div>
               <div className="grid leading-[1.2]">
                 <b className="text-[13px] font-bold text-[#1d1d1f]">{item.title}</b>
