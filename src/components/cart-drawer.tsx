@@ -6,12 +6,17 @@ import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
+import { CartCheckbox } from "./cart-checkbox";
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { items, removeItem, updateQty, total } = useCart();
+  const { items, removeItem, updateQty, toggleSelected, selectAll, total, allSelected, someSelected } = useCart();
   const tr = useTranslations();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [stockMsg, setStockMsg] = useState<number | null>(null);
+
+  // Total of selected items (items without `selected` are treated as selected).
+  const selectedCount = items.filter((i) => i.selected !== false).length;
+  const hasSelected = selectedCount > 0;
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
@@ -27,6 +32,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
+  const Checkbox = CartCheckbox;
+
   return (
     <>
       {open && <div ref={overlayRef} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={onClose} />}
@@ -36,7 +43,17 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
         }`}
       >
         <div className="flex items-center justify-between border-b border-[#cccfcf]/50 px-5 py-4">
-          <h2 className="text-lg font-semibold text-[#1d1d1f]">{tr.cart.title}</h2>
+          <div className="flex items-center gap-3">
+            {items.length > 0 && (
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                onChange={() => selectAll(!allSelected)}
+                label={tr.cart.selectAll}
+              />
+            )}
+            <h2 className="text-lg font-semibold text-[#1d1d1f]">{tr.cart.title}</h2>
+          </div>
           <button onClick={onClose} className="rounded-full p-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
             <X className="h-5 w-5" />
           </button>
@@ -53,54 +70,64 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           <>
             <div className="flex-1 overflow-y-auto px-5 py-4">
               <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={`${item.product_id}-${item.unit_id}`} className="flex gap-4 rounded-[28px] bg-[#f3f6f6] p-3">
-                    <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[12px] bg-white">
-                      {item.image ? (
-                        <Image src={item.image} alt={item.name} fill className="object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-[#6b6c6c]">N/A</div>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col justify-between min-w-0">
-                      <Link href={`/product/${item.product_id}`} onClick={onClose} className="text-sm font-medium text-[#1d1d1f] hover:text-[#4e8f28] transition-colors line-clamp-2">
-                        {item.name}
-                      </Link>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <div className="flex items-center rounded-[28px] border border-[#cccfcf]">
-                          <button className="px-2 py-1 text-[#1d1d1f] hover:bg-white transition-colors rounded-l-[28px]" onClick={() => updateQty(item.product_id, item.unit_id, item.qty - 1)}>
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="min-w-[24px] text-center text-sm font-medium text-[#1d1d1f]">{item.qty}</span>
-                          <div className="relative">
-                            <button
-                              className="px-2 py-1 text-[#1d1d1f] hover:bg-white transition-colors rounded-r-[28px] disabled:opacity-30 disabled:pointer-events-none"
-                              onClick={() => {
-                                if (item.qty >= (item.stock || 99)) {
-                                  setStockMsg(item.product_id);
-                                  setTimeout(() => setStockMsg(null), 2000);
-                                } else {
-                                  updateQty(item.product_id, item.unit_id, item.qty + 1);
-                                }
-                              }}
-                            >
-                              <Plus className="h-3 w-3" />
+                {items.map((item) => {
+                  const isSelected = item.selected !== false;
+                  return (
+                    <div key={`${item.product_id}-${item.unit_id}`} className={`flex gap-3 rounded-[28px] bg-[#f3f6f6] p-3 transition-opacity ${isSelected ? "" : "opacity-50"}`}>
+                      <div className="flex items-center">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => toggleSelected(item.product_id, item.unit_id)}
+                          label={tr.cart.selectItem}
+                        />
+                      </div>
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-[12px] bg-white">
+                        {item.image ? (
+                          <Image src={item.image} alt={item.name} fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-[#6b6c6c]">N/A</div>
+                        )}
+                      </div>
+                      <div className="flex flex-1 flex-col justify-between min-w-0">
+                        <Link href={`/product/${item.product_id}`} onClick={onClose} className="text-sm font-medium text-[#1d1d1f] hover:text-[#4e8f28] transition-colors line-clamp-2">
+                          {item.name}
+                        </Link>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <div className="flex items-center rounded-[28px] border border-[#cccfcf]">
+                            <button className="px-2 py-1 text-[#1d1d1f] hover:bg-white transition-colors rounded-l-[28px]" onClick={() => updateQty(item.product_id, item.unit_id, item.qty - 1)}>
+                              <Minus className="h-3 w-3" />
                             </button>
-                            {stockMsg === item.product_id && (
-                              <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[8px] bg-[#1d1d1f] px-2.5 py-1 text-xs text-white shadow-lg">
-                                {tr.cart.noStock}
-                              </span>
-                            )}
+                            <span className="min-w-[24px] text-center text-sm font-medium text-[#1d1d1f]">{item.qty}</span>
+                            <div className="relative">
+                              <button
+                                className="px-2 py-1 text-[#1d1d1f] hover:bg-white transition-colors rounded-r-[28px] disabled:opacity-30 disabled:pointer-events-none"
+                                onClick={() => {
+                                  if (item.qty >= (item.stock || 99)) {
+                                    setStockMsg(item.product_id);
+                                    setTimeout(() => setStockMsg(null), 2000);
+                                  } else {
+                                    updateQty(item.product_id, item.unit_id, item.qty + 1);
+                                  }
+                                }}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                              {stockMsg === item.product_id && (
+                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-[8px] bg-[#1d1d1f] px-2.5 py-1 text-xs text-white shadow-lg">
+                                  {tr.cart.noStock}
+                                </span>
+                              )}
+                            </div>
                           </div>
+                          <span className="text-sm font-semibold text-[#1d1d1f] ml-auto">{(item.price * item.qty).toFixed(0)} MDL</span>
+                          <button onClick={() => removeItem(item.product_id, item.unit_id)} className="text-[#6b6c6c] hover:text-[#b64400] transition-colors">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
-                        <span className="text-sm font-semibold text-[#1d1d1f] ml-auto">{(item.price * item.qty).toFixed(0)} MDL</span>
-                        <button onClick={() => removeItem(item.product_id, item.unit_id)} className="text-[#6b6c6c] hover:text-[#b64400] transition-colors">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -113,13 +140,19 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
                 <span className="font-bold text-[#34781f]">0 MDL</span>
               </div>
-              <Link
-                href="/checkout"
-                onClick={onClose}
-                className="flex w-full items-center justify-center rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
-              >
-                {tr.cart.checkout}
-              </Link>
+              {hasSelected ? (
+                <Link
+                  href="/checkout"
+                  onClick={onClose}
+                  className="flex w-full items-center justify-center rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
+                >
+                  {tr.cart.checkout}
+                </Link>
+              ) : (
+                <div className="rounded-[28px] bg-[#e4e8e4] py-3 text-center text-sm font-medium text-[#6b6c6c]">
+                  {tr.cart.selectAtLeastOne}
+                </div>
+              )}
             </div>
           </>
         )}

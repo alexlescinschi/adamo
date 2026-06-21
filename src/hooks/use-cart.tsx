@@ -10,18 +10,28 @@ export interface CartItem {
   qty: number;
   image?: string;
   stock?: number;
+  selected?: boolean; // default true; legacy items without it are treated as selected
 }
 
 interface CartContextValue {
   items: CartItem[];
+  selectedItems: CartItem[];
   addItem: (item: CartItem) => void;
   removeItem: (product_id: number, unit_id: number) => void;
   updateQty: (product_id: number, unit_id: number, qty: number) => void;
+  toggleSelected: (product_id: number, unit_id: number) => void;
+  selectAll: (selected: boolean) => void;
   clearCart: () => void;
-  total: number;
+  total: number;       // sum of selected items only
+  totalAll: number;    // sum of all items
+  allSelected: boolean;
+  someSelected: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+const sameItem = (i: CartItem, product_id: number, unit_id: number) =>
+  i.product_id === product_id && i.unit_id === unit_id;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -29,7 +39,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("adamo-cart");
-      if (stored) setItems(JSON.parse(stored));
+      if (stored) {
+        // Backwards-compat: legacy items without `selected` default to selected.
+        const parsed: CartItem[] = JSON.parse(stored);
+        setItems(parsed.map((i) => ({ ...i, selected: i.selected !== false })));
+      }
     } catch {
       // ignore
     }
@@ -41,26 +55,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = useCallback((item: CartItem) => {
     setItems((prev) => {
-      const existing = prev.find(
-        (i) => i.product_id === item.product_id && i.unit_id === item.unit_id
-      );
+      const existing = prev.find((i) => sameItem(i, item.product_id, item.unit_id));
       if (existing) {
         const newQty = Math.min(existing.qty + item.qty, existing.stock || 99);
         return prev.map((i) =>
-          i.product_id === item.product_id && i.unit_id === item.unit_id
-            ? { ...i, qty: newQty }
-            : i
+          sameItem(i, item.product_id, item.unit_id) ? { ...i, qty: newQty } : i
         );
       }
       const qty = Math.min(item.qty, item.stock || 99);
-      return [...prev, { ...item, qty }];
+      return [...prev, { ...item, qty, selected: item.selected !== false }];
     });
   }, []);
 
   const removeItem = useCallback((product_id: number, unit_id: number) => {
-    setItems((prev) =>
-      prev.filter((i) => !(i.product_id === product_id && i.unit_id === unit_id))
-    );
+    setItems((prev) => prev.filter((i) => !sameItem(i, product_id, unit_id)));
   }, []);
 
   const updateQty = useCallback((product_id: number, unit_id: number, qty: number) => {
@@ -70,21 +78,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     setItems((prev) =>
       prev.map((i) =>
-        i.product_id === product_id && i.unit_id === unit_id
+        sameItem(i, product_id, unit_id)
           ? { ...i, qty: Math.min(qty, i.stock || 99) }
           : i
       )
     );
   }, [removeItem]);
 
+  const toggleSelected = useCallback((product_id: number, unit_id: number) => {
+    setItems((prev) =>
+      prev.map((i) =>
+        sameItem(i, product_id, unit_id) ? { ...i, selected: !i.selected } : i
+      )
+    );
+  }, []);
+
+  const selectAll = useCallback((selected: boolean) => {
+    setItems((prev) => prev.map((i) => ({ ...i, selected })));
+  }, []);
+
   const clearCart = useCallback(() => {
     setItems([]);
   }, []);
 
-  const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const selectedItems = items.filter((i) => i.selected !== false);
+  const total = selectedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const totalAll = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const allSelected = items.length > 0 && selectedItems.length === items.length;
+  const someSelected = selectedItems.length > 0 && selectedItems.length < items.length;
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQty, clearCart, total }}>
+    <CartContext.Provider
+      value={{
+        items,
+        selectedItems,
+        addItem,
+        removeItem,
+        updateQty,
+        toggleSelected,
+        selectAll,
+        clearCart,
+        total,
+        totalAll,
+        allSelected,
+        someSelected,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
