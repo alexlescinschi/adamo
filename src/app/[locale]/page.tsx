@@ -1,5 +1,4 @@
 import { ProductCard } from "@/components/product-card";
-import { HomeCarousel } from "@/components/home-carousel";
 import { Hero, type HeroContent } from "@/components/hero";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
@@ -134,12 +133,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   return (
     <div>
       <Hero content={hero} images={heroImages} />
-
-      {carousel.length > 0 && (
-        <section className="pt-8">
-          <HomeCarousel slides={carousel} />
-        </section>
-      )}
 
       <section className="py-8 md:py-12">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-5">
