@@ -169,6 +169,27 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
+
+      <section className="py-[70px] border-t border-[#e4e8e4]">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri premium în Moldova pentru business, gaming și studii</h3>
+            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">ADAMO.MD este magazin specializat în laptopuri premium în Chișinău și Moldova: modele business, gaming, ultrabook-uri și laptopuri verificate pentru lucru, școală sau performanță.</p>
+          </div>
+          <div>
+            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri business verificate</h3>
+            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Modele stabile pentru birou, companii și freelanceri, cu SSD rapid, autonomie bună și suport inclus.</p>
+          </div>
+          <div>
+            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri gaming ASUS, MSI și Dell</h3>
+            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Configurații cu plăci video RTX, ecrane rapide și răcire puternică pentru jocuri, editare video și proiecte 3D.</p>
+          </div>
+          <div>
+            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Consultanță ADAMO.MD</h3>
+            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Te ajutăm să alegi laptopul potrivit după buget, scop și nivel de performanță, cu suport după cumpărare.</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
