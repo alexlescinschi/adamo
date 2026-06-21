@@ -1,9 +1,11 @@
 import { ProductCard } from "@/components/product-card";
 import { HomeCarousel } from "@/components/home-carousel";
+import { Hero, type HeroContent } from "@/components/hero";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import Image from "next/image";
+import heroContent from "../../../content/hero.json";
 
 export const dynamic = "force-dynamic";
 
@@ -116,6 +118,10 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     fetchStaticBanners(locale),
   ]);
 
+  // Hero block (editable text from content/hero.json + image from the first carousel slide).
+  const hero = (heroContent as Record<string, HeroContent>)[locale] || (heroContent as Record<string, HeroContent>).ro;
+  const heroImage = carousel[0]?.mediaUrl || null;
+
   const { wide, tile1, tile2 } = staticBanners;
 
   const benefits = [
@@ -128,6 +134,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div>
+      <Hero content={hero} imageUrl={heroImage} />
+
       {carousel.length > 0 && (
         <section className="pt-8">
           <HomeCarousel slides={carousel} />
