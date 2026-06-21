@@ -3,36 +3,11 @@ import { Hero, type HeroContent } from "@/components/hero";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
 import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
+import { extractProducts } from "@/lib/product-mapper";
 import Image from "next/image";
 import heroContent from "../../../content/hero.json";
 
 export const dynamic = "force-dynamic";
-
-function extractSpecs(item: any): string[] {
-  if (item.cardSpecs) {
-    return String(item.cardSpecs).split("|").map((s: string) => s.trim()).filter(Boolean).slice(0, 5);
-  }
-  const raw = item.specs || item.shortSpecs || item.attributes || [];
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((s: any) => s.label && s.valueLabel)
-    .slice(0, 5)
-    .map((s: any) => `${s.label}: ${s.valueLabel}`);
-}
-
-function extractProducts(data: any): any[] {
-  const items = data?.items || data || [];
-  return Array.isArray(items) ? items.map((item: any) => ({
-    id: item.id,
-    name: item.storefrontName || item.name,
-    slug: item.slug,
-    price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
-    old_price: item.discount?.compareAtPrice || item.discount?.originalPrice || item.oldPrice || item.old_price,
-    image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
-    specs: extractSpecs(item),
-  })) : [];
-}
 
 async function fetchProducts(type: string, locale = "ro", limit = 8) {
   const cacheKey = `home:${type}:${locale}:${limit}`;

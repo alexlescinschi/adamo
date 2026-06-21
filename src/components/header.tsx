@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Search, User, ShoppingBag, Menu, X, Phone, ChevronDown } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { usePathname, useParams } from "next/navigation";
 import { useCart } from "@/hooks/use-cart";
 import { CartDrawer } from "./cart-drawer";
@@ -20,7 +20,7 @@ const NAV_LINK_KEYS = [
   { href: "/contact", key: "contact" },
 ];
 
-export function Header({ categories = [] }: { categories?: CatalogCategory[] }) {
+export function Header({ categories = [], products = [] }: { categories?: CatalogCategory[]; products?: any[] }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -33,6 +33,15 @@ export function Header({ categories = [] }: { categories?: CatalogCategory[] }) 
   const tr = useTranslations();
   const { items } = useCart();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
+
+  const randomProducts = useMemo(() => {
+    if (products.length <= 2) return products;
+    const shuffled = [...products].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 2);
+  }, [catalogOpen, products]);
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("ro-RO", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
   // Close the desktop Catalog dropdown when clicking outside it.
   useEffect(() => {
@@ -89,17 +98,49 @@ export function Header({ categories = [] }: { categories?: CatalogCategory[] }) 
                         <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
                       </button>
                       {catalogOpen && (
-                        <div className="absolute left-0 top-full mt-1 z-50 min-w-[220px] max-h-[70vh] overflow-y-auto rounded-[12px] border border-[#e4e8e4] bg-white py-1 shadow-[0_8px_30px_rgba(31,41,55,0.12)]">
-                          {categories.map((c) => (
-                            <Link
-                              key={c.id}
-                              href={`/${locale}/category/${c.slug}`}
-                              onClick={() => setCatalogOpen(false)}
-                              className="block px-4 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
-                            >
-                              {c.name}
-                            </Link>
-                          ))}
+                        <div className="absolute left-0 top-full mt-1 z-50 flex rounded-[12px] border border-[#e4e8e4] bg-white shadow-[0_8px_30px_rgba(31,41,55,0.12)]">
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-1 p-4 min-w-[280px] max-h-[70vh] overflow-y-auto">
+                            {categories.map((c) => (
+                              <Link
+                                key={c.id}
+                                href={`/${locale}/category/${c.slug}`}
+                                onClick={() => setCatalogOpen(false)}
+                                className="rounded-[7px] px-3 py-2 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors whitespace-nowrap"
+                              >
+                                {c.name}
+                              </Link>
+                            ))}
+                          </div>
+                          {randomProducts.length > 0 && (
+                            <div className="border-l border-[#e4e8e4] p-4 flex gap-3 min-w-[320px]">
+                              {randomProducts.map((p: any) => (
+                                <Link
+                                  key={p.id}
+                                  href={`/${locale}/product/${p.slug || p.id}`}
+                                  onClick={() => setCatalogOpen(false)}
+                                  className="flex flex-col items-center gap-2 rounded-[10px] border border-[#e4e8e4] p-3 hover:border-[#63ad36] transition-colors flex-1 min-w-0"
+                                >
+                                  {p.image_url && (
+                                    <div className="relative w-full aspect-square rounded-[8px] overflow-hidden bg-[#f3f6f6]">
+                                      <Image
+                                        src={p.image_url}
+                                        alt={p.name || ""}
+                                        fill
+                                        className="object-contain p-2"
+                                        sizes="130px"
+                                      />
+                                    </div>
+                                  )}
+                                  <span className="text-[12px] font-semibold text-[#1d1d1f] leading-[1.2] text-center line-clamp-2">
+                                    {p.name}
+                                  </span>
+                                  {p.price > 0 && (
+                                    <span className="text-[13px] font-bold text-[#34781f]">{formatPrice(p.price)} lei</span>
+                                  )}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
