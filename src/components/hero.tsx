@@ -45,7 +45,7 @@ export function Hero({ content, images }: HeroProps) {
   const bgImage = images[0] || null;
 
   return (
-    <section className="relative flex min-h-[420px] items-center w-full overflow-hidden md:min-h-[540px]">
+    <section className="relative flex min-h-[420px] items-center overflow-hidden md:min-h-[540px]" style={{ marginLeft: 'calc(-50vw + 50%)', width: '100vw' }}>
       {bgImage && (
         <Image
           src={bgImage}
