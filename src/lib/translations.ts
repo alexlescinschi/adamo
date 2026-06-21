@@ -135,6 +135,9 @@ const dict = {
       noResults: "Nu am găsit produse pentru",
       noResultsSub: "Încearcă un alt termen de căutare.",
     },
+    chat: {
+      online: "Suntem online, scrieți!",
+    },
     contact: {
       title: "Contacte",
       officeAddress: "Adresa oficiului",
@@ -310,6 +313,9 @@ const dict = {
       noResults: "Товары не найдены для",
       noResultsSub: "Попробуйте другой поисковый запрос.",
     },
+    chat: {
+      online: "Мы онлайн, пишите!",
+    },
     contact: {
       title: "Контакты",
       officeAddress: "Адрес офиса",
@@ -484,6 +490,9 @@ const dict = {
       resultsFor: "Results for",
       noResults: "No products found for",
       noResultsSub: "Try a different search term.",
+    },
+    chat: {
+      online: "We're online, write us!",
     },
     contact: {
       title: "Contact",
