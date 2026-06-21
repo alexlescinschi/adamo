@@ -61,3 +61,4 @@ See `DEPLOY.md` for Vercel/Netlify instructions.
 - CRM products must be published to storefront to appear on the site
 - Customer auth uses CRM `/ecommerce/e-commerce-auth/*` endpoints
 - Internal CRM auth (for API routes) auto-refreshes JWT every 12 minutes
+
