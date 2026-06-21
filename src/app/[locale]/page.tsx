@@ -1,9 +1,9 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
-import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
+import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
-import { extractProducts } from "@/lib/product-mapper";
+import { extractProducts, mapProductCard } from "@/lib/product-mapper";
 import Image from "next/image";
 import heroContent from "../../../content/hero.json";
 
@@ -21,6 +21,23 @@ async function fetchProducts(type: string, locale = "ro", limit = 8) {
   try { data = await fetcher(locale, limit); } catch { data = null; }
   if (!data?.items?.length) { try { data = await getPublishedProducts(locale, limit).catch(() => null); } catch {} }
   return extractProducts(data || {});
+}
+
+async function enrichWithBadges(products: any[], locale: string) {
+  const ids = [...new Set(products.map((p) => p.id))];
+  const details = await Promise.allSettled(
+    ids.map((id) => getProductById(id, locale).catch(() => null))
+  );
+  const detailMap = new Map<number, any>();
+  details.forEach((r, i) => {
+    if (r.status === "fulfilled" && r.value) detailMap.set(ids[i], r.value);
+  });
+  return products.map((p) => {
+    const detail = detailMap.get(p.id);
+    if (!detail) return p;
+    const mapped = mapProductCard(detail);
+    return { ...p, badge: mapped.badge, badge_type: mapped.badge_type, specs: mapped.specs || p.specs };
+  });
 }
 
 async function fetchCarousel(locale = "ro") {
@@ -92,6 +109,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     fetchStaticBanners(locale),
   ]);
 
+  const allProducts = [...popular, ...promotions, ...newProducts];
+  const [popularE, promotionsE, newProductsE] = allProducts.length > 0
+    ? await Promise.all([
+        enrichWithBadges(popular, locale),
+        enrichWithBadges(promotions, locale),
+        enrichWithBadges(newProducts, locale),
+      ])
+    : [popular, promotions, newProducts];
+
   const hero = (heroContent as Record<string, HeroContent>)[locale] || (heroContent as Record<string, HeroContent>).ro;
   const heroImages = carousel.map((c: any) => c.mediaUrl).filter(Boolean) as string[];
 
@@ -131,8 +157,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.popular} products={popular} viewAllHref="/minipc" />
-      <Section title={tr.home.promotions} products={promotions} viewAllHref="/minipc" />
+      <Section title={tr.home.popular} products={popularE} viewAllHref="/minipc" />
+      <Section title={tr.home.promotions} products={promotionsE} viewAllHref="/minipc" />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -143,7 +169,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
+      <Section title={tr.home.newProducts} products={newProductsE} viewAllHref="/laptopuri" />
 
       <section className="py-[70px] border-t border-[#e4e8e4]">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
