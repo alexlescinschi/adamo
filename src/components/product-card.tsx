@@ -29,13 +29,12 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)]">
-      {product.badge && (
-        <span className={`mb-2 inline-block self-start rounded-[7px] px-[9px] py-[4px] text-[10px] font-black uppercase leading-none tracking-wide ${product.badge_type === "blue" ? "bg-[#eaf2ff] text-[#1769e8]" : "bg-[#edf7e8] text-[#34781f]"}`}>
-          {product.badge}
-        </span>
-      )}
-
       <Link href={href} className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]">
+        {product.badge && (
+          <span className="absolute top-2 left-2 z-10 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
+            {product.badge}
+          </span>
+        )}
         {product.image_url ? (
           <Image
             src={product.image_url}

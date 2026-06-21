@@ -36,9 +36,9 @@ async function getProduct(id: string, locale = "ro") {
   const data = await getProductById(id, locale);
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
   const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
-  const specs = Array.isArray(data.specs)
-    ? Object.fromEntries(data.specs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]))
-    : {};
+  const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
+  const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
+  const badge = rawSpecs.some((s: any) => s.label === "Recomandat" && s.valueLabel) ? "Recomandat" : undefined;
   const localeTranslation = Array.isArray(data.translations)
     ? data.translations.find((t: any) => t.locale === locale)
     : null;
@@ -52,6 +52,7 @@ async function getProduct(id: string, locale = "ro") {
     image_url: data.images?.[0]?.url || data.previewImageUrl || null,
     images: extractImage(data),
     specs,
+    badge,
     availability: data.offerSummary?.availability || "OutOfStock",
     category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
     category_name: data.category?.translation?.name || data.category?.name || null,
@@ -108,6 +109,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-[70px] md:grid-cols-2">
         <div className="min-w-0 md:sticky md:top-24 md:self-start">
+          {product.badge && (
+            <span className="inline-block mb-3 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
+              {product.badge}
+            </span>
+          )}
           <ImageGallery
             images={product.images}
             name={product.name}
