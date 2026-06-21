@@ -47,30 +47,27 @@ export function Hero({ content, images }: HeroProps) {
   return (
     <section className="relative flex min-h-[420px] items-center w-full overflow-hidden md:min-h-[540px]">
       {bgImage && (
-        <>
-          <Image
-            src={bgImage}
-            alt=""
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/30" />
-        </>
+        <Image
+          src={bgImage}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority
+        />
       )}
       {!bgImage && <div className="absolute inset-0 bg-[#f3f6f6]" />}
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-16">
         <div className="max-w-xl">
-          <h1 className={`text-[32px] font-extrabold leading-[1.1] tracking-[-0.02em] md:text-[44px] ${bgImage ? "text-white" : "text-[#1d1d1f]"}`}>
+          <h1 className="text-[32px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#1d1d1f] md:text-[44px]">
             {titleLines.map((line, i) => {
               if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
                 return (
                   <span key={i} className="block">
                     {parts[0]}
-                    <em className={`not-italic ${bgImage ? "text-[#7cc44e]" : "text-[#34781f]"}`}>{emphasizeWord}</em>
+                    <em className="not-italic text-[#34781f]">{emphasizeWord}</em>
                     {parts[1]}
                   </span>
                 );
@@ -84,7 +81,7 @@ export function Hero({ content, images }: HeroProps) {
           </h1>
 
           {subtitle && (
-            <p className={`mt-4 max-w-md text-[15px] leading-relaxed md:text-[16px] ${bgImage ? "text-white/80" : "text-[#6b6c6c]"}`}>
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#6b6c6c] md:text-[16px]">
               {subtitle}
             </p>
           )}
@@ -108,7 +105,7 @@ export function Hero({ content, images }: HeroProps) {
                 ))}
               </div>
               <div className="grid leading-[1.2]">
-                <span className={`text-[13px] font-medium ${bgImage ? "text-white/90" : "text-[#1d1d1f]"}`}>
+                <span className="text-[13px] font-medium text-[#1d1d1f]">
                   {socialProof.text}
                 </span>
                 {socialProof.stars > 0 && (
