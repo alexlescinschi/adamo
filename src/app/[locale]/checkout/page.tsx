@@ -8,10 +8,11 @@ import { useCart } from "@/hooks/use-cart";
 import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2, FileText } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { ADAMO_COMPANY } from "@/lib/company";
+import { resolvePaymentMethod } from "@/lib/checkout";
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, total, clearCart } = useCart();
+  const { items, selectedItems, total, clearCart } = useCart();
   const tr = useTranslations();
 
   const [buyerType, setBuyerType] = useState<"INDIVIDUAL" | "LEGAL">("INDIVIDUAL");
@@ -48,7 +49,7 @@ export default function CheckoutPage() {
   function buildInvoiceUrl(orderId: string) {
     const now = new Date();
     const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
-    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(items.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(selectedItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
   }
 
   function copyIban() {
@@ -85,7 +86,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (items.length === 0) {
+  if (selectedItems.length === 0) {
     return (
       <div className="py-16 text-center">
         <ShoppingCart className="mx-auto h-12 w-12 text-slate-300" />
@@ -110,9 +111,9 @@ export default function CheckoutPage() {
       const fullComment = [companyNote, comment].filter(Boolean).join(" | ");
 
       const payload: Record<string, unknown> = {
-        items: items.map((i) => ({ product_id: i.product_id, unit_id: i.unit_id, qty: i.qty })),
+        items: selectedItems.map((i) => ({ product_id: i.product_id, unit_id: i.unit_id, qty: i.qty })),
         delivery_method: deliveryMethod,
-        payment_method: payMode === "BANK_TRANSFER" ? "BANK_TRANSFER" : "ONLINE",
+        payment_method: resolvePaymentMethod(payMode, deliveryMethod),
         contact: {
           full_name: contact.full_name,
           phone: contact.phone,
@@ -178,7 +179,7 @@ export default function CheckoutPage() {
         // Show invoice download screen for legal entity bank transfer
         const now = new Date();
         const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
-        setInvoiceData({ orderId: String(orderId), date, orderItems: items, orderTotal: total });
+        setInvoiceData({ orderId: String(orderId), date, orderItems: selectedItems, orderTotal: total });
         setSubmitting(false);
       } else {
         // CASH (plată la livrare) — redirect to success, no payment processing
@@ -527,7 +528,7 @@ export default function CheckoutPage() {
             )}
 
             <div className="space-y-3 mb-4">
-              {items.map((item) => (
+              {selectedItems.map((item) => (
                 <div key={`${item.product_id}-${item.unit_id}`} className="flex gap-3">
                   <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-[8px] bg-[#f3f6f6]">
                     {item.image ? (

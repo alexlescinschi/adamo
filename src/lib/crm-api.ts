@@ -1,5 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
+import type { CrmPaymentMethod } from "@/lib/checkout";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 const CRM_LOGIN = process.env.CRM_API_LOGIN || "";
@@ -104,7 +105,7 @@ export async function getPickupWarehouses() {
 export interface CheckoutPayload {
   items: { product_id: number; unit_id: number; qty: number }[];
   delivery_method: "PICKUP" | "COURIER";
-  payment_method: "ONLINE" | "BANK_TRANSFER";
+  payment_method: CrmPaymentMethod;
   warehouse_id?: number;
   contact: {
     phone: string;

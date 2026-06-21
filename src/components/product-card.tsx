@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
-import { useFavorites } from "@/hooks/use-favorites";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface Product {
@@ -23,7 +22,6 @@ interface Product {
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
   const tr = useTranslations();
   const unitId = product.unit_id || product.id;
   const hasPrice = product.price > 0;
@@ -37,25 +35,18 @@ export function ProductCard({ product }: { product: Product }) {
         </span>
       )}
 
-      <Link href={href} className="relative mb-[10px] block h-[140px] overflow-hidden rounded-[7px] bg-[#f3f6f6]">
+      <Link href={href} className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]">
         {product.image_url ? (
           <Image
             src={product.image_url}
             alt={product.name}
             fill
-            className="object-cover transition-transform group-hover:scale-105"
+            className="object-contain p-2 transition-transform group-hover:scale-105"
             sizes="(max-width: 768px) 50vw, 25vw"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">Fără imagine</div>
         )}
-        <button
-          onClick={(e) => { e.preventDefault(); toggleFavorite({ product_id: product.id, name: product.name, price: product.price, image_url: product.image_url }); }}
-          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-colors hover:bg-white"
-          aria-label="Adaugă la favorite"
-        >
-          <Heart className={`h-4 w-4 transition-colors ${isFavorite(product.id) ? "fill-[#b64400] text-[#b64400]" : "text-[#6b6c6c]"}`} />
-        </button>
       </Link>
 
       <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
@@ -71,26 +62,40 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="mt-auto pt-2">
         {hasPrice ? (
           <>
-            <strong className="block text-[22px] font-extrabold leading-none text-[#34781f]">
-              {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
-            </strong>
-            {product.old_price && product.old_price > product.price && (
-              <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
-            )}
-            <p className="mt-[3px] mb-[10px] text-[12.5px] text-[#6b6c6c]">{tr.product.installments}</p>
+            <div className="flex items-end justify-between gap-2">
+              <div className="min-w-0">
+                <strong className="block text-[22px] font-extrabold leading-none text-[#34781f]">
+                  {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
+                </strong>
+                {product.old_price && product.old_price > product.price && (
+                  <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
+                )}
+                <p className="mt-[3px] text-[12.5px] text-[#6b6c6c]">{tr.product.installments}</p>
+              </div>
+              <button
+                onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
+                className="flex flex-shrink-0 items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] px-3 py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+                disabled={!hasPrice}
+                aria-label={tr.product.addToCart}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {tr.product.addToCart}
+              </button>
+            </div>
           </>
         ) : (
-          <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
+          <>
+            <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
+            <button
+              onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
+              className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+              disabled={!hasPrice}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {tr.product.unavailable}
+            </button>
+          </>
         )}
-
-        <button
-          onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
-          className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
-          disabled={!hasPrice}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {hasPrice ? tr.product.addToCart : tr.product.unavailable}
-        </button>
       </div>
     </article>
   );
