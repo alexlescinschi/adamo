@@ -44,7 +44,9 @@ async function enrichWithSpecs(products: any[], locale: string): Promise<any[]> 
     products.map(async (p) => {
       try {
         const detail = await getProductById(p.id, locale);
-        return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs: extractSpecs(detail) };
+        const specs = extractSpecs(detail);
+        const badge = Object.entries(specs).some(([k, v]) => k === "Recomandat" && v) ? "Recomandat" : undefined;
+        return { ...p, price: enrichPrice(p, detail), stock: enrichStock(detail), specs, badge, badge_type: badge ? "green" as const : undefined };
       } catch {
         return { ...p, specs: {} };
       }

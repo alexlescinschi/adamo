@@ -109,15 +109,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-[70px] md:grid-cols-2">
         <div className="min-w-0 md:sticky md:top-24 md:self-start">
-          {product.badge && (
-            <span className="inline-block mb-3 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
-              {product.badge}
-            </span>
-          )}
-          <ImageGallery
-            images={product.images}
-            name={product.name}
-          />
+          <div className="relative">
+            <ImageGallery
+              images={product.images}
+              name={product.name}
+            />
+            {product.badge && (
+              <span className="absolute top-3 left-3 z-10 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
+                {product.badge}
+              </span>
+            )}
+          </div>
         </div>
         <div>
           <ProductInfo product={product} />
