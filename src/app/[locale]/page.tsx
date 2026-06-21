@@ -36,7 +36,7 @@ async function enrichWithBadges(products: any[], locale: string) {
     const detail = detailMap.get(p.id);
     if (!detail) return p;
     const mapped = mapProductCard(detail);
-    return { ...p, badge: mapped.badge, badge_type: mapped.badge_type, specs: mapped.specs || p.specs };
+    return { ...p, price: mapped.price || p.price, old_price: mapped.old_price || p.old_price, badge: mapped.badge, badge_type: mapped.badge_type, specs: mapped.specs || p.specs };
   });
 }
 
