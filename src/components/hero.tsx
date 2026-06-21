@@ -12,7 +12,7 @@ export interface HeroContent {
 
 interface HeroProps {
   content: HeroContent;
-  imageUrl: string | null;
+  images: string[];
 }
 
 const isExternal = (href: string) => href.startsWith("http");
@@ -37,87 +37,92 @@ function CtaLink({ cta, variant }: { cta: { label: string; href: string }; varia
   );
 }
 
-export function Hero({ content, imageUrl }: HeroProps) {
+export function Hero({ content, images }: HeroProps) {
   const { titleLines, emphasizeWord, subtitle, primaryCta, ghostCta, socialProof } = content;
 
-  // Graceful: no title -> render nothing.
   if (!titleLines || titleLines.length === 0) return null;
 
+  const bgImage = images[0] || null;
+
   return (
-    <section className="grid items-center gap-8 py-8 md:grid-cols-2 md:gap-12 md:py-12">
-      {/* Left: copy */}
-      <div className="order-2 md:order-1">
-        <h1 className="text-[32px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#1d1d1f] md:text-[44px]">
-          {titleLines.map((line, i) => {
-            // Emphasize the configured word inside the last line (like the template's <em>).
-            if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
-              const parts = line.split(emphasizeWord);
+    <section className="relative flex min-h-[420px] items-center w-full overflow-hidden md:min-h-[540px]">
+      {bgImage && (
+        <>
+          <Image
+            src={bgImage}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/30" />
+        </>
+      )}
+      {!bgImage && <div className="absolute inset-0 bg-[#f3f6f6]" />}
+
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-16">
+        <div className="max-w-xl">
+          <h1 className={`text-[32px] font-extrabold leading-[1.1] tracking-[-0.02em] md:text-[44px] ${bgImage ? "text-white" : "text-[#1d1d1f]"}`}>
+            {titleLines.map((line, i) => {
+              if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
+                const parts = line.split(emphasizeWord);
+                return (
+                  <span key={i} className="block">
+                    {parts[0]}
+                    <em className={`not-italic ${bgImage ? "text-[#7cc44e]" : "text-[#34781f]"}`}>{emphasizeWord}</em>
+                    {parts[1]}
+                  </span>
+                );
+              }
               return (
                 <span key={i} className="block">
-                  {parts[0]}
-                  <em className="not-italic text-[#34781f]">{emphasizeWord}</em>
-                  {parts[1]}
+                  {line}
                 </span>
               );
-            }
-            return (
-              <span key={i} className="block">
-                {line}
-              </span>
-            );
-          })}
-        </h1>
+            })}
+          </h1>
 
-        {subtitle && <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#6b6c6c] md:text-[16px]">{subtitle}</p>}
+          {subtitle && (
+            <p className={`mt-4 max-w-md text-[15px] leading-relaxed md:text-[16px] ${bgImage ? "text-white/80" : "text-[#6b6c6c]"}`}>
+              {subtitle}
+            </p>
+          )}
 
-        {(primaryCta?.label || ghostCta?.label) && (
-          <div className="mt-6 flex flex-wrap gap-3">
-            {primaryCta && <CtaLink cta={primaryCta} variant="primary" />}
-            {ghostCta && <CtaLink cta={ghostCta} variant="ghost" />}
-          </div>
-        )}
-
-        {socialProof?.text && (
-          <div className="mt-8 flex items-center gap-3">
-            {/* Stacked avatar faces */}
-            <div className="flex">
-              {[0, 1, 2, 3].map((i) => (
-                <span
-                  key={i}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#7cc44e] to-[#63ad36] text-[11px] font-bold text-white shadow-sm"
-                  style={{ marginLeft: i === 0 ? 0 : -10 }}
-                />
-              ))}
+          {(primaryCta?.label || ghostCta?.label) && (
+            <div className="mt-6 flex flex-wrap gap-3">
+              {primaryCta && <CtaLink cta={primaryCta} variant="primary" />}
+              {ghostCta && <CtaLink cta={ghostCta} variant="ghost" />}
             </div>
-            <div className="grid leading-[1.2]">
-              <span className="text-[13px] font-medium text-[#1d1d1f]">{socialProof.text}</span>
-              {socialProof.stars > 0 && (
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: socialProof.stars }).map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-[#f5a623] text-[#f5a623]" />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Right: visual */}
-      {imageUrl && (
-        <div className="order-1 md:order-2">
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-[#f3f6f6] md:aspect-square">
-            <Image
-              src={imageUrl}
-              alt=""
-              fill
-              className="object-contain p-6"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
-            />
-          </div>
+          {socialProof?.text && (
+            <div className="mt-8 flex items-center gap-3">
+              <div className="flex">
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#7cc44e] to-[#63ad36] text-[11px] font-bold text-white shadow-sm"
+                    style={{ marginLeft: i === 0 ? 0 : -10 }}
+                  />
+                ))}
+              </div>
+              <div className="grid leading-[1.2]">
+                <span className={`text-[13px] font-medium ${bgImage ? "text-white/90" : "text-[#1d1d1f]"}`}>
+                  {socialProof.text}
+                </span>
+                {socialProof.stars > 0 && (
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: socialProof.stars }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-[#f5a623] text-[#f5a623]" />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }

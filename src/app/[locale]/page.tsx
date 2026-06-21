@@ -118,9 +118,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     fetchStaticBanners(locale),
   ]);
 
-  // Hero block (editable text from content/hero.json + image from the first carousel slide).
   const hero = (heroContent as Record<string, HeroContent>)[locale] || (heroContent as Record<string, HeroContent>).ro;
-  const heroImage = carousel[0]?.mediaUrl || null;
+  const heroImages = carousel.map((c: any) => c.mediaUrl).filter(Boolean) as string[];
 
   const { wide, tile1, tile2 } = staticBanners;
 
@@ -134,7 +133,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div>
-      <Hero content={hero} imageUrl={heroImage} />
+      <Hero content={hero} images={heroImages} />
 
       {carousel.length > 0 && (
         <section className="pt-8">
