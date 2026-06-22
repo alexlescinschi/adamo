@@ -1,18 +1,18 @@
-import { Suspense } from "react";
-import { SearchContent } from "@/components/search-content";
-import { Loader2 } from "lucide-react";
+import { SearchResults } from "@/components/search-results";
+import { searchProducts } from "@/lib/crm-api";
+import { mapProductCard } from "@/lib/product-mapper";
 
 export const dynamic = "force-dynamic";
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
-  return (
-    <Suspense fallback={
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-      </div>
-    }>
-      <SearchContent query={q || ""} />
-    </Suspense>
-  );
+  let products: any[] = [];
+  if (q) {
+    try {
+      const data = await searchProducts(q, "ro", 24);
+      const items = data?.items || [];
+      products = Array.isArray(items) ? items.map(mapProductCard) : [];
+    } catch {}
+  }
+  return <SearchResults query={q || ""} products={products} />;
 }
