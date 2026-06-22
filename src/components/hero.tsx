@@ -26,13 +26,13 @@ function CtaLink({ cta, variant }: { cta: { label: string; href: string }; varia
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={
         variant === "primary"
-          ? "inline-flex items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_8px_20px_rgba(99,173,54,0.3)] transition-all hover:from-[#63ad36] hover:to-[#4e8f28]"
-          : "inline-flex items-center justify-center gap-2 rounded-[12px] border border-[#e4e8e4] bg-white px-6 py-3 text-[15px] font-semibold text-[#1d1d1f] transition-colors hover:border-[#63ad36] hover:text-[#34781f]"
+          ? "inline-flex items-center justify-center min-h-[48px] gap-[10px] px-6 rounded-[7px] border border-[#5ba52f] bg-gradient-to-b from-[#78bb45] to-[#55a02d] text-[14px] font-extrabold uppercase text-white shadow-[0_14px_24px_rgba(85,160,45,0.24)]"
+          : "inline-flex items-center justify-center min-h-[48px] gap-[10px] px-6 rounded-[7px] border border-[#e4e8e4] text-[14px] font-extrabold uppercase text-[#273142] bg-white/86 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]"
       }
     >
       {cta.label}
-      {variant === "ghost" && <MessageCircle className="h-4 w-4" />}
-      {variant === "primary" && <ArrowRight className="h-4 w-4" />}
+      {variant === "ghost" && <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2.1} />}
+      {variant === "primary" && <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.1} />}
     </a>
   );
 }

@@ -1,6 +1,6 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
-import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
+import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
@@ -128,7 +128,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub },
     { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub },
     { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub },
-    { Icon: Package, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub },
+    { Icon: CreditCard, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub },
+    { Icon: RefreshCcw, title: tr.home.benefitReturn, sub: tr.home.benefitReturnSub },
     { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub },
   ];
 
@@ -137,15 +138,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Hero content={hero} images={heroImages} />
 
       <section className="py-8 md:py-12">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5 md:gap-5">
+        <div className="grid grid-cols-2 divide-x divide-[#e4e8e4] divide-y divide-[#e4e8e4] border border-[#e4e8e4] rounded-[9px] bg-white shadow-[0_1px_4px_rgba(31,41,55,0.06)] overflow-hidden md:grid-cols-3 lg:grid-cols-6">
           {benefits.map((item) => (
-            <div key={item.title} className="flex items-center gap-3 rounded-[12px] bg-white px-4 py-5 shadow-[0_2px_12px_rgba(31,41,55,0.07)]">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7cc44e] to-[#63ad36] shadow-[0_4px_12px_rgba(99,173,54,0.25)]">
-                <item.Icon className="h-5 w-5 text-white" />
+            <div key={item.title} className="group flex items-center gap-2 px-3 py-4 hover:bg-[#f9fdf6] transition-colors cursor-pointer">
+              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-[#111827] group-hover:text-[#2f7d25] transition-colors">
+                <item.Icon className="h-8 w-8" strokeWidth={2} />
               </div>
-              <div className="grid leading-[1.2]">
-                <b className="text-[13px] font-bold text-[#1d1d1f]">{item.title}</b>
-                <span className="text-[12px] text-[#6b6c6c]">{item.sub}</span>
+              <div className="grid leading-[1.2] min-w-0">
+                <b className="text-[11px] font-extrabold uppercase text-[#1d1d1f] group-hover:text-[#2f7d25] transition-colors">{item.title}</b>
+                <span className="text-[12px] text-[#6b6c6c] whitespace-nowrap">{item.sub}</span>
               </div>
             </div>
           ))}
