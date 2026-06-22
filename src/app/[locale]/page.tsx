@@ -61,7 +61,7 @@ async function fetchAndEnrich(locale: string) {
 
   return {
     popular: deduped.filter((p: any) => p.is_popular).slice(0, 8),
-    promotions: deduped.slice(0, 8),
+    promotions: deduped.filter((p: any) => p.old_price && p.old_price > p.price).sort((a: any, b: any) => ((b.old_price - b.price) / b.old_price) - ((a.old_price - a.price) / a.old_price)).slice(0, 8),
     newProducts: deduped.filter((p: any) => newList.some((n: any) => n.id === p.id)).slice(0, 8),
   };
 }
