@@ -99,8 +99,8 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                       </button>
                       {catalogOpen && (
                         <div className="fixed inset-x-0 top-[57px] z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
-                          <div className="mx-auto max-w-7xl px-4 py-6 flex gap-10">
-                            <div className="flex flex-col gap-0.5 w-52">
+                          <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-3 gap-6">
+                            <div className="flex flex-col gap-0.5 border-r border-[#e4e8e4]/60 pr-4">
                               {categories.map((c) => (
                                 <Link
                                   key={c.id}
@@ -113,13 +113,12 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                               ))}
                             </div>
                             {randomProducts.length > 0 && (
-                              <div className="flex-1 flex gap-4">
-                                {randomProducts.map((p: any) => (
+                              randomProducts.map((p: any) => (
                                   <Link
                                     key={p.id}
                                     href={`/${locale}/product/${p.slug || p.id}`}
                                     onClick={() => setCatalogOpen(false)}
-                                    className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all flex-1 min-w-0 group"
+                                    className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all group"
                                   >
                                     {p.image_url && (
                                       <div className="relative w-full aspect-[4/3] rounded-[8px] overflow-hidden bg-[#f3f6f6]">
@@ -141,8 +140,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                                       )}
                                     </div>
                                   </Link>
-                                ))}
-                              </div>
+                              ))
                             )}
                           </div>
                         </div>
