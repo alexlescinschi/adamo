@@ -1,7 +1,8 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
 
 @theme inline {
-  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
   --color-midnight: #1d1d1f;
   --color-cloud: #6b6c6c;
   --color-frost: #f3f6f6;
