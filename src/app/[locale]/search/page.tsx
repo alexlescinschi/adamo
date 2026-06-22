@@ -9,7 +9,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   let products: any[] = [];
   if (q) {
     try {
-      const data = await searchProducts(q, "ro", 24);
+      const data = await searchProducts(q, "ro", 48);
       const items = data?.items || [];
       products = Array.isArray(items) ? items.map(mapProductCard) : [];
     } catch {}
