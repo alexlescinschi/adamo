@@ -13,6 +13,11 @@ function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   return {};
 }
 
+export function hasAttribute(item: any, label: string): boolean {
+  const specs = item.specs || [];
+  return Array.isArray(specs) && specs.some((s: any) => s.label === label && s.valueLabel);
+}
+
 export function extractSpecs(item: any): string[] {
   if (item.cardSpecs) {
     return String(item.cardSpecs).split("|").map((s: string) => s.trim()).filter(Boolean).slice(0, 5);

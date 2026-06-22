@@ -1,44 +1,13 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { ShieldCheck, Truck, Percent, Package, Wrench } from "lucide-react";
-import { getPopularProducts, getPromotions, getNewProducts, getPublishedProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
+import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
-import { extractProducts, mapProductCard } from "@/lib/product-mapper";
+import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
 import Image from "next/image";
 import heroContent from "../../../content/hero.json";
 
 export const dynamic = "force-dynamic";
-
-async function fetchProducts(type: string, locale = "ro", limit = 8) {
-  const cacheKey = `home:${type}:${locale}:${limit}`;
-  const fetchers: Record<string, (l: string, lim: number) => Promise<any>> = {
-    popular: getPopularProducts,
-    promotions: getPromotions,
-    new: getNewProducts,
-  };
-  const fetcher = fetchers[type] || getPopularProducts;
-  let data;
-  try { data = await fetcher(locale, limit); } catch { data = null; }
-  if (!data?.items?.length) { try { data = await getPublishedProducts(locale, limit).catch(() => null); } catch {} }
-  return extractProducts(data || {});
-}
-
-async function enrichWithBadges(products: any[], locale: string) {
-  const ids = [...new Set(products.map((p) => p.id))];
-  const details = await Promise.allSettled(
-    ids.map((id) => getProductById(id, locale).catch(() => null))
-  );
-  const detailMap = new Map<number, any>();
-  details.forEach((r, i) => {
-    if (r.status === "fulfilled" && r.value) detailMap.set(ids[i], r.value);
-  });
-  return products.map((p) => {
-    const detail = detailMap.get(p.id);
-    if (!detail) return p;
-    const mapped = mapProductCard(detail);
-    return { ...p, price: mapped.price || p.price, old_price: mapped.old_price || p.old_price, badge: mapped.badge, badge_type: mapped.badge_type, specs: mapped.specs || p.specs };
-  });
-}
 
 async function fetchCarousel(locale = "ro") {
   try {
@@ -52,6 +21,49 @@ async function fetchStaticBanners(locale = "ro") {
     const data = await getHomeStaticBanners(locale);
     return data || {};
   } catch { return {}; }
+}
+
+async function fetchAndEnrich(locale: string) {
+  const [publishedData, newData] = await Promise.all([
+    getPublishedProducts(locale, 80).catch(() => ({ items: [] })),
+    getNewProducts(locale, 12).catch(() => ({ items: [] })),
+  ]);
+
+  const published = extractProducts(publishedData);
+  const newList = extractProducts(newData);
+  const allProducts = [...published, ...newList];
+
+  const ids = [...new Set(allProducts.map((p: any) => p.id))];
+  const details = await Promise.allSettled(
+    ids.map((id: number) => getProductById(id, locale).catch(() => null))
+  );
+  const detailMap = new Map<number, any>();
+  details.forEach((r, i) => {
+    if (r.status === "fulfilled" && r.value) detailMap.set(ids[i], r.value);
+  });
+
+  const enriched = allProducts.map((p: any) => {
+    const detail = detailMap.get(p.id);
+    if (!detail) return p;
+    const mapped = mapProductCard(detail);
+    return {
+      ...p,
+      price: mapped.price || p.price,
+      old_price: mapped.old_price || p.old_price,
+      badge: mapped.badge,
+      badge_type: mapped.badge_type,
+      specs: mapped.specs || p.specs,
+      is_popular: hasAttribute(detail, "popular"),
+    };
+  });
+
+  const deduped = [...new Map(enriched.map((p: any) => [p.id, p])).values()] as any[];
+
+  return {
+    popular: deduped.filter((p: any) => p.is_popular).slice(0, 8),
+    promotions: deduped.slice(0, 8),
+    newProducts: deduped.filter((p: any) => newList.some((n: any) => n.id === p.id)).slice(0, 8),
+  };
 }
 
 function Section({ title, products, viewAllHref }: { title: string; products: any[]; viewAllHref?: string }) {
@@ -101,22 +113,11 @@ function StaticBanner({ banner }: { banner: any }) {
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const tr = getDict(locale);
-  const [popular, promotions, newProducts, carousel, staticBanners] = await Promise.all([
-    fetchProducts("popular", locale),
-    fetchProducts("promotions", locale),
-    fetchProducts("new", locale),
+  const [{ popular, promotions, newProducts }, carousel, staticBanners] = await Promise.all([
+    fetchAndEnrich(locale),
     fetchCarousel(locale),
     fetchStaticBanners(locale),
   ]);
-
-  const allProducts = [...popular, ...promotions, ...newProducts];
-  const [popularE, promotionsE, newProductsE] = allProducts.length > 0
-    ? await Promise.all([
-        enrichWithBadges(popular, locale),
-        enrichWithBadges(promotions, locale),
-        enrichWithBadges(newProducts, locale),
-      ])
-    : [popular, promotions, newProducts];
 
   const hero = (heroContent as Record<string, HeroContent>)[locale] || (heroContent as Record<string, HeroContent>).ro;
   const heroImages = carousel.map((c: any) => c.mediaUrl).filter(Boolean) as string[];
@@ -157,8 +158,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.popular} products={popularE} viewAllHref="/minipc" />
-      <Section title={tr.home.promotions} products={promotionsE} viewAllHref="/minipc" />
+      <Section title={tr.home.popular} products={popular} viewAllHref="/minipc" />
+      <Section title={tr.home.promotions} products={promotions} viewAllHref="/minipc" />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -169,7 +170,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.newProducts} products={newProductsE} viewAllHref="/laptopuri" />
+      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
 
       <section className="py-[70px] border-t border-[#e4e8e4]">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
