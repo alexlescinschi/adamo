@@ -95,7 +95,7 @@ const dict = {
       bankTransferInstruction: "Indicați numărul comenzii în descrierea transferului.",
     },
     home: {
-      popular: "Produse populare",
+      popular: "Laptopuri populare în Moldova",
       promotions: "Promoții",
       newProducts: "Noutăți",
       title: "Magazinul Adamo",
@@ -275,7 +275,7 @@ const dict = {
       bankTransferInstruction: "Укажите номер заказа в описании перевода.",
     },
     home: {
-      popular: "Популярные товары",
+      popular: "Популярные ноутбуки в Молдове",
       promotions: "Акции",
       newProducts: "Новинки",
       title: "Магазин Adamo",
@@ -455,7 +455,7 @@ const dict = {
       bankTransferInstruction: "Include the order number in the transfer description.",
     },
     home: {
-      popular: "Popular products",
+      popular: "Popular laptops in Moldova",
       promotions: "Promotions",
       newProducts: "New arrivals",
       title: "Adamo Store",

@@ -63,7 +63,7 @@ export function ProductCard({ product }: { product: Product }) {
           <>
             <div className="flex flex-col gap-[3px] md:flex-row md:items-end md:justify-between md:gap-2">
               <div className="min-w-0">
-                <strong className="block text-[22px] font-extrabold leading-none text-[#34781f]">
+                <strong className="block text-[25px] font-extrabold leading-none text-[#34781f]">
                   {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
                 </strong>
                 {product.old_price && product.old_price > product.price && (
