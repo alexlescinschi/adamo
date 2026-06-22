@@ -63,14 +63,14 @@ export function ProductCard({ product }: { product: Product }) {
           <>
             <div className="flex flex-col gap-[3px] md:flex-row md:items-end md:justify-between md:gap-2">
               <div className="min-w-0">
-                <strong className="block text-[25px] font-extrabold leading-none text-[#34781f]">
+                <strong className="text-[25px] font-extrabold leading-none text-[#34781f] whitespace-nowrap">
                   {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
                 </strong>
                 {product.old_price && product.old_price > product.price && (
-                  <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
+                  <span className="text-sm text-[#34781f] line-through">{product.old_price.toFixed(0)} MDL</span>
                 )}
                 <span className="mt-[3px] inline-flex items-center gap-1 text-[12.5px] font-medium text-[#1d1d1f]">
-                  La 0% <img src="/iute_logo.svg" alt="iute" className="h-3.5 w-auto" />
+                  {tr.product.installments} <img src="/iute_logo.svg" alt="iute" className="h-3.5 w-auto" />
                 </span>
               </div>
               <button
