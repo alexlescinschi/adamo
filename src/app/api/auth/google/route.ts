@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { createContact } from "@/lib/crm-api";
 
-const JWT_SECRET = process.env.GOOGLE_JWT_SECRET || "adamo-google-jwt-fallback";
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-
-function signToken(payload: Record<string, unknown>): string {
-  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
-  const body = Buffer.from(JSON.stringify({ ...payload, iat: Date.now(), exp: Date.now() + 7 * 24 * 60 * 60 * 1000 })).toString("base64url");
-  const signature = crypto.createHmac("sha256", JWT_SECRET).update(`${header}.${body}`).digest("base64url");
-  return `${header}.${body}.${signature}`;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,19 +25,42 @@ export async function POST(request: NextRequest) {
     const firstName = given_name || name?.split(" ")[0] || "";
     const lastName = family_name || name?.split(" ").slice(1).join(" ") || "";
 
+    const response = NextResponse.json({ success: true });
+
+    let gotCrmToken = false;
     try {
-      await createContact({ first_name: firstName, last_name: lastName, phone: "", email });
+      const crmRes = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/oauth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: credential }),
+      });
+      if (crmRes.ok) {
+        const crmData = await crmRes.json();
+        if (crmData.accessToken) {
+          response.cookies.set("ecommerceAccessToken", crmData.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60,
+          });
+          if (crmData.refreshToken) {
+            response.cookies.set("ecommerceRefreshToken", crmData.refreshToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+              maxAge: 30 * 24 * 60 * 60,
+            });
+          }
+          gotCrmToken = true;
+        }
+      }
     } catch {}
 
-    const token = signToken({ email, name: `${firstName} ${lastName}`.trim(), provider: "google" });
-
-    const response = NextResponse.json({ success: true });
-    response.cookies.set("googleAccessToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    if (!gotCrmToken) {
+      try {
+        await createContact({ first_name: firstName, last_name: lastName, phone: "", email });
+      } catch {}
+    }
 
     return response;
   } catch (error) {
