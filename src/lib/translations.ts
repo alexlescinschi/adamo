@@ -134,6 +134,8 @@ const dict = {
       resultsFor: "Rezultate pentru",
       noResults: "Nu am găsit produse pentru",
       noResultsSub: "Încearcă un alt termen de căutare.",
+      resultsCount: "{count} produse găsite",
+      loadMore: "Vezi mai multe ({count})",
     },
     chat: {
       online: "Suntem online, scrieți!",
@@ -312,6 +314,8 @@ const dict = {
       resultsFor: "Результаты для",
       noResults: "Товары не найдены для",
       noResultsSub: "Попробуйте другой поисковый запрос.",
+      resultsCount: "Найдено {count} товаров",
+      loadMore: "Показать ещё ({count})",
     },
     chat: {
       online: "Мы онлайн, пишите!",
@@ -490,6 +494,8 @@ const dict = {
       resultsFor: "Results for",
       noResults: "No products found for",
       noResultsSub: "Try a different search term.",
+      resultsCount: "{count} products found",
+      loadMore: "Show more ({count})",
     },
     chat: {
       online: "We're online, write us!",

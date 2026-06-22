@@ -82,8 +82,39 @@ export async function getProductById(id: number | string, locale = "ro") {
   }
 }
 
-export async function searchProducts(query: string, locale = "ro", limit = 24) {
-  return crmFetch(`/ecommerce/products/search?q=${encodeURIComponent(query)}&locale=${locale}&limit=${limit}`);
+// CRM caps search results at 10 when no `page` is sent and ignores `limit`.
+// With `page=N` it returns 12 items/page. searchProductsAll loops through
+// pages and combines them (dedup by id) so the storefront sees every match.
+const SEARCH_PAGE_SIZE = 12;
+const SEARCH_MAX_PAGES = 30; // safety cap: 30 pages × 12 = 360 products
+
+export async function searchProducts(query: string, locale = "ro", page = 1) {
+  return crmFetch(`/ecommerce/products/search?q=${encodeURIComponent(query)}&locale=${locale}&page=${page}`);
+}
+
+export async function searchProductsAll(
+  query: string,
+  locale = "ro"
+): Promise<{ items: any[] }> {
+  const all: any[] = [];
+  const seenIds = new Set<number | string>();
+
+  for (let page = 1; page <= SEARCH_MAX_PAGES; page++) {
+    const data = await searchProducts(query, locale, page);
+    const items = Array.isArray(data?.items) ? data.items : [];
+
+    for (const item of items) {
+      const id = item?.id;
+      if (id === undefined || seenIds.has(id)) continue;
+      seenIds.add(id);
+      all.push(item);
+    }
+
+    // Stop when a page is empty or partial (< full page) — no more results.
+    if (items.length < SEARCH_PAGE_SIZE) break;
+  }
+
+  return { items: all };
 }
 
 export async function getCategories(locale = "ro") {
