@@ -9,7 +9,7 @@ function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   }
   if (typeof item.cardSpecs === "string") {
     const parts = item.cardSpecs.split("|").map((s: string) => s.trim());
-    if (parts.some((p) => BADGE_LABELS.includes(p))) {
+    if (parts.some((p: string) => BADGE_LABELS.includes(p))) {
       return { badge: "Recomandat", badge_type: "green" };
     }
   }
