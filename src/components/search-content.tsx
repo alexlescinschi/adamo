@@ -1,15 +1,14 @@
 "use client";
 
-import { useSearchParams, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Loader2, PackageX } from "lucide-react";
 
-export function SearchContent() {
-  const searchParams = useSearchParams();
+export function SearchContent({ query: initialQuery }: { query: string }) {
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
-  const query = searchParams?.get("q") || "";
+  const query = initialQuery;
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +26,7 @@ export function SearchContent() {
       })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, [query]);
+  }, [query, locale]);
 
   return (
     <div className="py-8">
