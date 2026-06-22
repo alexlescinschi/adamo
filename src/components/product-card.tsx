@@ -69,7 +69,9 @@ export function ProductCard({ product }: { product: Product }) {
                 {product.old_price && product.old_price > product.price && (
                   <span className="text-sm text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
                 )}
-                <p className="mt-[3px] text-[12.5px] text-[#6b6c6c]">{tr.product.installments}</p>
+                <span className="mt-[3px] inline-flex items-center gap-1 text-[12.5px] font-medium text-[#1d1d1f]">
+                  La 0% <img src="/iute_logo.svg" alt="iute" className="h-3.5 w-auto" />
+                </span>
               </div>
               <button
                 onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
