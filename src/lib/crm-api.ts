@@ -181,6 +181,29 @@ export async function createContact(data: { first_name: string; last_name: strin
   });
 }
 
+// Refresh an expired ecommerce access token using the refresh cookie.
+// Returns new tokens or null if refresh fails.
+const CRM_TOKEN_MAX_AGE = 15 * 60; // 15 min, matches CRM expiresIn
+const CRM_REFRESH_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
+
+export { CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE };
+
+export async function refreshCrmToken(refreshToken: string): Promise<{ accessToken: string; refreshToken?: string } | null> {
+  try {
+    const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.accessToken) return null;
+    return { accessToken: data.accessToken, refreshToken: data.refreshToken };
+  } catch {
+    return null;
+  }
+}
+
 export async function getHomeCarousel(locale = "ro") {
   return crmFetch(`/ecommerce/banners/home-carousel?locale=${locale}`);
 }

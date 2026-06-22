@@ -1,12 +1,15 @@
+const BADGE_LABELS = ["Recomandat", "Рекомендуем", "Recommended"];
+const POPULAR_LABELS = ["popular", "популярный"];
+
 function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   const specs = item.specs || item.attributes || [];
   if (Array.isArray(specs)) {
-    const rec = specs.find((s: any) => s.label === "Recomandat" && s.valueLabel);
-    if (rec) return { badge: "Recomandat", badge_type: "green" };
+    const rec = specs.find((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel);
+    if (rec) return { badge: rec.label as string, badge_type: "green" };
   }
   if (typeof item.cardSpecs === "string") {
     const parts = item.cardSpecs.split("|").map((s: string) => s.trim());
-    if (parts.includes("Recomandat") || parts.includes("Рекомендуем")) {
+    if (parts.some((p) => BADGE_LABELS.includes(p))) {
       return { badge: "Recomandat", badge_type: "green" };
     }
   }
@@ -15,7 +18,9 @@ function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
 
 export function hasAttribute(item: any, label: string): boolean {
   const specs = item.specs || [];
-  return Array.isArray(specs) && specs.some((s: any) => s.label === label && s.valueLabel);
+  if (!Array.isArray(specs)) return false;
+  const searchLabels = POPULAR_LABELS.includes(label) ? POPULAR_LABELS : [label];
+  return specs.some((s: any) => searchLabels.includes(s.label) && s.valueLabel);
 }
 
 export function extractSpecs(item: any): string[] {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
@@ -23,7 +24,15 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: CRM_TOKEN_MAX_AGE,
+      });
+    }
+    if (data.refreshToken) {
+      response.cookies.set("ecommerceRefreshToken", data.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: CRM_REFRESH_MAX_AGE,
       });
     }
 

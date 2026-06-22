@@ -7,6 +7,8 @@ import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
 import { mapProductCard } from "@/lib/product-mapper";
 
+const BADGE_LABELS = ["Recomandat", "Рекомендуем", "Recommended"];
+
 export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
@@ -39,7 +41,7 @@ async function getProduct(id: string, locale = "ro") {
   const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
   const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
-  const badge = rawSpecs.some((s: any) => s.label === "Recomandat" && s.valueLabel) ? "Recomandat" : undefined;
+  const badge = rawSpecs.some((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel) ? rawSpecs.find((s: any) => BADGE_LABELS.includes(s.label))?.label : undefined;
   const localeTranslation = Array.isArray(data.translations)
     ? data.translations.find((t: any) => t.locale === locale)
     : null;
