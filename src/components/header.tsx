@@ -98,49 +98,53 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                         <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
                       </button>
                       {catalogOpen && (
-                        <div className="absolute left-0 top-full mt-1 z-50 flex rounded-[12px] border border-[#e4e8e4] bg-white shadow-[0_8px_30px_rgba(31,41,55,0.12)]">
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-1 p-4 min-w-[280px] max-h-[70vh] overflow-y-auto">
-                            {categories.map((c) => (
-                              <Link
-                                key={c.id}
-                                href={`/${locale}/category/${c.slug}`}
-                                onClick={() => setCatalogOpen(false)}
-                                className="rounded-[7px] px-3 py-2 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors whitespace-nowrap"
-                              >
-                                {c.name}
-                              </Link>
-                            ))}
-                          </div>
-                          {randomProducts.length > 0 && (
-                            <div className="border-l border-[#e4e8e4] p-4 flex gap-3 min-w-[320px]">
-                              {randomProducts.map((p: any) => (
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-50 w-screen rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
+                          <div className="mx-auto max-w-7xl px-4 py-6 flex gap-10">
+                            <div className="flex flex-col gap-0.5 w-52">
+                              {categories.map((c) => (
                                 <Link
-                                  key={p.id}
-                                  href={`/${locale}/product/${p.slug || p.id}`}
+                                  key={c.id}
+                                  href={`/${locale}/category/${c.slug}`}
                                   onClick={() => setCatalogOpen(false)}
-                                  className="flex flex-col items-center gap-2 rounded-[10px] border border-[#e4e8e4] p-3 hover:border-[#63ad36] transition-colors flex-1 min-w-0"
+                                  className="rounded-[7px] px-3 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
                                 >
-                                  {p.image_url && (
-                                    <div className="relative w-full aspect-square rounded-[8px] overflow-hidden bg-[#f3f6f6]">
-                                      <Image
-                                        src={p.image_url}
-                                        alt={p.name || ""}
-                                        fill
-                                        className="object-contain p-2"
-                                        sizes="130px"
-                                      />
-                                    </div>
-                                  )}
-                                  <span className="text-[12px] font-semibold text-[#1d1d1f] leading-[1.2] text-center line-clamp-2">
-                                    {p.name}
-                                  </span>
-                                  {p.price > 0 && (
-                                    <span className="text-[13px] font-bold text-[#34781f]">{formatPrice(p.price)} lei</span>
-                                  )}
+                                  {c.name}
                                 </Link>
                               ))}
                             </div>
-                          )}
+                            {randomProducts.length > 0 && (
+                              <div className="flex-1 flex gap-4">
+                                {randomProducts.map((p: any) => (
+                                  <Link
+                                    key={p.id}
+                                    href={`/${locale}/product/${p.slug || p.id}`}
+                                    onClick={() => setCatalogOpen(false)}
+                                    className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all flex-1 min-w-0 group"
+                                  >
+                                    {p.image_url && (
+                                      <div className="relative w-full aspect-[4/3] rounded-[8px] overflow-hidden bg-[#f3f6f6]">
+                                        <Image
+                                          src={p.image_url}
+                                          alt={p.name || ""}
+                                          fill
+                                          className="object-cover transition-transform group-hover:scale-105"
+                                          sizes="300px"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="flex flex-col gap-1">
+                                      <span className="text-[14px] font-bold text-[#1d1d1f] leading-[1.25] line-clamp-2 group-hover:text-[#34781f] transition-colors">
+                                        {p.name}
+                                      </span>
+                                      {p.price > 0 && (
+                                        <span className="text-[16px] font-extrabold text-[#34781f]">{formatPrice(p.price)} lei</span>
+                                      )}
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
