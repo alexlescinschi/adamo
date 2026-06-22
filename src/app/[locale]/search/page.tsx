@@ -1,12 +1,14 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Loader2, PackageX } from "lucide-react";
 
 function SearchContent() {
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = (params?.locale as string) || "ro";
   const query = searchParams?.get("q") || "";
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +19,7 @@ function SearchContent() {
       setLoading(false);
       return;
     }
-    fetch(`/api/search?q=${encodeURIComponent(query)}&locale=ro&limit=24`)
+    fetch(`/api/search?q=${encodeURIComponent(query)}&locale=${locale}&limit=24`)
       .then((r) => r.json().catch(() => ({ items: [] })))
       .then((data) => {
         const items = data.items || data.products || data || [];
