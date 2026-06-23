@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
+import { CartCheckbox } from "@/components/cart-checkbox";
 
 export function QuickOrder({ tr }: { tr: any }) {
   const cart = useCart();
@@ -50,32 +51,20 @@ export function QuickOrder({ tr }: { tr: any }) {
         {cart.items.map((item) => {
           const checked = item.selected !== false;
           return (
-            <label
+            <div
               key={`${item.product_id}-${item.unit_id}`}
-              className={`grid items-center gap-[14px] min-h-[86px] px-4 py-3 border-b border-[#e1e7ef] cursor-pointer transition-[background,opacity] duration-[.18s] ${
+              className={`grid items-center gap-[14px] min-h-[86px] px-4 py-3 border-b border-[#e1e7ef] transition-[background,opacity] duration-[.18s] ${
                 checked
                   ? "bg-[#f9fdf6]"
                   : "opacity-[0.62] bg-[#f8fafc]"
               }`}
-              style={{ gridTemplateColumns: "22px 62px 1fr auto" }}
+              style={{ gridTemplateColumns: "18px 62px 1fr auto" }}
             >
-              <input
-                type="checkbox"
+              <CartCheckbox
                 checked={checked}
                 onChange={() => cart.toggleSelected(item.product_id, item.unit_id)}
-                className="sr-only"
+                label={`Selecteaz\u0103 ${item.name}`}
               />
-              <span
-                className={`grid place-items-center w-[22px] h-[22px] border rounded-[6px] bg-white flex-shrink-0 transition-[background,border-color] duration-[.18s] ${
-                  checked
-                    ? "border-[#63ad36] bg-[#63ad36]"
-                    : "border-[#b8c4d2]"
-                }`}
-              >
-                {checked && (
-                  <span className="block w-[10px] h-[6px] border-l-2 border-b-2 border-white -rotate-45 translate-y-[-1px]" />
-                )}
-              </span>
 
               <span className="w-[62px] h-[44px] flex-shrink-0 flex items-center justify-center bg-[#f3f6f6] rounded overflow-hidden">
                 {item.image ? (
@@ -101,7 +90,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               <strong className="text-[24px] leading-none text-[#34781f] font-extrabold whitespace-nowrap">
                 {fmt(item.price * item.qty)} <small className="text-[12px]">MDL</small>
               </strong>
-            </label>
+            </div>
           );
         })}
 
