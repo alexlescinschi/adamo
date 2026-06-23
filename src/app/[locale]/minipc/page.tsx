@@ -15,7 +15,7 @@ function extractBase(item: any) {
     slug: item.slug,
     price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
     image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
+    unit_id: item.units?.[0]?.id ?? item.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? item.id,
     stock: 0,
   };
 }
