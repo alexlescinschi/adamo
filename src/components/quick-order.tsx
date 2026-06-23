@@ -70,7 +70,7 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(p)}
-                className="absolute opacity-0 pointer-events-none"
+                className="sr-only"
               />
               <span
                 className={`grid place-items-center w-[22px] h-[22px] border rounded-[6px] bg-white flex-shrink-0 transition-[background,border-color] duration-[.18s] ${
