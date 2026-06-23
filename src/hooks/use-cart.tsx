@@ -41,8 +41,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem("adamo-cart");
       if (stored) {
         // Backwards-compat: legacy items without `selected` default to selected.
-        const parsed: CartItem[] = JSON.parse(stored);
-        setItems(parsed.map((i) => ({ ...i, selected: i.selected !== false })));
+        // ponytail: curăță itemi cu bug-ul unit_id===product_id (checkout pica 409).
+        // Userul îi readaugă cu unit_id corect din mapper-ul reparat.
+        const parsed: CartItem[] = (JSON.parse(stored) as CartItem[])
+          .filter((i) => i.unit_id !== i.product_id)
+          .map((i) => ({ ...i, selected: i.selected !== false }));
+        setItems(parsed);
       }
     } catch {
       // ignore

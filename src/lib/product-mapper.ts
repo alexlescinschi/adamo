@@ -44,7 +44,8 @@ export function mapProductCard(item: any) {
     price: item.offerSummary?.minPrice || item.minPrice || item.price || 0,
     old_price: item.discount?.compareAtPrice || item.discount?.originalPrice || item.oldPrice || item.old_price || undefined,
     image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
+    // unit_id real din CRM (ex: produs 1377 → unit 1882). ponytail: fallback product.id doar daca CRM nu intoarce unit.
+    unit_id: item.units?.[0]?.id ?? item.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? item.id,
     specs: extractSpecs(item),
     ...badge,
   };

@@ -13,7 +13,7 @@ function transformProduct(item: any) {
     price,
     old_price: oldPrice > price ? oldPrice : undefined,
     image_url: item.imageUrl || item.previewImageUrl || null,
-    unit_id: item.id,
+    unit_id: item.units?.[0]?.id ?? item.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? item.id,
     category_id: item.category_id,
     is_published: item.is_published,
   };

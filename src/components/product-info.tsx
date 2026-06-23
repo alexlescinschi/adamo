@@ -44,7 +44,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <RateCalculator price={product.price} productName={product.name} />
 
       <button
-        onClick={() => addItem({ product_id: product.id, unit_id: product.id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total })}
+        onClick={() => addItem({ product_id: product.id, unit_id: product.unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total })}
         disabled={!hasPrice || product.availability === "OutOfStock"}
         className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
       >
