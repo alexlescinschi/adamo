@@ -46,6 +46,29 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, [warehouseId]);
 
+  // Pre-fill din localStorage (ultima comandă) + profil CRM dacă e logat.
+  // ponytail: localStorage = sursa universală (guest + logat), zero DB pe site.
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("adamo-checkout") || "{}");
+      if (saved.contact) setContact(saved.contact);
+      if (saved.delivery) setDelivery(saved.delivery);
+    } catch {}
+
+    fetch("/api/account/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.user) return;
+        // /me dă doar email+phone; nu suprascrie ce a pus localStorage pt nume/adresă
+        setContact((c) => ({
+          full_name: c.full_name || data.user.username || "",
+          phone: c.phone || data.user.phone || "",
+          email: data.user.email || c.email,
+        }));
+      })
+      .catch(() => {});
+  }, []);
+
   function buildInvoiceUrl(orderId: string) {
     const now = new Date();
     const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
@@ -143,6 +166,10 @@ export default function CheckoutPage() {
       const orderId = order.id || order.orderId;
 
       clearCart();
+      localStorage.setItem(
+        "adamo-checkout",
+        JSON.stringify({ contact, delivery: { ...delivery } })
+      );
 
       // Create FanCourier AWB for courier deliveries (non-blocking)
       let awbNumber = "";
