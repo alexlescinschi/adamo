@@ -61,7 +61,7 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
               key={p.id}
               className={`grid items-center gap-[14px] min-h-[86px] px-4 py-3 border-b border-[#e1e7ef] cursor-pointer transition-[background,opacity] duration-[.18s] ${
                 checked
-                  ? "bg-white"
+                  ? "bg-[#f9fdf6]"
                   : "opacity-[0.62] bg-[#f8fafc]"
               }`}
               style={{ gridTemplateColumns: "22px 62px 1fr auto" }}
