@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
+import { QuickOrder } from "@/components/quick-order";
 import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
@@ -172,6 +173,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
+
+      {/* ponytail: first 4 popular products; swap to curated IDs if needed */}
+      <QuickOrder products={popular.slice(0, 4)} tr={tr} />
 
       <section className="py-[70px] border-t border-[#e4e8e4]">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
