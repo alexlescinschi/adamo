@@ -116,7 +116,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                               randomProducts.map((p: any) => (
                                   <Link
                                     key={p.id}
-                                    href={`/${locale}/product/${p.slug || p.id}`}
+                                    href={`/${locale}/product/${p.slug ? `${p.id}-${p.slug}` : p.id}`}
                                     onClick={() => setCatalogOpen(false)}
                                     className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all group"
                                   >

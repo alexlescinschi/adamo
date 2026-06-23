@@ -56,7 +56,8 @@ export function CategoryFilter({ products, categoryName, page, perPage }: Catego
   }, [products, filters]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const safePage = Math.min(page, totalPages);
+  // ponytail: citește pagina din URL (nu din prop-ul mort page). goToPage scrie ?page=N aici.
+  const safePage = Math.min(Number(searchParams.get("page")) || 1, totalPages);
   const start = (safePage - 1) * perPage;
   const paginated = filtered.slice(start, start + perPage);
 
