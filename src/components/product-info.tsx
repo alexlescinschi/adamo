@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
-import { ShoppingCart } from "lucide-react";
+import { useResolveUnit } from "@/hooks/use-resolve-unit";
+import { ShoppingCart, Loader2 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 
@@ -12,9 +14,21 @@ interface ProductInfoProps {
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const { addItem } = useCart();
+  const resolveUnit = useResolveUnit();
   const tr = useTranslations();
+  const [adding, setAdding] = useState(false);
 
   const hasPrice = product.price > 0;
+
+  const handleAdd = async () => {
+    setAdding(true);
+    try {
+      const unit_id = await resolveUnit(product);
+      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total });
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div>
@@ -44,11 +58,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <RateCalculator price={product.price} productName={product.name} />
 
       <button
-        onClick={() => addItem({ product_id: product.id, unit_id: product.unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total })}
-        disabled={!hasPrice || product.availability === "OutOfStock"}
+        onClick={handleAdd}
+        disabled={!hasPrice || product.availability === "OutOfStock" || adding}
         className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
       >
-        <ShoppingCart className="h-4 w-4" />
+        {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
         {hasPrice ? tr.product.addToCart : tr.product.unavailable}
       </button>
 

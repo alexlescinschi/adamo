@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Loader2 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { useTranslations } from "@/hooks/use-translations";
 
 interface Product {
@@ -23,9 +25,20 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const tr = useTranslations();
-  const unitId = product.unit_id || product.id;
+  const resolveUnit = useResolveUnit();
+  const [adding, setAdding] = useState(false);
   const hasPrice = product.price > 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
+
+  const handleAdd = async () => {
+    setAdding(true);
+    try {
+      const unit_id = await resolveUnit(product);
+      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock });
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <article className="group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)]">
@@ -73,24 +86,24 @@ export function ProductCard({ product }: { product: Product }) {
               </p>
             </div>
             <button
-              onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
+              onClick={handleAdd}
+              disabled={!hasPrice || adding}
               className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
-              disabled={!hasPrice}
               aria-label={tr.product.addToCart}
             >
-              <ShoppingCart className="h-5 w-5" />
+              {adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
             </button>
           </div>
         ) : (
           <div className="flex items-end justify-between gap-3">
             <p className="text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
             <button
-              onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
+              onClick={handleAdd}
+              disabled={!hasPrice || adding}
               className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
-              disabled={!hasPrice}
               aria-label={tr.product.unavailable}
             >
-              <ShoppingCart className="h-5 w-5" />
+              {adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
             </button>
           </div>
         )}
