@@ -4,41 +4,34 @@ import { useCart } from "@/hooks/use-cart";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { ShoppingCart } from "lucide-react";
 
-interface QuickOrderProduct {
-  id: number;
-  unit_id: number;
-  name: string;
-  price: number;
-  image_url: string | null;
-  badge?: string;
-}
-
-export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr: any }) {
+export function QuickOrder({ tr }: { tr: any }) {
   const cart = useCart();
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
 
-  const isChecked = (productId: number) =>
-    cart.items.some((i) => i.product_id === productId);
+  if (cart.items.length === 0) {
+    return (
+      <section className="my-[28px] md:my-[30px]">
+        <div className="flex items-end justify-between gap-4 mb-3">
+          <h2 className="text-[22px] font-extrabold uppercase text-[#1d1d1f] leading-tight">
+            {tr.home.quickOrderTitle}
+          </h2>
+          <span className="text-[14px] text-[#6b6c6c] whitespace-nowrap">
+            {tr.home.quickOrderSubtitle}
+          </span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-3 overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)] min-h-[120px] text-center">
+          <ShoppingCart className="h-8 w-8 text-[#b8c4d2]" />
+          <p className="text-[14px] text-[#6b6c6c]">{tr.home.quickOrderEmpty}</p>
+        </div>
+      </section>
+    );
+  }
 
-  const checkedProducts = products.filter((p) => isChecked(p.id));
-  const total = checkedProducts.reduce((sum, p) => sum + p.price, 0);
-
-  const toggle = (product: QuickOrderProduct) => {
-    if (isChecked(product.id)) {
-      cart.removeItem(product.id, product.unit_id);
-    } else {
-      cart.addItem({
-        product_id: product.id,
-        unit_id: product.unit_id,
-        name: product.name,
-        price: product.price,
-        qty: 1,
-        selected: true,
-      });
-    }
-  };
+  const checkedItems = cart.selectedItems;
+  const total = cart.total;
 
   const fmt = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
@@ -54,11 +47,11 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
       </div>
 
       <div className="overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)]">
-        {products.map((p) => {
-          const checked = isChecked(p.id);
+        {cart.items.map((item) => {
+          const checked = item.selected !== false;
           return (
             <label
-              key={p.id}
+              key={`${item.product_id}-${item.unit_id}`}
               className={`grid items-center gap-[14px] min-h-[86px] px-4 py-3 border-b border-[#e1e7ef] cursor-pointer transition-[background,opacity] duration-[.18s] ${
                 checked
                   ? "bg-[#f9fdf6]"
@@ -69,7 +62,7 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
               <input
                 type="checkbox"
                 checked={checked}
-                onChange={() => toggle(p)}
+                onChange={() => cart.toggleSelected(item.product_id, item.unit_id)}
                 className="sr-only"
               />
               <span
@@ -85,10 +78,10 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
               </span>
 
               <span className="w-[62px] h-[44px] flex-shrink-0 flex items-center justify-center bg-[#f3f6f6] rounded overflow-hidden">
-                {p.image_url ? (
+                {item.image ? (
                   <Image
-                    src={p.image_url}
-                    alt={p.name}
+                    src={item.image}
+                    alt={item.name}
                     width={62}
                     height={44}
                     className="w-full h-full object-contain"
@@ -98,15 +91,15 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
 
               <span className="min-w-0 grid gap-[3px]">
                 <b className="text-[15px] leading-[1.2] text-[#1d1d1f] truncate">
-                  {p.name}
+                  {item.name}
                 </b>
-                {p.badge && (
-                  <small className="text-[12px] text-[#6b6c6c]">{p.badge}</small>
+                {item.qty > 1 && (
+                  <small className="text-[12px] text-[#6b6c6c]">x{item.qty}</small>
                 )}
               </span>
 
               <strong className="text-[24px] leading-none text-[#34781f] font-extrabold whitespace-nowrap">
-                {fmt(p.price)} <small className="text-[12px]">MDL</small>
+                {fmt(item.price * item.qty)} <small className="text-[12px]">MDL</small>
               </strong>
             </label>
           );
@@ -132,8 +125,7 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
         </div>
       </div>
 
-      {/* ponytail: checkout CTA not in template, needed for flow */}
-      {checkedProducts.length > 0 ? (
+      {checkedItems.length > 0 ? (
         <Link
           href={`/${locale}/checkout`}
           className="block mt-4 text-center text-[15px] font-bold py-3 px-6 rounded-[28px] bg-[#63ad36] text-white hover:bg-[#4e8f28] transition-colors"

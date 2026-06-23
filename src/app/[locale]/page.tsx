@@ -174,8 +174,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
 
-      {/* ponytail: first 4 popular products; swap to curated IDs if needed */}
-      <QuickOrder products={popular.slice(0, 4)} tr={tr} />
+      <QuickOrder tr={tr} />
 
       <section className="py-[70px] border-t border-[#e4e8e4]">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">

@@ -117,6 +117,7 @@ const dict = {
       quickOrderTotal: "Total de plată",
       quickOrderDelivery: "Livrare",
       quickOrderButton: "Comandă",
+      quickOrderEmpty: "Adaugă primul produs în coș",
     },
     footer: {
       shop: "Magazin",
@@ -304,6 +305,7 @@ const dict = {
       quickOrderTotal: "Итого к оплате",
       quickOrderDelivery: "Доставка",
       quickOrderButton: "Заказать",
+      quickOrderEmpty: "Добавьте первый товар в корзину",
     },
     footer: {
       shop: "Магазин",
@@ -491,6 +493,7 @@ const dict = {
       quickOrderTotal: "Total payment",
       quickOrderDelivery: "Delivery",
       quickOrderButton: "Order",
+      quickOrderEmpty: "Add your first product to cart",
     },
     footer: {
       shop: "Shop",
