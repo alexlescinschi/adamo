@@ -69,8 +69,8 @@ export function ProductCard({ product }: { product: Product }) {
                 {product.old_price && product.old_price > product.price && (
                   <span className="block text-sm text-[#34781f] line-through">{product.old_price.toFixed(0)} MDL</span>
                 )}
-                <span className="mt-[3px] inline-flex items-center text-[12.5px] font-medium text-[#1d1d1f]">
-                  {tr.product.installments}&nbsp;<img src="/iute_logo.svg" alt="iute" className="h-3.5 w-auto" />
+                <span className="mt-[3px] text-[12.5px] font-medium text-[#1d1d1f]">
+                  {tr.product.installments}{" "}<img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />
                 </span>
               </div>
               <button
