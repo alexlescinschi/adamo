@@ -4,12 +4,13 @@ import { mapProductCard } from "@/lib/product-mapper";
 
 export const dynamic = "force-dynamic";
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+export default async function SearchPage({ searchParams, params }: { searchParams: Promise<{ q?: string }>; params: Promise<{ locale: string }> }) {
   const { q } = await searchParams;
+  const { locale } = await params;
   let products: any[] = [];
   if (q) {
     try {
-      const data = await searchProductsAll(q, "ro");
+      const data = await searchProductsAll(q, locale);
       const items = data?.items || [];
       products = Array.isArray(items) ? items.map(mapProductCard) : [];
     } catch {}
