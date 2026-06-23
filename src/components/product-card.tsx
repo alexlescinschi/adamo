@@ -60,42 +60,39 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="mt-auto pt-2">
         {hasPrice ? (
-          <>
-            <div className="flex flex-col gap-[3px] md:flex-row md:items-end md:justify-between md:gap-2">
-              <div className="min-w-0">
-                <strong className="text-[25px] font-extrabold leading-none text-[#34781f] whitespace-nowrap">
-                  {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
-                </strong>
-                {product.old_price && product.old_price > product.price && (
-                  <span className="block text-sm text-[#34781f] line-through">{product.old_price.toFixed(0)} MDL</span>
-                )}
-                <span className="mt-[3px] text-[12.5px] font-medium text-[#1d1d1f]">
-                  {tr.product.installments}{" "}<img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />
-                </span>
-              </div>
-              <button
-                onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
-                className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] px-3 py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40 md:w-auto md:flex-shrink-0"
-                disabled={!hasPrice}
-                aria-label={tr.product.addToCart}
-              >
-                <ShoppingCart className="h-4 w-4" />
-                {tr.product.addToCart}
-              </button>
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <strong className="block text-[25px] font-extrabold leading-none text-[#34781f]">
+                {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
+              </strong>
+              {product.old_price && product.old_price > product.price && (
+                <span className="block text-sm text-[#34781f] line-through">{product.old_price.toFixed(0)} MDL</span>
+              )}
+              <p className="m-0 mt-[3px] text-[12.5px] font-medium text-[#1d1d1f]">
+                {tr.product.installments}{" "}<img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />
+              </p>
             </div>
-          </>
-        ) : (
-          <>
-            <p className="mb-[10px] text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
             <button
               onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
-              className="flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+              className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
               disabled={!hasPrice}
+              aria-label={tr.product.addToCart}
             >
-              <ShoppingCart className="h-4 w-4" />
-              {tr.product.unavailable}
+              <ShoppingCart className="h-5 w-5" />
             </button>
-          </>
+          </div>
+        ) : (
+          <div className="flex items-end justify-between gap-3">
+            <p className="text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
+            <button
+              onClick={() => addItem({ product_id: product.id, unit_id: unitId, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock })}
+              className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
+              disabled={!hasPrice}
+              aria-label={tr.product.unavailable}
+            >
+              <ShoppingCart className="h-5 w-5" />
+            </button>
+          </div>
         )}
       </div>
     </article>
