@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
     console.log("[checkout] payload to CRM:", JSON.stringify(payload));
 
     const data = await createOrder(payload);
-    return NextResponse.json(data, { status: 201 });
+    // ponytail: CRM întoarce { order: { id }, invoice_access_token }. Frontend-ul citește
+    // order.id || order.orderId (top-level) → adăugăm id+orderId top-level pentru compat.
+    const orderId = data?.order?.id ?? data?.id ?? data?.orderId;
+    return NextResponse.json({ ...data, id: orderId, orderId }, { status: 201 });
   } catch (error) {
     console.error("[checkout] error:", error);
     const message = error instanceof Error ? error.message : "Checkout failed";

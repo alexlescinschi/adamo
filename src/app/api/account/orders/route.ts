@@ -3,6 +3,23 @@ import { refreshCrmToken, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/c
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
+// ponytail: CRM deal row are amount (string/Decimal, nu total), positions (nu items),
+// stage.name (nu status). Normalizăm la forma pe care o citește frontend-ul.
+function normalizeDeal(d: any) {
+  return {
+    id: d.id,
+    created_at: d.created_at,
+    status: d.stage?.name || d.stage_name || d.status,
+    items: d.positions || d.items || d.lines || [],
+    total: Number(d.amount ?? d.final_total ?? d.total ?? 0),
+  };
+}
+
+function normalizeDealsList(data: any) {
+  const list = Array.isArray(data) ? data : data?.items || data?.deals || data?.data || [];
+  return Array.isArray(list) ? list.map(normalizeDeal) : [];
+}
+
 export async function GET(request: NextRequest) {
   const token = request.cookies.get("ecommerceAccessToken")?.value;
 
@@ -26,7 +43,7 @@ export async function GET(request: NextRequest) {
           });
           if (res.ok) {
             const data = await res.json();
-            const response = NextResponse.json(data);
+            const response = NextResponse.json(normalizeDealsList(data));
             setTokenCookies(response, refreshed);
             return response;
           }
@@ -40,7 +57,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data, { status: res.status });
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json(normalizeDealsList(data));
   } catch (error) {
     console.error("Account orders error:", error);
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
