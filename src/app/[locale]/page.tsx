@@ -137,7 +137,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     <div>
       <Hero content={hero} images={heroImages} />
 
-      <section className="py-8 md:py-12">
+      <section className="pb-8 md:pb-12">
         <div className="grid grid-cols-2 divide-x divide-[#e4e8e4] divide-y divide-[#e4e8e4] border border-[#e4e8e4] rounded-[9px] bg-white shadow-[0_1px_4px_rgba(31,41,55,0.06)] overflow-hidden md:grid-cols-3 lg:grid-cols-6">
           {benefits.map((item) => (
             <div key={item.title} className="group flex items-center gap-2 px-3 py-4 hover:bg-[#f9fdf6] transition-colors cursor-pointer">
