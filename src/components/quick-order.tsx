@@ -4,12 +4,14 @@ import { useCart } from "@/hooks/use-cart";
 import { CartCheckbox } from "@/components/cart-checkbox";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 interface QuickOrderProduct {
   id: number;
   unit_id: number;
   name: string;
   price: number;
+  image_url: string | null;
 }
 
 export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr: any }) {
@@ -65,6 +67,17 @@ export function QuickOrder({ products, tr }: { products: QuickOrderProduct[]; tr
                 onChange={() => toggle(p)}
                 label={`Selecteaz\u0103 ${p.name}`}
               />
+              {p.image_url && (
+                <div className="h-12 w-12 flex-shrink-0 rounded-[8px] overflow-hidden bg-[#f3f6f6]">
+                  <Image
+                    src={p.image_url}
+                    alt={p.name}
+                    width={48}
+                    height={48}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              )}
               <span className="flex-1 text-[14px] font-semibold text-[#1d1d1f] truncate">
                 {p.name}
               </span>
