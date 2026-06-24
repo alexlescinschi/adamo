@@ -3,7 +3,7 @@
 import { usePathname, useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const LOCALES = [
   { code: "ro", label: "Română" },
@@ -35,14 +35,13 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div ref={ref} className="relative mr-1">
+    <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-[9px] border border-[#e4e8e4] px-[10px] py-[7px] text-[13px] font-semibold text-[#444545] transition-colors hover:border-[#63ad36] hover:text-[#1d1d1f]"
+        className="flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold text-[#444545] transition-colors hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"
       >
-        <Globe className="h-3.5 w-3.5 text-[#63ad36]" />
         {currentLocale.toUpperCase()}
-        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (

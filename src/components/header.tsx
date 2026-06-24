@@ -66,7 +66,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         <div className="mx-auto flex max-w-[1000px] items-center justify-between gap-4 px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <Image src="/logo.svg" alt="Adamo" width={120} height={28} className="h-6 w-auto" priority />
+            <Image src="/logo.svg" alt="Adamo" width={160} height={28} className="h-7 w-[160px]" priority />
           </Link>
 
           {/* Desktop nav */}
@@ -153,20 +153,24 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
             })}
           </nav>
 
-          {/* Actions */}
+          {/* Actions — order: Phone, Profile, Cart, Search */}
           <div className="flex items-center gap-1">
-            {/* Phone CTA — icon only with shake */}
+            {/* Phone CTA with vibrate */}
             <a
               href={`tel:${PHONE}`}
-              className="mr-2 hidden items-center justify-center rounded-full p-2 text-[#63ad36] transition-colors md:flex hover:text-[#4e8f28]"
+              className="mr-2 hidden items-center gap-2.5 rounded-[9px] border border-[#e4e8e4] px-[13px] py-[8px] transition-colors hover:border-[#63ad36] md:flex"
               style={{ animation: "vibrate 2s ease-in-out infinite" }}
             >
-              <Phone className="h-5 w-5" />
+              <Phone className="h-5 w-5 text-[#63ad36]" />
+              <span className="grid leading-[1.1]">
+                <b className="text-[13px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
+                <small className="text-[11px] text-[#6b6c6c]">{tr.header.callNow}</small>
+              </span>
             </a>
 
-            <button onClick={() => setSearchOpen(!searchOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Căutare">
-              <Search className="h-5 w-5" />
-            </button>
+            <Link href="/account" className="hidden rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:block">
+              <User className="h-5 w-5" />
+            </Link>
             <button onClick={() => setCartOpen(true)} className="relative rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Coș">
               <ShoppingBag className="h-5 w-5" />
               {cartCount > 0 && (
@@ -175,9 +179,9 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                 </span>
               )}
             </button>
-            <Link href="/account" className="hidden rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:block">
-              <User className="h-5 w-5" />
-            </Link>
+            <button onClick={() => setSearchOpen(!searchOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Căutare">
+              <Search className="h-5 w-5" />
+            </button>
             <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:hidden" aria-label="Meniu">
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
