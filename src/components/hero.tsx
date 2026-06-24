@@ -45,7 +45,7 @@ export function Hero({ content, images }: HeroProps) {
   const bgImage = images[0] || null;
 
   return (
-    <section className="relative flex min-h-[420px] items-center overflow-hidden md:min-h-[540px]" style={{ marginLeft: 'calc(-50vw + 50%)', width: '100vw' }}>
+    <section className="relative flex min-h-[420px] items-center overflow-hidden rounded-[9px] md:min-h-[540px]">
       {bgImage && (
         <Image
           src={bgImage}
@@ -66,7 +66,7 @@ export function Hero({ content, images }: HeroProps) {
         }}
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1000px] px-4 py-12 md:px-8 md:py-16">
+      <div className="relative z-10 px-4 py-12 md:px-8 md:py-16">
         <div className="max-w-[500px]">
           <h1 className="text-[32px] font-medium leading-[1.06] text-[#1d1d1f] md:text-[45px]">
             {titleLines.map((line, i) => {
