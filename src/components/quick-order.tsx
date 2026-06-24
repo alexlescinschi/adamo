@@ -16,11 +16,11 @@ export function QuickOrder({ tr }: { tr: any }) {
   if (cart.items.length === 0) {
     return (
       <section className="my-[28px] md:my-[30px]">
-        <div className="flex items-end justify-between gap-4 mb-3">
+        <div className="flex flex-col items-start gap-1 mb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
           <h2 className="text-[22px] font-extrabold uppercase text-[#1d1d1f] leading-tight">
             {tr.home.quickOrderTitle}
           </h2>
-          <span className="text-[14px] text-[#6b6c6c] whitespace-nowrap">
+          <span className="text-[13px] text-[#6b6c6c] sm:text-[14px]">
             {tr.home.quickOrderSubtitle}
           </span>
         </div>
@@ -37,11 +37,11 @@ export function QuickOrder({ tr }: { tr: any }) {
 
   return (
     <section className="my-[28px] md:my-[30px]">
-      <div className="flex items-end justify-between gap-4 mb-3">
+      <div className="flex flex-col items-start gap-1 mb-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <h2 className="text-[22px] font-extrabold uppercase text-[#1d1d1f] leading-tight">
           {tr.home.quickOrderTitle}
         </h2>
-        <span className="text-[14px] text-[#6b6c6c] whitespace-nowrap">
+        <span className="text-[13px] text-[#6b6c6c] sm:text-[14px]">
           {tr.home.quickOrderSubtitle}
         </span>
       </div>
