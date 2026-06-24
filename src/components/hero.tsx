@@ -68,7 +68,7 @@ export function Hero({ content, images }: HeroProps) {
 
       <div className="relative z-10 mx-auto w-full max-w-[1000px] px-4 py-12 md:px-8 md:py-16">
         <div className="max-w-[500px]">
-          <h1 className="text-[32px] font-extrabold leading-[1.06] text-[#1d1d1f] md:text-[45px]">
+          <h1 className="text-[32px] font-medium leading-[1.06] text-[#1d1d1f] md:text-[45px]">
             {titleLines.map((line, i) => {
               if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
