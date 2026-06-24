@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingCart, Loader2, Check } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 import { formatPrice } from "@/lib/utils";
@@ -18,6 +18,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const resolveUnit = useResolveUnit();
   const tr = useTranslations();
   const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const hasPrice = product.price > 0;
 
@@ -26,6 +27,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
     try {
       const unit_id = await resolveUnit(product);
       addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.units_total });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1500);
     } finally {
       setAdding(false);
     }
@@ -38,7 +41,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           {product.category_name || product.category_slug}
         </Link>
       )}
-      <h1 className="text-[34px] font-semibold leading-tight tracking-[-0.031em] text-[#1d1d1f]">{product.name}</h1>
+      <h1 className="text-[34px] font-medium leading-tight tracking-[-0.031em] text-[#1d1d1f]">{product.name}</h1>
       {product.availability === "OutOfStock" && (
         <span className="mt-3 inline-block text-xs font-medium text-[#b64400]">{tr.product.outOfStock}</span>
       )}
@@ -46,7 +49,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="mt-6">
         {hasPrice ? (
           <div className="flex items-baseline gap-3">
-            <span className="text-[28px] font-semibold text-[#1d1d1f]">{formatPrice(product.price)} MDL</span>
+            <span className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} MDL</span>
             {product.old_price && product.old_price > product.price && (
               <span className="text-lg text-[#6b6c6c] line-through">{formatPrice(product.old_price)} MDL</span>
             )}
@@ -61,10 +64,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <button
         onClick={handleAdd}
         disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] border-[#63ad36] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-40"
+        className={`mt-4 flex w-full items-center justify-center gap-1.5 rounded-[7px] border-[1.5px] py-[9px] text-[13px] font-semibold transition-colors disabled:opacity-40 ${
+          added
+            ? "border-[#55a02d] bg-gradient-to-b from-[#78bb45] to-[#55a02d] text-white"
+            : "border-[#63ad36] text-[#34781f] hover:bg-[#edf7e8]"
+        }`}
       >
-        {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-        {hasPrice ? tr.product.addToCart : tr.product.unavailable}
+        {added ? <Check className="h-4 w-4" /> : adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+        {added ? tr.product.addedToCart : hasPrice ? tr.product.addToCart : tr.product.unavailable}
       </button>
 
       {product.description && (

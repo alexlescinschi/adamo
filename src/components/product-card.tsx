@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingCart, Loader2, Check } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { useTranslations } from "@/hooks/use-translations";
@@ -28,6 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
   const tr = useTranslations();
   const resolveUnit = useResolveUnit();
   const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
   const hasPrice = product.price > 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
@@ -36,6 +37,8 @@ export function ProductCard({ product }: { product: Product }) {
     try {
       const unit_id = await resolveUnit(product);
       addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1500);
     } finally {
       setAdding(false);
     }
@@ -62,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
+      <Link href={href} className="mb-[6px] text-[15px] font-medium leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
         {product.name}
       </Link>
 
@@ -89,10 +92,14 @@ export function ProductCard({ product }: { product: Product }) {
             <button
               onClick={handleAdd}
               disabled={!hasPrice || adding}
-              className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
+              className={`grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border transition-[background,color,border-color,transform] duration-[.18s] hover:-translate-y-[1px] disabled:opacity-40 ${
+                added
+                  ? "border-[#55a02d] bg-gradient-to-b from-[#78bb45] to-[#55a02d] text-white"
+                  : "border-[#63ad36] bg-white text-[#34781f] hover:bg-[#f6fbf2] hover:border-[#579c31]"
+              }`}
               aria-label={tr.product.addToCart}
             >
-              {adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
+              {added ? <Check className="h-5 w-5" /> : adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
             </button>
           </div>
         ) : (
@@ -101,10 +108,14 @@ export function ProductCard({ product }: { product: Product }) {
             <button
               onClick={handleAdd}
               disabled={!hasPrice || adding}
-              className="grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border border-[#63ad36] bg-white text-[#34781f] transition-[background,color,border-color,transform] duration-[.18s] hover:bg-[#f6fbf2] hover:border-[#579c31] hover:-translate-y-[1px] disabled:opacity-40"
+              className={`grid place-items-center w-[38px] h-[38px] flex-shrink-0 rounded-[8px] border transition-[background,color,border-color,transform] duration-[.18s] hover:-translate-y-[1px] disabled:opacity-40 ${
+                added
+                  ? "border-[#55a02d] bg-gradient-to-b from-[#78bb45] to-[#55a02d] text-white"
+                  : "border-[#63ad36] bg-white text-[#34781f] hover:bg-[#f6fbf2] hover:border-[#579c31]"
+              }`}
               aria-label={tr.product.unavailable}
             >
-              {adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
+              {added ? <Check className="h-5 w-5" /> : adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingCart className="h-5 w-5" />}
             </button>
           </div>
         )}
