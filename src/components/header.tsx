@@ -74,6 +74,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
             {NAV_LINK_KEYS.map(({ href, key }) => {
               // Insert the Catalog dropdown right after "home".
               const isHome = href === "/";
+              const isContact = href === "/contact";
               const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
               const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
               return (
@@ -145,6 +146,8 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                       )}
                     </div>
                   )}
+                  {/* Locale switcher right after Contact */}
+                  {isContact && <LocaleSwitcher />}
                 </span>
               );
             })}
@@ -152,17 +155,13 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
 
           {/* Actions */}
           <div className="flex items-center gap-1">
-            <LocaleSwitcher />
-            {/* Phone CTA — visible on md+ */}
+            {/* Phone CTA — icon only with shake */}
             <a
               href={`tel:${PHONE}`}
-              className="mr-2 hidden items-center gap-2.5 rounded-[9px] border border-[#e4e8e4] px-[13px] py-[8px] transition-colors hover:border-[#63ad36] md:flex"
+              className="mr-2 hidden items-center justify-center rounded-full p-2 text-[#63ad36] transition-colors md:flex hover:text-[#4e8f28]"
+              style={{ animation: "vibrate 2s ease-in-out infinite" }}
             >
-              <Phone className="h-5 w-5 text-[#63ad36]" />
-              <span className="grid leading-[1.1]">
-                <b className="text-[13px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
-                <small className="text-[11px] text-[#6b6c6c]">{tr.header.callNow}</small>
-              </span>
+              <Phone className="h-5 w-5" />
             </a>
 
             <button onClick={() => setSearchOpen(!searchOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Căutare">
