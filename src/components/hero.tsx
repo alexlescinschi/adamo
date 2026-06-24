@@ -45,7 +45,7 @@ export function Hero({ content, images }: HeroProps) {
   const bgImage = images[0] || null;
 
   return (
-    <section className="relative flex min-h-[374px] items-center overflow-hidden sm:min-h-[392px] md:min-h-[400px]">
+    <section className="relative flex min-h-[400px] items-center overflow-hidden">
       {bgImage && (
         <Image
           src={bgImage}

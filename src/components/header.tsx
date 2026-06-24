@@ -66,7 +66,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         <div className="mx-auto flex max-w-[1000px] items-center justify-between gap-4 px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <Image src="/logo.svg" alt="Adamo" width={160} height={28} className="h-7 w-[160px]" priority />
+            <Image src="/logo.svg" alt="Adamo" width={160} height={28} className="h-full w-auto" priority />
           </Link>
 
           {/* Desktop nav */}

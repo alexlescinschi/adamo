@@ -1,39 +1,58 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Phone, X } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 
 const PHONE = "37379966909";
 
 const channels = [
   {
+    label: "Viber",
+    href: `viber://chat?number=%2B${PHONE}`,
+    className: "viber",
+    bg: "#7360f2",
+    icon: (
+      <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+        <path d="M20 11.5a8 8 0 0 1-8.4 8l-3.6 2v-3A8.1 8.1 0 1 1 20 11.5Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8.4 8.1c.6 4 2.2 5.7 6.1 6.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="m8.7 8.3 1.2 1.5-.8 1M14.5 14.5l-1.3-.8 1-1.2 1.5 1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14.6 7.1a4.2 4.2 0 0 1 2.3 2.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     label: "WhatsApp",
     href: `https://wa.me/${PHONE}`,
-    bg: "#25d366",
+    className: "whatsapp",
+    bg: "#24a861",
     icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+        <path d="M20.2 11.6a8.2 8.2 0 0 1-11.8 7.3L4 20.3l1.4-4.2A8.2 8.2 0 1 1 20.2 11.6Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8.8 8.4c.4 3.4 2.4 5.4 5.8 6.1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="m9.3 8.4 1.3 1.7-.9 1.1M14.6 14.5l-1.1-1 1.2-1.2 1.8 1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     label: "Telegram",
-    href: `https://t.me/${PHONE}`,
-    bg: "#29a8e8",
+    href: `tg://resolve?phone=${PHONE}`,
+    className: "telegram",
+    bg: "#229ed9",
     icon: (
-      <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
-        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+        <path d="m21 4-4.1 16-6.1-4.3-3.1 2.9.6-5.5L19.2 5.5 6.1 11.4 2.8 10 21 4Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="m8.3 13.1 8.6-6.2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
-    label: "Viber",
-    href: `viber://chat?number=+${PHONE}`,
-    bg: "#7360f2",
+    label: "Telefon",
+    href: `tel:+${PHONE}`,
+    className: "phone",
+    bg: "#5c6b7a",
     icon: (
-      <svg viewBox="0 0 512 512" className="h-5 w-5 fill-white">
-        <path d="M444.3 49.9c-12.7-11.7-64.1-49-178.7-49.5 0 0-135.1-8.1-200.9 52.3-36.6 36.6-49.5 90.3-50.9 156.8s-3.1 191.1 117 224.9l.1 0-.1 51.6s-.8 20.9 13 25.1c16.6 5.2 26.4-10.7 42.3-27.8 8.7-9.4 20.7-23.2 29.8-33.7 82.2 6.9 145.3-8.9 152.5-11.2 16.6-5.4 110.5-17.4 125.7-142 15.8-128.6-7.6-209.8-49.8-246.5zM458.2 287c-12.9 104-89 110.6-103 115.1-6 1.9-61.5 15.7-131.2 11.2 0 0-52 62.7-68.2 79-5.3 5.3-11.1 4.8-11-5.7 0-6.9 .4-85.7 .4-85.7l0 0C43.4 372.7 49.4 266.6 50.5 211.1s11.6-101 42.6-131.6c55.7-50.5 170.4-43 170.4-43 96.9 .4 143.3 29.6 154.1 39.4 35.7 30.6 53.9 103.8 40.6 211.1zm-139-80.8c.4 8.6-12.5 9.2-12.9 .6-1.1-22-11.4-32.7-32.6-33.9-8.6-.5-7.8-13.4 .7-12.9 27.9 1.5 43.4 17.5 44.8 46.2zm20.3 11.3c1-42.4-25.5-75.6-75.8-79.3-8.5-.6-7.6-13.5 .9-12.9 58 4.2 88.9 44.1 87.8 92.5-.1 8.6-13.1 8.2-12.9-.3zm47 13.4c.1 8.6-12.9 8.7-12.9 .1-.6-81.5-54.9-125.9-120.8-126.4-8.5-.1-8.5-12.9 0-12.9 73.7 .5 133 51.4 133.7 139.2zM375.2 329l0 .2c-10.8 19-31 40-51.8 33.3l-.2-.3c-21.1-5.9-70.8-31.5-102.2-56.5-16.2-12.8-31-27.9-42.4-42.4-10.3-12.9-20.7-28.2-30.8-46.6-21.3-38.5-26-55.7-26-55.7-6.7-20.8 14.2-41 33.3-51.8l.2 0c9.2-4.8 18-3.2 23.9 3.9 0 0 12.4 14.8 17.7 22.1 5 6.8 11.7 17.7 15.2 23.8 6.1 10.9 2.3 22-3.7 26.6l-12 9.6c-6.1 4.9-5.3 14-5.3 14s17.8 67.3 84.3 84.3c0 0 9.1 .8 14-5.3l9.6-12c4.6-6 15.7-9.8 26.6-3.7 14.7 8.3 33.4 21.2 45.8 32.9 7 5.7 8.6 14.4 3.8 23.6z" />
+      <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+        <path d="M7.2 3.4 9.3 8a2 2 0 0 1-.5 2.3l-1 1a14.6 14.6 0 0 0 5 5l1-1a2 2 0 0 1 2.3-.5l4.5 2.1v3.2a2 2 0 0 1-2.2 2A18.6 18.6 0 0 1 2.9 6.6a2 2 0 0 1 2-2.2h2.3Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -42,8 +61,25 @@ const channels = [
 export function ContactWidget() {
   const tr = useTranslations();
   const [open, setOpen] = useState(false);
+  const [promptVisible, setPromptVisible] = useState(false);
+  const [interacted, setInteracted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const promptTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Show prompt bubble after 3s, auto-hide after 8s
+  useEffect(() => {
+    if (interacted) return;
+    const show = setTimeout(() => setPromptVisible(true), 3000);
+    return () => clearTimeout(show);
+  }, [interacted]);
+
+  useEffect(() => {
+    if (!promptVisible || interacted) return;
+    promptTimer.current = setTimeout(() => setPromptVisible(false), 8000);
+    return () => { if (promptTimer.current) clearTimeout(promptTimer.current); };
+  }, [promptVisible, interacted]);
+
+  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
@@ -55,50 +91,166 @@ export function ContactWidget() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
+  const handleFabClick = () => {
+    setInteracted(true);
+    setPromptVisible(false);
+    setOpen((v) => !v);
+  };
+
+  const handlePromptClick = () => {
+    setInteracted(true);
+    setPromptVisible(false);
+    setOpen(true);
+  };
+
+  const handleChannelClick = () => {
+    setInteracted(true);
+    setOpen(false);
+  };
+
   return (
-    <div ref={ref} className="fixed bottom-5 right-5 z-40 flex items-center">
-      {/* Panel slides out leftwards from button */}
-      <div
-        className={`bg-white rounded-2xl shadow-xl border border-[#e4e8e4] overflow-hidden transition-all duration-300 ease-out ${
-          open
-            ? "max-w-[260px] opacity-100 mr-3"
-            : "max-w-0 opacity-0 mr-0 border-0 shadow-none"
+    <aside
+      ref={ref}
+      className={`fixed z-60 grid justify-items-end font-sans ${promptVisible && !open ? "is-prompt-visible" : ""} ${open ? "is-open" : ""}`}
+      style={{ right: "max(22px, env(safe-area-inset-right))", bottom: "max(22px, env(safe-area-inset-bottom))" }}
+      aria-label="Contact rapid ADAMO.MD"
+    >
+      {/* Prompt bubble */}
+      <button
+        type="button"
+        onClick={handlePromptClick}
+        className={`absolute w-max max-w-[min(250px,calc(100vw-116px))] min-h-[42px] py-[9px] px-[14px] border border-white/[.82] rounded-[8px] text-[13px] font-semibold leading-[1.25] text-[#111827] cursor-pointer transition-all duration-[.24s] backdrop-blur-[20px] ${
+          promptVisible && !open
+            ? "opacity-100 visible pointer-events-auto translate-x-0 scale-100"
+            : "opacity-0 invisible pointer-events-none translate-x-[6px] scale-[.985]"
         }`}
+        style={{
+          right: "69px",
+          bottom: "6px",
+          background: "rgba(249, 251, 253, .76)",
+          boxShadow: "0 12px 32px rgba(24, 35, 52, .13), inset 0 1px 0 rgba(255, 255, 255, .92)",
+          WebkitBackdropFilter: "blur(20px) saturate(135%)",
+          backdropFilter: "blur(20px) saturate(135%)",
+        }}
+        aria-expanded={open}
       >
-        <div className="flex items-center gap-2 whitespace-nowrap px-4 py-3">
-          <span className="text-[13px] font-semibold text-[#1d1d1f]">{tr.chat.online}</span>
-          <button
-            onClick={() => setOpen(false)}
-            className="ml-auto text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors flex-shrink-0"
-            aria-label="Închide"
+        {tr.chat.online}
+        <span
+          className="absolute w-[10px] h-[10px] border-t border-r border-white/[.82] rotate-45"
+          style={{ right: "-6px", bottom: "13px", background: "rgba(249, 251, 253, .76)" }}
+        />
+      </button>
+
+      {/* Channel menu */}
+      <nav
+        className={`absolute grid gap-[2px] w-[232px] p-2 border border-white/[.82] rounded-[8px] transition-all duration-[.22s] origin-bottom-right ${
+          open
+            ? "opacity-100 visible pointer-events-auto translate-y-0 scale-100"
+            : "opacity-0 invisible pointer-events-none translate-y-[8px] scale-[.985]"
+        }`}
+        style={{
+          right: "0",
+          bottom: "68px",
+          background: "rgba(245, 248, 251, .78)",
+          boxShadow: "0 20px 48px rgba(24, 35, 52, .17), inset 0 1px 0 rgba(255, 255, 255, .94)",
+          WebkitBackdropFilter: "blur(24px) saturate(140%)",
+          backdropFilter: "blur(24px) saturate(140%)",
+        }}
+        aria-label="Alege aplicația de contact"
+        aria-hidden={!open}
+      >
+        {channels.map((ch) => (
+          <a
+            key={ch.label}
+            href={ch.href}
+            target={ch.label !== "Telefon" ? "_blank" : undefined}
+            rel={ch.label !== "Telefon" ? "noopener noreferrer" : undefined}
+            onClick={handleChannelClick}
+            className="grid grid-cols-[minmax(0,1fr)_36px] items-center gap-3 min-h-[48px] py-[6px] pl-3 pr-[6px] rounded-[6px] text-[13.5px] font-bold leading-[1.2] text-[#202938] transition-[background,box-shadow] duration-[.18s] hover:bg-white/70 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,.68)] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_rgba(84,160,47,.42)]"
           >
-            <X className="h-4 w-4" />
-          </button>
-          {channels.map((ch) => (
-            <a
-              key={ch.label}
-              href={ch.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={ch.label}
-              className="flex h-9 w-9 items-center justify-center rounded-full transition-transform hover:scale-110 flex-shrink-0"
-              style={{ background: ch.bg }}
+            <span className="min-w-0 text-left">{ch.label}</span>
+            <span
+              className="grid place-items-center w-9 h-9 flex-shrink-0 rounded-[7px] text-white"
+              style={{
+                background: ch.bg,
+                boxShadow: "inset 0 1px 0 rgba(255, 255, 255, .18), 0 3px 9px rgba(28, 39, 55, .1)",
+              }}
             >
               {ch.icon}
-            </a>
-          ))}
-        </div>
-      </div>
+            </span>
+          </a>
+        ))}
+      </nav>
 
-      {/* Trigger button — integrated with panel */}
+      {/* FAB button */}
       <button
-        onClick={() => setOpen(!open)}
-        className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#63ad36] text-white shadow-lg transition-transform hover:scale-105 flex-shrink-0"
-        aria-label={tr.chat.online}
+        type="button"
+        onClick={handleFabClick}
+        className="relative grid place-items-center w-14 h-14 p-0 border border-white/[.34] rounded-full text-white cursor-pointer transition-[transform,box-shadow] duration-[.18s] hover:-translate-y-[1px] hover:shadow-[0_15px_34px_rgba(69,139,40,.36),inset_0_1px_0_rgba(255,255,255,.28)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[rgba(84,160,47,.24)] focus-visible:outline-offset-[3px]"
+        style={{
+          background: "linear-gradient(180deg, #73b944, #55a02d)",
+          boxShadow: "0 12px 30px rgba(69, 139, 40, .3), inset 0 1px 0 rgba(255, 255, 255, .24)",
+        }}
+        aria-label={open ? "Închide contactele" : "Deschide contactele"}
+        aria-expanded={open}
       >
-        <span className="absolute inset-0 rounded-full bg-[#63ad36] animate-ping opacity-30" />
-        <Phone className="h-6 w-6 relative z-10" />
+        {/* Typing dots */}
+        <span className={`absolute left-[10px] bottom-[10px] flex items-center justify-center gap-[2.5px] w-[18px] h-[5px] pointer-events-none transition-opacity duration-[.18s] ${open ? "opacity-0" : ""}`}>
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="w-[3px] h-[3px] rounded-full bg-white/[.94] opacity-[.34]"
+              style={{
+                boxShadow: "0 1px 2px rgba(40, 83, 22, .18)",
+                animation: `contact-typing-dot 4.2s ease-in-out infinite`,
+                animationDelay: `${i * 0.14}s`,
+              }}
+            />
+          ))}
+        </span>
+
+        {/* Phone icon */}
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className={`absolute w-6 h-6 transition-all duration-[.22s] ${
+            open ? "opacity-0 rotate-[35deg] scale-75" : "opacity-100 -translate-y-[3px]"
+          }`}
+          style={{ strokeWidth: 1.85 }}
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M7.2 3.4 9.3 8a2 2 0 0 1-.5 2.3l-1 1a14.6 14.6 0 0 0 5 5l1-1a2 2 0 0 1 2.3-.5l4.5 2.1v3.2a2 2 0 0 1-2.2 2A18.6 18.6 0 0 1 2.9 6.6a2 2 0 0 1 2-2.2h2.3Z" />
+        </svg>
+
+        {/* Close icon */}
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className={`absolute w-6 h-6 transition-all duration-[.22s] ${
+            open ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-45 scale-75"
+          }`}
+          style={{ strokeWidth: 1.85 }}
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
       </button>
-    </div>
+    </aside>
   );
 }
