@@ -1,4 +1,4 @@
-import { getCategoryBySlug, getPublishedProducts, getProductById } from "@/lib/crm-api";
+import { getCategoryBySlug, getPublishedProducts, getPopularProducts, getPromotions, getNewProducts, getProductById } from "@/lib/crm-api";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
@@ -53,26 +53,44 @@ async function enrichWithSpecs(products: any[], locale: string) {
   return enriched.map((r) => (r.status === "fulfilled" ? r.value : { ...r.reason, specs: {} }));
 }
 
-export default async function LaptopuriPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LaptopuriPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ type?: string }> }) {
   const { locale } = await params;
+  const { type } = await searchParams;
   const PER_PAGE = 8;
 
-  const [cat, allProductsData] = await Promise.all([
-    getCategoryBySlug(SLUG, locale),
-    getPublishedProducts(locale, 500),
-  ]);
+  const cat = await getCategoryBySlug(SLUG, locale);
   const categoryId = cat?.id;
+
+  // ponytail: CRM dedicated endpoints for filtered listings
+  let allProductsData: any;
+  if (type === "popular") {
+    allProductsData = await getPopularProducts(locale, 200);
+  } else if (type === "promotions") {
+    allProductsData = await getPromotions(locale, 200);
+  } else if (type === "new") {
+    allProductsData = await getNewProducts(locale, 200);
+  } else {
+    allProductsData = await getPublishedProducts(locale, 500);
+  }
+
   const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
   const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
   const products = await enrichWithSpecs(items.map(extractBase), locale);
   const categoryName = cat?.name || cat?.translation?.name || SLUG;
+
+  const titleByType: Record<string, string> = {
+    popular: "Laptopuri populare",
+    promotions: "Promoții",
+    new: "Noutăți",
+  };
+  const displayName = type ? (titleByType[type] || categoryName) : categoryName;
 
   return (
     <div className="py-6">
       <div className="flex items-center gap-2 text-sm text-[#6b6c6c] mb-4">
         <Link href="/" className="hover:text-[#1d1d1f] transition-colors">Acasă</Link>
         <ChevronRight className="h-4 w-4" />
-        <span className="text-[#1d1d1f]">{categoryName}</span>
+        <span className="text-[#1d1d1f]">{displayName}</span>
       </div>
       <Suspense fallback={null}>
         <CategoryFilter products={products} categoryName={categoryName} page={1} perPage={PER_PAGE} />
