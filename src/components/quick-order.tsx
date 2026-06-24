@@ -78,7 +78,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               </span>
 
               <span className="min-w-0 grid gap-[3px]">
-                <b className="text-[15px] leading-[1.2] text-[#1d1d1f] truncate">
+                <b className="text-[15px] font-medium leading-[1.2] text-[#1d1d1f] truncate">
                   {item.name}
                 </b>
                 {item.qty > 1 && (

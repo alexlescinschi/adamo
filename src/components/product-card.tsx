@@ -65,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      <Link href={href} className="mb-[6px] text-[15px] font-medium leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
+      <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
         {product.name}
       </Link>
 

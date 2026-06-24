@@ -46,7 +46,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
                 <item.Icon className="h-8 w-8" strokeWidth={2} />
               </span>
               <span className="min-w-0 grid leading-[1.2]">
-                <b className={`text-[11px] font-extrabold uppercase transition-colors duration-[.18s] ${
+                <b className={`text-[11px] font-medium uppercase transition-colors duration-[.18s] ${
                   isActive ? "text-[#2f7d25]" : "text-[#1d1d1f]"
                 }`}>{item.title}</b>
                 <span className={`text-[12px] whitespace-nowrap transition-colors duration-[.18s] ${

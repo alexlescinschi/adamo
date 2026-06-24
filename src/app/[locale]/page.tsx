@@ -225,7 +225,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <item.Icon className="h-[34px] w-[34px]" strokeWidth={1.5} />
               </span>
               <div className="min-w-0">
-                <h3 className="text-[12px] font-extrabold uppercase text-[#1d1d1f] leading-[1.2]">{item.title}</h3>
+                <h3 className="text-[12px] font-medium uppercase text-[#1d1d1f] leading-[1.2]">{item.title}</h3>
                 <p className="text-[12px] text-[#6b6c6c] leading-[1.35]">{item.desc}</p>
               </div>
             </article>
