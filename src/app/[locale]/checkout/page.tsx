@@ -497,7 +497,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-between gap-4 pt-1">
                     <span className="text-[#6b6c6c]">IBAN</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-[#1d1d1f] text-[12px] tracking-wide">
+                      <span className="font-semibold text-[#1d1d1f] text-[12px] tracking-wide">
                         {ADAMO_COMPANY.iban}
                       </span>
                       <button

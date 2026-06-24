@@ -107,7 +107,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 <div className="flex items-center justify-between gap-3 mb-1">
                   <span className="text-[#6b6c6c] text-sm">IBAN</span>
                 </div>
-                <p className="font-mono font-semibold text-[#1d1d1f] text-[13px] tracking-wide break-all">
+                <p className="font-semibold text-[#1d1d1f] text-[13px] tracking-wide break-all">
                   {ADAMO_COMPANY.iban}
                 </p>
               </div>
