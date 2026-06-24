@@ -2,7 +2,7 @@ import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { QuickOrder } from "@/components/quick-order";
 import { BenefitsStrip } from "@/components/benefits-strip";
-import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench, CheckCircle, Headphones } from "lucide-react";
+import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
@@ -177,20 +177,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   const { wide, tile1, tile2 } = staticBanners;
 
-  const benefits = [
-    { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub, desc: tr.home.benefitWarrantyDesc },
-    { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub, desc: tr.home.benefitDeliveryDesc },
-    { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub, desc: tr.home.benefitInstallmentsDesc },
-    { Icon: CreditCard, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub, desc: tr.home.benefitPaymentDesc },
-    { Icon: RefreshCcw, title: tr.home.benefitReturn, sub: tr.home.benefitReturnSub, desc: tr.home.benefitReturnDesc },
-    { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub, desc: tr.home.benefitServiceDesc },
-  ];
-
   return (
     <div>
       <Hero content={hero} images={heroImages} />
 
-      <BenefitsStrip benefits={benefits} />
+      <BenefitsStrip tr={tr} />
 
       {wide && (
         <section className="pb-[70px]">

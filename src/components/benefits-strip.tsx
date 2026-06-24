@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench } from "lucide-react";
 
-interface Benefit {
-  Icon: LucideIcon;
-  title: string;
-  sub: string;
-  desc: string;
-}
-
-export function BenefitsStrip({ benefits }: { benefits: Benefit[] }) {
+export function BenefitsStrip({ tr }: { tr: any }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const benefits = [
+    { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub, desc: tr.home.benefitWarrantyDesc },
+    { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub, desc: tr.home.benefitDeliveryDesc },
+    { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub, desc: tr.home.benefitInstallmentsDesc },
+    { Icon: CreditCard, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub, desc: tr.home.benefitPaymentDesc },
+    { Icon: RefreshCcw, title: tr.home.benefitReturn, sub: tr.home.benefitReturnSub, desc: tr.home.benefitReturnDesc },
+    { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub, desc: tr.home.benefitServiceDesc },
+  ];
 
   const handleClick = (index: number) => {
     setActiveIndex(activeIndex === index ? null : index);
