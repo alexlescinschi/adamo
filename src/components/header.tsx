@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/use-cart";
 import { CartDrawer } from "./cart-drawer";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useTranslations } from "@/hooks/use-translations";
+import { formatPrice } from "@/lib/utils";
 import type { CatalogCategory } from "@/lib/categories";
 
 const PHONE = "+37379966909";
@@ -40,9 +41,6 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
     return shuffled.slice(0, 2);
   }, [catalogOpen, products]);
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("ro-RO", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
-
   // Close the desktop Catalog dropdown when clicking outside it.
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -65,7 +63,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   return (
     <>
       <header className="sticky top-0 z-30 bg-white/88 backdrop-blur-[18px] border-b border-[#e4e8e4]/60">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-[1000px] items-center justify-between gap-4 px-4 py-3">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <Image src="/logo.svg" alt="Adamo" width={120} height={28} className="h-6 w-auto" priority />
@@ -99,7 +97,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                       </button>
                       {catalogOpen && (
                         <div className="fixed inset-x-0 top-[57px] z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
-                          <div className="mx-auto max-w-7xl px-4 py-6 grid grid-cols-3 gap-6">
+                          <div className="mx-auto max-w-[1000px] px-4 py-6 grid grid-cols-3 gap-6">
                             <div className="flex flex-col gap-0.5 border-r border-[#e4e8e4]/60 pr-4">
                               {categories.map((c) => (
                                 <Link
@@ -189,7 +187,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
 
         {searchOpen && (
           <div className="border-t border-[#e4e8e4]/60 px-4 py-3">
-            <form action={`/${locale}/search`} className="mx-auto max-w-7xl">
+            <form action={`/${locale}/search`} className="mx-auto max-w-[1000px]">
               <input
                 name="q"
                 type="text"

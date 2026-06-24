@@ -43,10 +43,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className="h-full">
-      <body className="min-h-full flex flex-col font-sans bg-white text-[#1d1d1f]">
+      <body className="min-h-full flex flex-col font-sans text-[#1d1d1f]" style={{ background: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)" }}>
         <CartProvider>
           <Header categories={categories} products={products} />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4">{children}</main>
+          <main className="mx-auto w-full max-w-[1000px] flex-1 px-4">{children}</main>
           <Footer />
           <ContactWidget />
         </CartProvider>

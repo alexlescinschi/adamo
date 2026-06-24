@@ -17,7 +17,7 @@ export function Footer() {
   const tr = useTranslations();
   return (
     <footer className="mt-[70px] border-t border-[#e4e8e4] bg-[#f7f9f7]">
-      <div className="mx-auto max-w-7xl px-4 py-12">
+      <div className="mx-auto max-w-[1000px] px-4 py-12">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
 
           {/* Brand column */}
@@ -146,7 +146,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-[#e4e8e4]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 md:flex-row">
+        <div className="mx-auto flex max-w-[1000px] flex-col items-center justify-between gap-3 px-4 py-5 md:flex-row">
           <span className="text-[12px] text-[#6b6c6c]">&copy; {new Date().getFullYear()} Adamo</span>
           <span className="text-[12px] text-[#6b6c6c] text-center">{tr.footer.rights}</span>
           <div aria-label="Visa · Mastercard" className="flex shrink-0 items-center justify-center gap-3 sm:justify-end" role="group">

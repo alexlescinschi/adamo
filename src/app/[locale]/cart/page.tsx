@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { CartCheckbox } from "@/components/cart-checkbox";
+import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
   const { items, removeItem, updateQty, toggleSelected, selectAll, total, allSelected, someSelected } = useCart();
@@ -64,7 +65,7 @@ export default function CartPage() {
                     {item.name}
                   </Link>
                   <p className="text-sm text-slate-500">
-                    {item.price > 0 ? `${item.price.toFixed(0)} MDL` : tr.product.priceOnRequest}
+                    {item.price > 0 ? `${formatPrice(item.price)} MDL` : tr.product.priceOnRequest}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
@@ -89,7 +90,7 @@ export default function CartPage() {
           <h2 className="text-lg font-bold mb-4">{tr.cart.summary}</h2>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-slate-600">{tr.cart.subtotal}</span>
-            <span className="font-medium">{total.toFixed(0)} MDL</span>
+            <span className="font-medium">{formatPrice(total)} MDL</span>
           </div>
           <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm mb-4">
             <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
@@ -97,7 +98,7 @@ export default function CartPage() {
           </div>
           <div className="border-t border-slate-200 pt-4 flex justify-between text-lg font-bold">
             <span>{tr.cart.total}</span>
-            <span>{total.toFixed(0)} MDL</span>
+            <span>{formatPrice(total)} MDL</span>
           </div>
           {hasSelected ? (
             <Link

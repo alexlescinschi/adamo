@@ -1,7 +1,8 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { QuickOrder } from "@/components/quick-order";
-import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench } from "lucide-react";
+import { BenefitsStrip } from "@/components/benefits-strip";
+import { ShieldCheck, Truck, Percent, CreditCard, RefreshCcw, Wrench, CheckCircle, Headphones } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
@@ -67,15 +68,15 @@ async function fetchAndEnrich(locale: string) {
   };
 }
 
-function Section({ title, products, viewAllHref }: { title: React.ReactNode; products: any[]; viewAllHref?: string }) {
+function Section({ title, products, viewAllHref, tr }: { title: React.ReactNode; products: any[]; viewAllHref?: string; tr: any }) {
   if (products.length === 0) return null;
   return (
-    <section className="py-[70px]">
+    <section className="pt-[22px] pb-[70px]">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-[22px] font-extrabold text-[#1d1d1f]">{title}</h2>
         {viewAllHref && (
           <a href={viewAllHref} className="text-[14px] font-semibold text-[#34781f] hover:underline transition-colors">
-            Vezi toate
+            {tr.category.viewAll}
           </a>
         )}
       </div>
@@ -87,6 +88,57 @@ function Section({ title, products, viewAllHref }: { title: React.ReactNode; pro
     </section>
   );
 }
+
+const seoBlocks = [
+  {
+    title: {
+      ro: "Laptopuri premium în Moldova pentru business, gaming și studii",
+      ru: "Премиум ноутбуки в Молдове для бизнеса, игр и учёбы",
+      en: "Premium laptops in Moldova for business, gaming and studies",
+    },
+    desc: {
+      ro: "ADAMO.MD este magazin specializat în laptopuri premium în Chișinău și Moldova: modele business, gaming, ultrabook-uri și laptopuri verificate pentru lucru, școală sau performanță.",
+      ru: "ADAMO.MD — специализированный магазин премиум ноутбуков в Кишинёве и Молдове: бизнес-модели, игровые, ультрабуки и проверенные ноутбуки для работы, учёбы или производительности.",
+      en: "ADAMO.MD is a specialized store for premium laptops in Chisinau and Moldova: business, gaming, ultrabooks and verified laptops for work, school or performance.",
+    },
+  },
+  {
+    title: {
+      ro: "Laptopuri business verificate",
+      ru: "Проверенные бизнес-ноутбуки",
+      en: "Verified business laptops",
+    },
+    desc: {
+      ro: "Modele stabile pentru birou, companii și freelanceri, cu SSD rapid, autonomie bună și suport inclus.",
+      ru: "Стабильные модели для офиса, компаний и фрилансеров с быстрым SSD, хорошей автономностью и поддержкой.",
+      en: "Stable models for office, companies and freelancers, with fast SSD, good battery life and included support.",
+    },
+  },
+  {
+    title: {
+      ro: "Laptopuri gaming ASUS, MSI și Dell",
+      ru: "Игровые ноутбуки ASUS, MSI и Dell",
+      en: "Gaming laptops ASUS, MSI and Dell",
+    },
+    desc: {
+      ro: "Configurații cu plăci video RTX, ecrane rapide și răcire puternică pentru jocuri, editare video și proiecte 3D.",
+      ru: "Конфигурации с видеокартами RTX, быстрыми экранами и мощным охлаждением для игр, видеомонтажа и 3D-проектов.",
+      en: "Configurations with RTX graphics, fast screens and powerful cooling for gaming, video editing and 3D projects.",
+    },
+  },
+  {
+    title: {
+      ro: "Consultanță ADAMO.MD",
+      ru: "Консультация ADAMO.MD",
+      en: "ADAMO.MD consultation",
+    },
+    desc: {
+      ro: "Te ajutăm să alegi laptopul potrivit după buget, scop și nivel de performanță, cu suport după cumpărare.",
+      ru: "Помогаем выбрать подходящий ноутбук по бюджету, целям и уровню производительности, с поддержкой после покупки.",
+      en: "We help you choose the right laptop by budget, purpose and performance level, with post-purchase support.",
+    },
+  },
+];
 
 function StaticBanner({ banner }: { banner: any }) {
   if (!banner?.mediaUrl) return null;
@@ -126,33 +178,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { wide, tile1, tile2 } = staticBanners;
 
   const benefits = [
-    { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub },
-    { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub },
-    { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub },
-    { Icon: CreditCard, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub },
-    { Icon: RefreshCcw, title: tr.home.benefitReturn, sub: tr.home.benefitReturnSub },
-    { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub },
+    { Icon: ShieldCheck, title: tr.home.benefitWarranty, sub: tr.home.benefitWarrantySub, desc: tr.home.benefitWarrantyDesc },
+    { Icon: Truck, title: tr.home.benefitDelivery, sub: tr.home.benefitDeliverySub, desc: tr.home.benefitDeliveryDesc },
+    { Icon: Percent, title: tr.home.benefitInstallments, sub: tr.home.benefitInstallmentsSub, desc: tr.home.benefitInstallmentsDesc },
+    { Icon: CreditCard, title: tr.home.benefitPayment, sub: tr.home.benefitPaymentSub, desc: tr.home.benefitPaymentDesc },
+    { Icon: RefreshCcw, title: tr.home.benefitReturn, sub: tr.home.benefitReturnSub, desc: tr.home.benefitReturnDesc },
+    { Icon: Wrench, title: tr.home.benefitService, sub: tr.home.benefitServiceSub, desc: tr.home.benefitServiceDesc },
   ];
 
   return (
     <div>
       <Hero content={hero} images={heroImages} />
 
-      <section className="pb-8 md:pb-12">
-        <div className="grid grid-cols-2 divide-x divide-[#e4e8e4] divide-y divide-[#e4e8e4] border border-[#e4e8e4] rounded-[9px] bg-white shadow-[0_1px_4px_rgba(31,41,55,0.06)] overflow-hidden md:grid-cols-3 lg:grid-cols-6">
-          {benefits.map((item) => (
-            <div key={item.title} className="group flex items-center gap-2 px-3 py-4 hover:bg-[#f9fdf6] transition-colors cursor-pointer">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center text-[#111827] group-hover:text-[#2f7d25] transition-colors">
-                <item.Icon className="h-8 w-8" strokeWidth={2} />
-              </div>
-              <div className="grid leading-[1.2] min-w-0">
-                <b className="text-[11px] font-extrabold uppercase text-[#1d1d1f] group-hover:text-[#2f7d25] transition-colors">{item.title}</b>
-                <span className="text-[12px] text-[#6b6c6c] whitespace-nowrap">{item.sub}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <BenefitsStrip benefits={benefits} />
 
       {wide && (
         <section className="pb-[70px]">
@@ -160,8 +198,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={<span className="inline-flex items-center gap-2"><svg viewBox="0 0 20 20" className="h-5 w-5" fill="#0b55d8"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{tr.home.popular}</span>} products={popular} viewAllHref="/minipc" />
-      <Section title={tr.home.promotions} products={promotions} viewAllHref="/minipc" />
+      <Section title={<span className="inline-flex items-center gap-2"><svg viewBox="0 0 20 20" className="h-5 w-5" fill="#0b55d8"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{tr.home.popular}</span>} products={popular} viewAllHref="/minipc" tr={tr} />
+      <Section title={tr.home.promotions} products={promotions} viewAllHref="/minipc" tr={tr} />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -172,28 +210,46 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" />
+      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri" tr={tr} />
 
       <QuickOrder tr={tr} />
 
+      <section className="my-[30px] md:my-[30px]">
+        <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
+          {tr.home.whyTitle}
+        </h2>
+        <div className="grid grid-cols-2 overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)] md:grid-cols-3 lg:grid-cols-5">
+          {[
+            { Icon: CheckCircle, title: tr.home.whyVerifiedTitle, desc: tr.home.whyVerifiedDesc },
+            { Icon: ShieldCheck, title: tr.home.whyWarrantyTitle, desc: tr.home.whyWarrantyDesc },
+            { Icon: CreditCard, title: tr.home.whyPaymentTitle, desc: tr.home.whyPaymentDesc },
+            { Icon: Wrench, title: tr.home.whyServiceTitle, desc: tr.home.whyServiceDesc },
+            { Icon: Headphones, title: tr.home.whySupportTitle, desc: tr.home.whySupportDesc },
+          ].map((item, i, arr) => (
+            <article
+              key={item.title}
+              className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-r border-[#e1e7ef] transition-colors duration-[.18s] hover:bg-[#f9fdf6] ${i === arr.length - 1 ? "border-r-0" : ""}`}
+            >
+              <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] text-[#111827]">
+                <item.Icon className="h-[34px] w-[34px]" strokeWidth={1.5} />
+              </span>
+              <div className="min-w-0">
+                <h3 className="text-[12px] font-extrabold uppercase text-[#1d1d1f] leading-[1.2]">{item.title}</h3>
+                <p className="text-[12px] text-[#6b6c6c] leading-[1.35]">{item.desc}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="py-[70px] border-t border-[#e4e8e4]">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri premium în Moldova pentru business, gaming și studii</h3>
-            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">ADAMO.MD este magazin specializat în laptopuri premium în Chișinău și Moldova: modele business, gaming, ultrabook-uri și laptopuri verificate pentru lucru, școală sau performanță.</p>
-          </div>
-          <div>
-            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri business verificate</h3>
-            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Modele stabile pentru birou, companii și freelanceri, cu SSD rapid, autonomie bună și suport inclus.</p>
-          </div>
-          <div>
-            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Laptopuri gaming ASUS, MSI și Dell</h3>
-            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Configurații cu plăci video RTX, ecrane rapide și răcire puternică pentru jocuri, editare video și proiecte 3D.</p>
-          </div>
-          <div>
-            <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">Consultanță ADAMO.MD</h3>
-            <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">Te ajutăm să alegi laptopul potrivit după buget, scop și nivel de performanță, cu suport după cumpărare.</p>
-          </div>
+          {seoBlocks.map((block) => (
+            <div key={block.title.ro}>
+              <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">{block.title[locale as keyof typeof block.title] || block.title.ro}</h3>
+              <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">{block.desc[locale as keyof typeof block.desc] || block.desc.ro}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>

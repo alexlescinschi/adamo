@@ -7,6 +7,7 @@ import { ShoppingCart, Loader2 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { useTranslations } from "@/hooks/use-translations";
+import { formatPrice } from "@/lib/utils";
 
 interface Product {
   id: number;
@@ -76,10 +77,10 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <strong className="block text-[25px] font-extrabold leading-none text-[#34781f]">
-                {product.price.toFixed(0)} <small className="text-[13px]">MDL</small>
+                {formatPrice(product.price)} <small className="text-[13px]">MDL</small>
               </strong>
               {product.old_price && product.old_price > product.price && (
-                <span className="block text-sm text-[#34781f] line-through">{product.old_price.toFixed(0)} MDL</span>
+                <span className="block text-sm text-[#34781f] line-through">{formatPrice(product.old_price)} MDL</span>
               )}
               <p className="m-0 mt-[3px] text-[12.5px] font-medium text-[#1d1d1f]">
                 {tr.product.installments}{" "}<img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />

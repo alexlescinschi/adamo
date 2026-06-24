@@ -9,6 +9,7 @@ import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2, FileText } 
 import { useTranslations } from "@/hooks/use-translations";
 import { ADAMO_COMPANY } from "@/lib/company";
 import { resolvePaymentMethod } from "@/lib/checkout";
+import { formatPrice } from "@/lib/utils";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -568,7 +569,7 @@ export default function CheckoutPage() {
                     <p className="text-sm font-medium truncate text-[#1d1d1f]">{item.name}</p>
                     <p className="text-xs text-[#6b6c6c]">x{item.qty}</p>
                   </div>
-                  <p className="text-sm font-medium text-[#1d1d1f]">{(item.price * item.qty).toFixed(0)} MDL</p>
+                  <p className="text-sm font-medium text-[#1d1d1f]">{formatPrice(item.price * item.qty)} MDL</p>
                 </div>
               ))}
             </div>
@@ -578,7 +579,7 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-[#e4e8e4] pt-4 flex justify-between text-lg font-bold text-[#1d1d1f]">
               <span>{tr.cart.total}</span>
-              <span>{total.toFixed(0)} MDL</span>
+              <span>{formatPrice(total)} MDL</span>
             </div>
 
             {error && <p className="mt-4 text-sm text-red-600">{error}</p>}

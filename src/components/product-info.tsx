@@ -7,6 +7,7 @@ import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { ShoppingCart, Loader2 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
+import { formatPrice } from "@/lib/utils";
 
 interface ProductInfoProps {
   product: any;
@@ -45,9 +46,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="mt-6">
         {hasPrice ? (
           <div className="flex items-baseline gap-3">
-            <span className="text-[28px] font-semibold text-[#1d1d1f]">{product.price.toFixed(0)} MDL</span>
+            <span className="text-[28px] font-semibold text-[#1d1d1f]">{formatPrice(product.price)} MDL</span>
             {product.old_price && product.old_price > product.price && (
-              <span className="text-lg text-[#6b6c6c] line-through">{product.old_price.toFixed(0)} MDL</span>
+              <span className="text-lg text-[#6b6c6c] line-through">{formatPrice(product.old_price)} MDL</span>
             )}
           </div>
         ) : (

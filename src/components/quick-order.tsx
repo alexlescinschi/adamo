@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { CartCheckbox } from "@/components/cart-checkbox";
+import { formatPrice } from "@/lib/utils";
 
 export function QuickOrder({ tr }: { tr: any }) {
   const cart = useCart();
@@ -33,8 +34,6 @@ export function QuickOrder({ tr }: { tr: any }) {
 
   const checkedItems = cart.selectedItems;
   const total = cart.total;
-
-  const fmt = (n: number) => n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
   return (
     <section className="my-[28px] md:my-[30px]">
@@ -88,7 +87,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               </span>
 
               <strong className="text-[24px] leading-none text-[#34781f] font-extrabold whitespace-nowrap">
-                {fmt(item.price * item.qty)} <small className="text-[12px]">MDL</small>
+                {formatPrice(item.price * item.qty)} <small className="text-[12px]">MDL</small>
               </strong>
             </div>
           );
@@ -100,7 +99,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               {tr.home.quickOrderTotal}
             </span>
             <strong className="text-[24px] leading-none text-[#34781f] font-extrabold">
-              {fmt(total)} <small className="text-[12px]">MDL</small>
+              {formatPrice(total)} <small className="text-[12px]">MDL</small>
             </strong>
           </div>
           <div className="flex items-center justify-between gap-[14px] min-h-[68px] px-[18px] py-[14px]">

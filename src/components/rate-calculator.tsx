@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Building2, ChevronRight } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
+import { formatPrice } from "@/lib/utils";
 
 const PLANS = [
   { months: 6,  rate: 0 },
@@ -19,10 +20,6 @@ function monthly(price: number, months: number, rate: number): number {
   const r = rate / 100;
   const factor = Math.pow(1 + r, months);
   return Math.ceil((price * r * factor) / (factor - 1));
-}
-
-function fmt(n: number) {
-  return n.toLocaleString("ro-MD");
 }
 
 interface Props {
@@ -53,7 +50,7 @@ export function RateCalculator({ price, productName }: Props) {
           first_name: form.firstName,
           last_name: form.lastName,
           phone: form.phone,
-          comment: `Rate ADAMO: ${productName} — ${best.months} luni, ${fmt(amount)} lei/lună${withAdvance ? ", cu avans" : ""}`,
+          comment: `Rate ADAMO: ${productName} — ${best.months} luni, ${formatPrice(amount)} lei/lună${withAdvance ? ", cu avans" : ""}`,
         }),
       });
     } catch {}
@@ -69,7 +66,7 @@ export function RateCalculator({ price, productName }: Props) {
           <span className="rounded-[6px] bg-[#63ad36] px-[10px] py-[4px] text-[11px] font-black uppercase tracking-wide text-white">
             {tr.badge}
           </span>
-          <span className="text-[22px] font-extrabold text-[#1d1d1f]">{fmt(price)} <span className="text-[15px] font-semibold text-[#6b6c6c]">lei</span></span>
+          <span className="text-[22px] font-extrabold text-[#1d1d1f]">{formatPrice(price)} <span className="text-[15px] font-semibold text-[#6b6c6c]">lei</span></span>
         </div>
 
         {/* Plan selector */}
@@ -87,7 +84,7 @@ export function RateCalculator({ price, productName }: Props) {
           </select>
           <span className="text-[#6b6c6c] text-[13px]">→</span>
           <span className="text-[18px] font-extrabold text-[#34781f]">
-            {fmt(amount)} <span className="text-[13px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
+            {formatPrice(amount)} <span className="text-[13px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
           </span>
         </div>
 
@@ -116,7 +113,7 @@ export function RateCalculator({ price, productName }: Props) {
             <div className="mb-5 pr-8">
               <p className="text-[13px] text-[#6b6c6c]">{tr.modalSubtitle}</p>
               <h3 className="mt-1 text-[16px] font-bold text-[#1d1d1f] leading-tight">{productName}</h3>
-              <p className="mt-1 text-[22px] font-extrabold text-[#1d1d1f]">{fmt(price)} <span className="text-[14px] font-semibold text-[#6b6c6c]">lei</span></p>
+              <p className="mt-1 text-[22px] font-extrabold text-[#1d1d1f]">{formatPrice(price)} <span className="text-[14px] font-semibold text-[#6b6c6c]">lei</span></p>
             </div>
 
             {sent ? (
@@ -154,7 +151,7 @@ export function RateCalculator({ price, productName }: Props) {
                           }`}>
                             {p.rate}%
                           </span>
-                          <p className="text-[15px] font-extrabold text-[#1d1d1f] leading-none">{fmt(amt)}</p>
+                          <p className="text-[15px] font-extrabold text-[#1d1d1f] leading-none">{formatPrice(amt)}</p>
                           <p className="mt-0.5 text-[11px] text-[#6b6c6c]">lei</p>
                           <p className="mt-1 text-[11px] font-semibold text-[#6b6c6c]">{p.months} {tr.months}</p>
                         </button>
@@ -165,7 +162,7 @@ export function RateCalculator({ price, productName }: Props) {
                   {/* Total */}
                   <div className="mt-3 rounded-[10px] bg-[#f7f9f7] px-4 py-3">
                     <p className="text-[13px] text-[#6b6c6c]">{tr.monthlyTotal}</p>
-                    <p className="text-[20px] font-extrabold text-[#34781f]">{fmt(monthly(price, selectedMonths, best.rate))} lei</p>
+                    <p className="text-[20px] font-extrabold text-[#34781f]">{formatPrice(monthly(price, selectedMonths, best.rate))} lei</p>
                     <p className="text-[11px] text-[#6b6c6c] mt-1">{tr.disclaimer}</p>
                   </div>
                 </div>

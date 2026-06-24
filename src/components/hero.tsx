@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, MessageCircle, Star } from "lucide-react";
+import { ArrowRight, MessageCircle } from "lucide-react";
 
 export interface HeroContent {
   titleLines: string[];
@@ -56,24 +56,32 @@ export function Hero({ content, images }: HeroProps) {
           priority
         />
       )}
-      {!bgImage && <div className="absolute inset-0 bg-[#f3f6f6]" />}
+      {!bgImage && <div className="absolute inset-0 bg-[#f8fbff]" />}
 
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-16">
-        <div className="max-w-xl">
-          <h1 className="text-[32px] font-extrabold leading-[1.1] tracking-[-0.02em] text-[#1d1d1f] md:text-[44px]">
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(248,251,255,.82) 0%, rgba(248,251,255,0) 5%, rgba(248,251,255,0) 96%, rgba(248,251,255,.78) 100%), linear-gradient(180deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 17%, rgba(255,255,255,0) 84%, rgba(255,255,255,.58) 100%)",
+        }}
+      />
+
+      <div className="relative z-10 mx-auto w-full max-w-[1000px] px-4 py-12 md:px-8 md:py-16">
+        <div className="max-w-[500px]">
+          <h1 className="text-[32px] font-extrabold leading-[1.06] text-[#1d1d1f] md:text-[45px]">
             {titleLines.map((line, i) => {
               if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
                 return (
-                  <span key={i} className="block">
+                  <span key={i} className="block whitespace-nowrap">
                     {parts[0]}
-                    <em className="not-italic text-[#34781f]">{emphasizeWord}</em>
+                    <em className="not-italic text-[#1769e8]">{emphasizeWord}</em>
                     {parts[1]}
                   </span>
                 );
               }
               return (
-                <span key={i} className="block">
+                <span key={i} className="block whitespace-nowrap">
                   {line}
                 </span>
               );
@@ -81,7 +89,7 @@ export function Hero({ content, images }: HeroProps) {
           </h1>
 
           {subtitle && (
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#6b6c6c] md:text-[16px]">
+            <p className="mt-4 max-w-[430px] text-[18px] leading-[1.55] text-[#4b5565]">
               {subtitle}
             </p>
           )}
@@ -94,26 +102,16 @@ export function Hero({ content, images }: HeroProps) {
           )}
 
           {socialProof?.text && (
-            <div className="mt-8 flex items-center gap-3">
-              <div className="flex">
-                {[0, 1, 2, 3].map((i) => (
-                  <span
-                    key={i}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-[#7cc44e] to-[#63ad36] text-[11px] font-bold text-white shadow-sm"
-                    style={{ marginLeft: i === 0 ? 0 : -10 }}
-                  />
-                ))}
+            <div className="mt-[22px] flex items-center gap-[14px]">
+              <div className="w-[112px] h-[42px] flex-shrink-0">
+                <Image src="/social-faces.png" alt="Clienți ADAMO.MD" width={112} height={42} className="object-contain" />
               </div>
-              <div className="grid leading-[1.2]">
-                <span className="text-[13px] font-medium text-[#1d1d1f]">
-                  {socialProof.text}
-                </span>
+              <div>
+                <span className="text-[14px] text-[#697586]">{socialProof.text}</span>
                 {socialProof.stars > 0 && (
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: socialProof.stars }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-[#f5a623] text-[#f5a623]" />
-                    ))}
-                  </div>
+                  <b className="block text-[#63ad36] tracking-[3px] mt-1">
+                    {"★★★★★".slice(0, socialProof.stars)}
+                  </b>
                 )}
               </div>
             </div>

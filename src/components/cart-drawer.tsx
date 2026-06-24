@@ -7,6 +7,7 @@ import { useCart } from "@/hooks/use-cart";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { CartCheckbox } from "./cart-checkbox";
+import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { items, removeItem, updateQty, toggleSelected, selectAll, total, allSelected, someSelected } = useCart();
@@ -119,7 +120,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                               )}
                             </div>
                           </div>
-                          <span className="text-sm font-semibold text-[#1d1d1f] ml-auto">{(item.price * item.qty).toFixed(0)} MDL</span>
+                          <span className="text-sm font-semibold text-[#1d1d1f] ml-auto">{formatPrice(item.price * item.qty)} MDL</span>
                           <button onClick={() => removeItem(item.product_id, item.unit_id)} className="text-[#6b6c6c] hover:text-[#b64400] transition-colors">
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -134,7 +135,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="border-t border-[#cccfcf]/50 px-5 py-4 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-[#6b6c6c]">{tr.cart.subtotal}</span>
-                <span className="font-semibold text-[#1d1d1f]">{total.toFixed(0)} MDL</span>
+                <span className="font-semibold text-[#1d1d1f]">{formatPrice(total)} MDL</span>
               </div>
               <div className="flex items-center justify-between rounded-[10px] bg-[#edf7e8] px-3 py-2 text-sm">
                 <span className="text-[#34781f] font-medium">{tr.cart.deliveryFree}</span>
