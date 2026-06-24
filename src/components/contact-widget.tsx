@@ -56,26 +56,24 @@ export function ContactWidget() {
   }, [open]);
 
   return (
-    <div ref={ref} className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
-      {/* Slide-in panel */}
+    <div ref={ref} className="fixed bottom-5 right-5 z-40 flex items-center">
+      {/* Panel slides out leftwards from button */}
       <div
         className={`bg-white rounded-2xl shadow-xl border border-[#e4e8e4] overflow-hidden transition-all duration-300 ease-out ${
           open
-            ? "translate-x-0 opacity-100 max-w-[280px]"
-            : "translate-x-4 opacity-0 max-w-0 pointer-events-none"
+            ? "max-w-[260px] opacity-100 mr-3"
+            : "max-w-0 opacity-0 mr-0 border-0 shadow-none"
         }`}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#e4e8e4]">
+        <div className="flex items-center gap-2 whitespace-nowrap px-4 py-3">
           <span className="text-[13px] font-semibold text-[#1d1d1f]">{tr.chat.online}</span>
           <button
             onClick={() => setOpen(false)}
-            className="text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors"
+            className="ml-auto text-[#6b6c6c] hover:text-[#1d1d1f] transition-colors flex-shrink-0"
             aria-label="Închide"
           >
             <X className="h-4 w-4" />
           </button>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-3">
           {channels.map((ch) => (
             <a
               key={ch.label}
@@ -83,7 +81,7 @@ export function ContactWidget() {
               target="_blank"
               rel="noopener noreferrer"
               title={ch.label}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:scale-110"
+              className="flex h-9 w-9 items-center justify-center rounded-full transition-transform hover:scale-110 flex-shrink-0"
               style={{ background: ch.bg }}
             >
               {ch.icon}
@@ -92,10 +90,10 @@ export function ContactWidget() {
         </div>
       </div>
 
-      {/* Pulsing trigger button */}
+      {/* Trigger button — integrated with panel */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#63ad36] text-white shadow-lg transition-transform hover:scale-105"
+        className="relative flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#63ad36] text-white shadow-lg transition-transform hover:scale-105 flex-shrink-0"
         aria-label={tr.chat.online}
       >
         <span className="absolute inset-0 rounded-full bg-[#63ad36] animate-ping opacity-30" />
