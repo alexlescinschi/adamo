@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Loader2, Check } from "lucide-react";
@@ -15,6 +15,7 @@ interface Product {
   price: number;
   old_price?: number;
   image_url?: string;
+  images?: string[];
   unit_id?: number;
   slug?: string;
   stock?: number;
@@ -32,6 +33,26 @@ export function ProductCard({ product }: { product: Product }) {
   const hasPrice = product.price > 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
+  // ponytail: image slider — desktop auto-play on hover, mobile swipe
+  const imgs = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+  const hasSlider = imgs.length > 1;
+  const [imgIdx, setImgIdx] = useState(0);
+  const [hovering, setHovering] = useState(false);
+  const touchStart = useRef(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (hovering && hasSlider) {
+      intervalRef.current = setInterval(() => {
+        setImgIdx((i) => (i + 1) % imgs.length);
+      }, 2000);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [hovering, hasSlider, imgs.length]);
+
+  const nextImg = useCallback(() => setImgIdx((i) => (i + 1) % imgs.length), [imgs.length]);
+  const prevImg = useCallback(() => setImgIdx((i) => (i - 1 + imgs.length) % imgs.length), [imgs.length]);
+
   const handleAdd = async () => {
     setAdding(true);
     try {
@@ -46,20 +67,47 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)]">
-      <Link href={href} className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]">
+      <Link
+        href={href}
+        className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => { setHovering(false); setImgIdx(0); }}
+        onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          const diff = touchStart.current - e.changedTouches[0].clientX;
+          if (diff > 40) nextImg();
+          else if (diff < -40) prevImg();
+        }}
+      >
         {product.badge && (
           <span className="absolute top-2 left-2 z-10 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
             {product.badge}
           </span>
         )}
-        {product.image_url ? (
-          <Image
-            src={product.image_url}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 768px) 50vw, 25vw"
-          />
+        {imgs.length > 0 ? (
+          <>
+            {imgs.map((src, i) => (
+              <Image
+                key={i}
+                src={src}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-300"
+                sizes="(max-width: 768px) 50vw, 25vw"
+                style={{ transform: `translateX(${(i - imgIdx) * 100}%)`, opacity: i === imgIdx ? 1 : 0 }}
+              />
+            ))}
+            {hasSlider && (
+              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
+                {imgs.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`block w-[6px] h-[6px] rounded-full transition-colors ${i === imgIdx ? "bg-white" : "bg-white/50"}`}
+                  />
+                ))}
+              </span>
+            )}
+          </>
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">Fără imagine</div>
         )}
