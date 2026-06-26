@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Search, User, ShoppingBag, Menu, X, Phone, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { usePathname, useParams } from "next/navigation";
@@ -41,7 +40,6 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
     return shuffled.slice(0, 2);
   }, [catalogOpen, products]);
 
-  // Close the desktop Catalog dropdown when clicking outside it.
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catalogRef.current && !catalogRef.current.contains(e.target as Node)) {
@@ -52,144 +50,142 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // One-time cleanup of the legacy favorites data from localStorage (the feature was removed).
   useEffect(() => {
     try { localStorage.removeItem("adamo-favorites"); } catch {}
   }, []);
 
-  // A category page is active when the path starts with /[locale]/category/<slug>.
   const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
+
+  const desktopNavLinks = (
+    <>
+      {NAV_LINK_KEYS.map(({ href, key }) => {
+        const isHome = href === "/";
+        const isContact = href === "/contact";
+        const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
+        const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
+        return (
+          <span key={href} className="contents">
+            <Link
+              href={localHref}
+              className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+            >
+              {tr.nav[key as keyof typeof tr.nav]}
+            </Link>
+            {isHome && categories.length > 0 && (
+              <div ref={catalogRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setCatalogOpen((v) => !v)}
+                  className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                  aria-expanded={catalogOpen}
+                >
+                  {tr.nav.catalog}
+                  <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
+                </button>
+                {catalogOpen && (
+                  <div className="fixed inset-x-0 top-[57px] z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
+                    <div className="mx-auto max-w-[1048px] px-4 py-6 grid grid-cols-3 gap-6">
+                      <div className="flex flex-col gap-0.5 border-r border-[#e4e8e4]/60 pr-4">
+                        {categories.map((c) => (
+                          <Link
+                            key={c.id}
+                            href={`/${locale}/category/${c.slug}`}
+                            onClick={() => setCatalogOpen(false)}
+                            className="rounded-[7px] px-3 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
+                          >
+                            {c.name}
+                          </Link>
+                        ))}
+                      </div>
+                      {randomProducts.length > 0 && (
+                        randomProducts.map((p: any) => (
+                            <Link
+                              key={p.id}
+                              href={`/${locale}/product/${p.slug ? `${p.id}-${p.slug}` : p.id}`}
+                              onClick={() => setCatalogOpen(false)}
+                              className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all group"
+                            >
+                              {p.image_url && (
+                                <div className="relative w-full aspect-[4/3] rounded-[8px] overflow-hidden bg-[#f3f6f6]">
+                                  <img src={p.image_url} alt={p.name || ""} className="object-cover w-full h-full transition-transform group-hover:scale-105" />
+                                </div>
+                              )}
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[14px] font-bold text-[#1d1d1f] leading-[1.25] line-clamp-2 group-hover:text-[#34781f] transition-colors">
+                                  {p.name}
+                                </span>
+                                {p.price > 0 && (
+                                  <span className="text-[16px] font-extrabold text-[#34781f]">{formatPrice(p.price)} lei</span>
+                                )}
+                              </div>
+                            </Link>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {isContact && <LocaleSwitcher />}
+          </span>
+        );
+      })}
+    </>
+  );
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/88 backdrop-blur-[18px] border-b border-[#e4e8e4]/60">
-        <div className="mx-auto flex max-w-[1000px] items-center justify-between gap-4 px-4 py-3">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <Image src="/logo.svg" alt="Adamo" width={160} height={28} className="h-7 w-auto" priority />
-          </Link>
+      <header
+        className="sticky top-0 z-30 grid items-center gap-6 w-full bg-white/95 backdrop-blur-[18px]"
+        style={{
+          gridTemplateColumns: "auto 1fr auto",
+          padding: "11px max(24px, calc((100vw - 1048px) / 2))",
+          boxShadow: "0 10px 28px rgba(31, 41, 55, .035)",
+        }}
+      >
+        {/* Logo */}
+        <Link href="/" className="grid gap-0 font-extrabold tracking-[0] leading-none text-[29px] text-[#1d1d1f]">
+          ADAMO<span className="text-[#63ad36]">.</span>MD
+          <small className="mt-[5px] text-[10px] text-[#8a94a3] uppercase tracking-[1.8px] font-normal">Laptopuri premium</small>
+        </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-1 md:flex">
-            {NAV_LINK_KEYS.map(({ href, key }) => {
-              // Insert the Catalog dropdown right after "home".
-              const isHome = href === "/";
-              const isContact = href === "/contact";
-              const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
-              const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
-              return (
-                <span key={href} className="contents">
-                  <Link
-                    href={localHref}
-                    className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
-                  >
-                    {tr.nav[key as keyof typeof tr.nav]}
-                  </Link>
-                  {isHome && categories.length > 0 && (
-                    <div ref={catalogRef} className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setCatalogOpen((v) => !v)}
-                        className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
-                        aria-expanded={catalogOpen}
-                      >
-                        {tr.nav.catalog}
-                        <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
-                      </button>
-                      {catalogOpen && (
-                        <div className="fixed inset-x-0 top-[57px] z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
-                          <div className="mx-auto max-w-[1000px] px-4 py-6 grid grid-cols-3 gap-6">
-                            <div className="flex flex-col gap-0.5 border-r border-[#e4e8e4]/60 pr-4">
-                              {categories.map((c) => (
-                                <Link
-                                  key={c.id}
-                                  href={`/${locale}/category/${c.slug}`}
-                                  onClick={() => setCatalogOpen(false)}
-                                  className="rounded-[7px] px-3 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
-                                >
-                                  {c.name}
-                                </Link>
-                              ))}
-                            </div>
-                            {randomProducts.length > 0 && (
-                              randomProducts.map((p: any) => (
-                                  <Link
-                                    key={p.id}
-                                    href={`/${locale}/product/${p.slug ? `${p.id}-${p.slug}` : p.id}`}
-                                    onClick={() => setCatalogOpen(false)}
-                                    className="flex flex-col gap-3 rounded-[12px] border border-[#e4e8e4] p-4 hover:border-[#63ad36] hover:shadow-[0_8px_24px_rgba(99,173,54,0.1)] transition-all group"
-                                  >
-                                    {p.image_url && (
-                                      <div className="relative w-full aspect-[4/3] rounded-[8px] overflow-hidden bg-[#f3f6f6]">
-                                        <Image
-                                          src={p.image_url}
-                                          alt={p.name || ""}
-                                          fill
-                                          className="object-cover transition-transform group-hover:scale-105"
-                                          sizes="300px"
-                                        />
-                                      </div>
-                                    )}
-                                    <div className="flex flex-col gap-1">
-                                      <span className="text-[14px] font-bold text-[#1d1d1f] leading-[1.25] line-clamp-2 group-hover:text-[#34781f] transition-colors">
-                                        {p.name}
-                                      </span>
-                                      {p.price > 0 && (
-                                        <span className="text-[16px] font-extrabold text-[#34781f]">{formatPrice(p.price)} lei</span>
-                                      )}
-                                    </div>
-                                  </Link>
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {/* Locale switcher right after Contact */}
-                  {isContact && <LocaleSwitcher />}
-                </span>
-              );
-            })}
-          </nav>
+        {/* Desktop nav — centered */}
+        <nav className="hidden md:flex justify-center gap-[6px]">
+          {desktopNavLinks}
+        </nav>
 
-          {/* Actions — order: Phone, Profile, Cart, Search */}
-          <div className="flex items-center gap-1">
-            {/* Phone CTA with vibrate */}
-            <a
-              href={`tel:${PHONE}`}
-              className="mr-2 hidden items-center gap-2.5 rounded-[9px] border border-[#e4e8e4] px-[13px] py-[8px] transition-colors hover:border-[#63ad36] md:flex"
-            >
-              <Phone className="h-5 w-5 text-[#63ad36]" style={{ animation: "vibrate 2s ease-in-out infinite" }} />
-              <span className="grid leading-[1.1]">
-                <b className="text-[13px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
-                <small className="text-[11px] text-[#6b6c6c]">{tr.header.callNow}</small>
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          <a
+            href={`tel:${PHONE}`}
+            className="mr-2 hidden items-center gap-[10px] min-w-[168px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] md:flex"
+          >
+            <Phone className="h-5 w-5 text-[#63ad36]" style={{ animation: "vibrate 2s ease-in-out infinite" }} />
+            <span className="grid leading-[1.1]">
+              <b className="text-[14px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
+              <small className="text-[11px] text-[#6b6c6c]">{tr.header.callNow}</small>
+            </span>
+          </a>
+
+          <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[42px] h-[42px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors" aria-label="Căutare">
+            <Search className="h-6 w-6" />
+          </button>
+          <button onClick={() => setCartOpen(true)} className="relative grid place-items-center w-[42px] h-[42px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors" aria-label="Coș">
+            <ShoppingBag className="h-6 w-6" />
+            {cartCount > 0 && (
+              <span className="absolute top-[1px] right-[3px] min-w-[18px] h-[18px] grid place-items-center rounded-[20px] bg-[#63ad36] text-[11px] font-extrabold text-white">
+                {cartCount}
               </span>
-            </a>
-
-            <Link href="/account" className="hidden rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:block">
-              <User className="h-5 w-5" />
-            </Link>
-            <button onClick={() => setCartOpen(true)} className="relative rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Coș">
-              <ShoppingBag className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#63ad36] text-[10px] font-bold text-white">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <button onClick={() => setSearchOpen(!searchOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors" aria-label="Căutare">
-              <Search className="h-5 w-5" />
-            </button>
-            <button onClick={() => setMenuOpen(!menuOpen)} className="rounded-full p-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors md:hidden" aria-label="Meniu">
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
+            )}
+          </button>
+          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[42px] h-[42px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors md:hidden" aria-label="Meniu">
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
 
         {searchOpen && (
-          <div className="border-t border-[#e4e8e4]/60 px-4 py-3">
-            <form action={`/${locale}/search`} className="mx-auto max-w-[1000px]">
+          <div className="col-span-full border-t border-[#e4e8e4]/60" style={{ padding: "12px max(24px, calc((100vw - 1048px) / 2))" }}>
+            <form action={`/${locale}/search`}>
               <input
                 name="q"
                 type="text"

@@ -66,9 +66,9 @@ export function Hero({ content, images }: HeroProps) {
         }}
       />
 
-      <div className="relative z-10 px-4 py-12 md:px-8 md:py-16">
+      <div className="relative z-10 pt-[30px] px-4 md:px-8">
         <div className="max-w-[500px]">
-          <h1 className="text-[32px] font-extrabold leading-[1.06] text-[#1d1d1f] md:text-[45px]">
+          <h1 className="mb-[14px] text-[32px] font-extrabold leading-[1.06] text-[#1d1d1f] md:text-[45px]">
             {titleLines.map((line, i) => {
               if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
@@ -89,13 +89,13 @@ export function Hero({ content, images }: HeroProps) {
           </h1>
 
           {subtitle && (
-            <p className="mt-4 max-w-[430px] text-[18px] leading-[1.55] text-[#4b5565]">
+            <p className="mt-0 mb-[18px] max-w-[430px] text-[18px] leading-[1.55] text-[#4b5565]">
               {subtitle}
             </p>
           )}
 
           {(primaryCta?.label || ghostCta?.label) && (
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-[18px]">
               {primaryCta && <CtaLink cta={primaryCta} variant="primary" />}
               {ghostCta && <CtaLink cta={ghostCta} variant="ghost" />}
             </div>

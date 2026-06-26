@@ -72,10 +72,10 @@ function Section({ title, products, viewAllHref, tr }: { title: React.ReactNode;
   if (products.length === 0) return null;
   return (
     <section className="pt-[22px] pb-[70px]">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-[22px] font-extrabold text-[#1d1d1f]">{title}</h2>
+      <div className="mb-[10px] flex items-center justify-between">
+        <h2 className="text-[23px] font-extrabold uppercase text-[#1d1d1f]">{title}</h2>
         {viewAllHref && (
-          <a href={viewAllHref} className="text-[14px] font-semibold text-[#34781f] hover:underline transition-colors">
+          <a href={viewAllHref} className="text-[14px] font-semibold text-[#404b5a] hover:underline transition-colors">
             {tr.category.viewAll}
           </a>
         )}
@@ -205,7 +205,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       <QuickOrder tr={tr} />
 
-      <section className="my-[30px] md:my-[30px]">
+      <section className="mt-[30px] mb-[28px]">
         <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
           {tr.home.whyTitle}
         </h2>
@@ -233,13 +233,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </div>
       </section>
 
-      <section className="py-[70px] border-t border-[#e4e8e4]">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {seoBlocks.map((block) => (
-            <div key={block.title.ro}>
-              <h3 className="text-[16px] font-bold text-[#1d1d1f] mb-3">{block.title[locale as keyof typeof block.title] || block.title.ro}</h3>
-              <p className="text-[14px] leading-[1.6] text-[#6b6c6c]">{block.desc[locale as keyof typeof block.desc] || block.desc.ro}</p>
-            </div>
+      <section className="mt-[28px] mb-[34px]">
+        <h2 className="max-w-[760px] mb-[10px] text-[25px] leading-[1.18] font-bold text-[#1d1d1f]">{seoBlocks[0].title[locale as keyof typeof seoBlocks[0]["title"]] || seoBlocks[0].title.ro}</h2>
+        <p className="max-w-[870px] mb-[18px] text-[16px] leading-[1.6] text-[#536070]">{seoBlocks[0].desc[locale as keyof typeof seoBlocks[0]["desc"]] || seoBlocks[0].desc.ro}</p>
+        <div className="grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+          {seoBlocks.slice(1).map((block) => (
+            <article key={block.title.ro} className="pt-[18px] border-t border-[#e1e7ef]">
+              <h3 className="text-[16px] leading-[1.25] font-bold text-[#1d1d1f] mb-2">{block.title[locale as keyof typeof block.title] || block.title.ro}</h3>
+              <p className="text-[14px] leading-[1.55] text-[#697586]">{block.desc[locale as keyof typeof block.desc] || block.desc.ro}</p>
+            </article>
           ))}
         </div>
       </section>
