@@ -219,13 +219,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ].map((item, i, arr) => (
             <article
               key={item.title}
-              className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-r border-[#e1e7ef] transition-colors duration-[.18s] hover:bg-[#f9fdf6] ${i === arr.length - 1 ? "border-r-0" : ""}`}
+              className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-r border-[#e1e7ef] transition-colors duration-[.18s] hover:bg-[#f9fdf6] group ${i === arr.length - 1 ? "border-r-0" : ""}`}
             >
-              <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] text-[#111827]">
+              <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] text-[#111827] group-hover:text-[#2f7d25] transition-colors duration-[.18s]">
                 <item.Icon className="h-[34px] w-[34px]" strokeWidth={1.5} />
               </span>
               <div className="min-w-0">
-                <h3 className="text-[12px] font-medium uppercase text-[#1d1d1f] leading-[1.2]">{item.title}</h3>
+                <h3 className="text-[12px] font-medium uppercase text-[#1d1d1f] leading-[1.2] group-hover:text-[#2f7d25] transition-colors duration-[.18s]">{item.title}</h3>
                 <p className="text-[12px] text-[#6b6c6c] leading-[1.35]">{item.desc}</p>
               </div>
             </article>

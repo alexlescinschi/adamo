@@ -178,6 +178,9 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
               </span>
             )}
           </button>
+          <Link href={`/${locale}/account`} className="grid place-items-center w-[42px] h-[42px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors hidden md:grid">
+            <User className="h-6 w-6" />
+          </Link>
           <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[42px] h-[42px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors md:hidden" aria-label="Meniu">
             {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -254,6 +257,9 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
           <a href={`tel:${PHONE}`} className="mt-3 flex items-center gap-2 rounded-[9px] border border-[#e4e8e4] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:border-[#63ad36]">
             <Phone className="h-4 w-4 text-[#63ad36]" /> {PHONE_DISPLAY}
           </a>
+          <Link href={`/${locale}/account`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2 rounded-[9px] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6]">
+            <User className="h-4 w-4" /> Cont
+          </Link>
         </nav>
       </div>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />

@@ -124,10 +124,10 @@ export function Footer() {
       <div className="flex flex-col gap-4 pt-[18px] border-t border-[#e1e7ef] items-center text-center lg:grid lg:gap-5 lg:items-center lg:text-left lg:justify-items-start" style={{ gridColumn: "1 / -1", gridTemplateColumns: "minmax(220px, 1fr) auto minmax(156px, 1fr)" }}>
         <small className="text-[12px] leading-[1.35] text-[#697586]">&copy; {new Date().getFullYear()} ADAMO.MD - Toate drepturile rezervate.</small>
         <div className="flex items-center justify-center gap-3 text-[12px] font-semibold leading-[1.35] text-[#536070] whitespace-nowrap">
-          <span>Creat cu <span className="text-[#63ad36]">♥</span> în Moldova</span>
+          <span>Creat cu <span className="text-red-500">♥</span> în Moldova</span>
           <span>Design by GPT</span>
         </div>
-        <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-end" aria-label="Metode de plată">
+        <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-self-end" aria-label="Metode de plată">
           <img src="/payment-visa.svg" alt="Visa" className="h-7 w-auto" />
           <img src="/payment-mastercard.svg" alt="Mastercard" className="h-7 w-auto" />
         </div>
