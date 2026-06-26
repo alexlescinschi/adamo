@@ -155,7 +155,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-3">
           <a
             href={`tel:${PHONE}`}
             className="mr-1 hidden items-center gap-[10px] min-w-[168px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] sm:mr-2 md:flex"
@@ -167,22 +167,22 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
             </span>
           </a>
 
-          <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[36px] h-[36px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Căutare">
-            <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+          <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Căutare">
+            <Search className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
           </button>
-          <button onClick={() => setCartOpen(true)} className="relative grid place-items-center w-[36px] h-[36px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Coș">
-            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
+          <button onClick={() => setCartOpen(true)} className="relative grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Coș">
+            <ShoppingBag className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
             {cartCount > 0 && (
-              <span className="absolute top-0 right-0 min-w-[18px] h-[18px] grid place-items-center rounded-[20px] bg-[#63ad36] text-[11px] font-extrabold text-white sm:top-[1px] sm:right-[3px]">
+              <span className="absolute top-0 right-0 min-w-[16px] h-[16px] grid place-items-center rounded-[20px] bg-[#63ad36] text-[10px] font-extrabold text-white sm:min-w-[18px] sm:h-[18px] sm:text-[11px] sm:top-[1px] sm:right-[3px]">
                 {cartCount}
               </span>
             )}
           </button>
-          <Link href={`/${locale}/account`} className="grid place-items-center w-[36px] h-[36px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]">
-            <User className="h-5 w-5 sm:h-6 sm:w-6" />
+          <Link href={`/${locale}/account`} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]">
+            <User className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[36px] h-[36px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label="Meniu">
-            {menuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label="Meniu">
+            {menuOpen ? <X className="h-[18px] w-[18px] sm:h-6 sm:w-6" /> : <Menu className="h-[18px] w-[18px] sm:h-6 sm:w-6" />}
           </button>
         </div>
 
