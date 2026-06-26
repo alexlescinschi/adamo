@@ -39,12 +39,8 @@ export function Footer() {
 
   return (
     <footer
-      className="grid gap-[34px] mx-auto border-t border-[#e1e7ef] bg-white/90"
-      style={{
-        maxWidth: "1240px",
-        padding: "28px 28px 16px",
-        gridTemplateColumns: "1.3fr .7fr .9fr 1.2fr 1fr",
-      }}
+      className="grid grid-cols-1 gap-[34px] mx-auto border-t border-[#e1e7ef] bg-white/90 px-[18px] py-[26px] md:grid-cols-2 md:px-[28px] md:py-[28px] lg:grid-cols-[1.3fr_0.7fr_0.9fr_1.2fr_1fr] lg:px-[28px] lg:py-[28px] pb-[82px] md:pb-4"
+      style={{ maxWidth: "1240px" }}
     >
       {/* Brand */}
       <div>
@@ -125,13 +121,13 @@ export function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="grid gap-5 pt-[18px] border-t border-[#e1e7ef] items-center" style={{ gridColumn: "1 / -1", gridTemplateColumns: "minmax(220px, 1fr) auto minmax(156px, 1fr)" }}>
+      <div className="flex flex-col gap-4 pt-[18px] border-t border-[#e1e7ef] items-center text-center lg:grid lg:gap-5 lg:items-center lg:text-left lg:justify-items-start" style={{ gridColumn: "1 / -1", gridTemplateColumns: "minmax(220px, 1fr) auto minmax(156px, 1fr)" }}>
         <small className="text-[12px] leading-[1.35] text-[#697586]">&copy; {new Date().getFullYear()} ADAMO.MD - Toate drepturile rezervate.</small>
         <div className="flex items-center justify-center gap-3 text-[12px] font-semibold leading-[1.35] text-[#536070] whitespace-nowrap">
           <span>Creat cu <span className="text-[#63ad36]">♥</span> în Moldova</span>
           <span>Design by GPT</span>
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-3" aria-label="Metode de plată">
+        <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-end" aria-label="Metode de plată">
           <img src="/payment-visa.svg" alt="Visa" className="h-7 w-auto" />
           <img src="/payment-mastercard.svg" alt="Mastercard" className="h-7 w-auto" />
         </div>

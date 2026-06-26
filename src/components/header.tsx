@@ -145,7 +145,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
       >
         {/* Logo */}
         <Link href="/" className="grid gap-0 font-extrabold tracking-[0] leading-none text-[29px] text-[#1d1d1f]">
-          ADAMO<span className="text-[#63ad36]">.</span>MD
+          <span>ADAMO<span className="text-[#63ad36]">.</span>MD</span>
           <small className="mt-[5px] text-[10px] text-[#8a94a3] uppercase tracking-[1.8px] font-normal">Laptopuri premium</small>
         </Link>
 

@@ -42,8 +42,8 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className="h-full">
-      <body className="min-h-full flex flex-col font-sans text-[#1d1d1f]" style={{ background: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)", backgroundRepeat: "no-repeat", backgroundAttachment: "fixed" }}>
+    <html lang={locale} className="h-full overflow-x-hidden scroll-smooth">
+      <body className="min-h-full flex flex-col font-sans text-[15px] text-[#111827] overflow-x-hidden" style={{ background: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)" }}>
         <CartProvider>
           <Header categories={categories} products={products} />
           <main className="mx-auto w-full max-w-[1000px] flex-1 pb-[20px]">{children}</main>
