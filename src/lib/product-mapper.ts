@@ -19,9 +19,6 @@ export function hasAttribute(item: any, label: string): boolean {
 }
 
 export function extractSpecs(item: any): string[] {
-  if (item.cardSpecs) {
-    return String(item.cardSpecs).split("|").map((s: string) => s.trim()).filter(Boolean).slice(0, 5);
-  }
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
   return raw

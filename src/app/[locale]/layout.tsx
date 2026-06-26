@@ -3,17 +3,44 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ContactWidget } from "@/components/contact-widget";
 import { CartProvider } from "@/hooks/use-cart";
-import { getCategories, getPublishedProducts } from "@/lib/crm-api";
+import { getCategories, getPublishedProducts, getProductById } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
-import { extractProducts } from "@/lib/product-mapper";
+import { extractProducts, mapProductCard, extractSpecs } from "@/lib/product-mapper";
+
+export const SITE_URL = "https://adamo3.vercel.app";
+const LOCALES = ["ro", "ru", "en"];
 
 export function generateStaticParams() {
   return [{ locale: "ro" }, { locale: "ru" }, { locale: "en" }];
 }
 
+// ponytail: hreflang default pentru toate paginile. Per-pagină îl poate suprascrie
+// cu canonical self-referențial (ex: product/category își setează propriul alternates).
+function hreflang(path: string) {
+  const languages: Record<string, string> = {};
+  for (const l of LOCALES) languages[l] = `${SITE_URL}/${l}${path}`;
+  languages["x-default"] = `${SITE_URL}/ro${path}`; // piața principală: Moldova
+  return languages;
+}
+
 export const metadata: Metadata = {
-  title: "Adamo - Magazin Online",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Adamo — Magazin Online",
+    template: "%s — Adamo",
+  },
   description: "Magazinul oficial Adamo. Produse de calitate la prețuri bune.",
+  applicationName: "Adamo",
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  alternates: { languages: hreflang("") },
+  openGraph: {
+    type: "website",
+    siteName: "Adamo",
+    url: SITE_URL,
+    locale: "ro_MD",
+    alternateLocale: ["ru_MD", "en_US"],
+  },
+  twitter: { card: "summary_large_image", title: "Adamo — Magazin Online" },
 };
 
 export default async function LocaleLayout({
@@ -36,7 +63,18 @@ export default async function LocaleLayout({
   let products: any[] = [];
   try {
     const data = await getPublishedProducts(locale, 8);
-    products = extractProducts(data);
+    const basic = extractProducts(data);
+    // ponytail: enrich header products for correct specs
+    const enriched = await Promise.allSettled(
+      basic.map(async (p) => {
+        try {
+          const detail = await getProductById(p.id, locale);
+          const mapped = mapProductCard(detail);
+          return { ...p, specs: extractSpecs(detail), price: mapped.price || p.price, badge: mapped.badge, badge_type: mapped.badge_type };
+        } catch { return p; }
+      })
+    );
+    products = enriched.map((r) => (r.status === "fulfilled" ? r.value : null)).filter(Boolean);
   } catch {
     products = [];
   }

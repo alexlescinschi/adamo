@@ -1,13 +1,17 @@
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
 import { mapProductCard, BADGE_LABELS } from "@/lib/product-mapper";
+import { SITE_URL } from "@/app/[locale]/layout";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+const LOCALES = ["ro", "ru", "en"];
 
 export async function generateStaticParams() {
   try {
@@ -18,8 +22,7 @@ export async function generateStaticParams() {
     const data = await res.json();
     const ids: number[] = data.ids || [];
     const slugs: string[] = data.slugs || [];
-    const locales = ["ro", "ru", "en"];
-    return locales.flatMap((locale) =>
+    return LOCALES.flatMap((locale) =>
       ids.map((id, i) => ({ locale, id: slugs[i] ? `${id}-${slugs[i]}` : String(id) }))
     );
   } catch {
@@ -27,7 +30,7 @@ export async function generateStaticParams() {
   }
 }
 
-function extractImage(product: any): { url: string }[] {
+function extractImages(product: any): { url: string }[] {
   if (product.images?.length) return product.images;
   if (product.image_url) return [{ url: product.image_url }];
   return [];
@@ -51,14 +54,89 @@ async function getProduct(id: string, locale = "ro") {
     price,
     old_price: oldPrice > price ? oldPrice : undefined,
     image_url: data.images?.[0]?.url || data.previewImageUrl || null,
-    images: extractImage(data),
+    images: extractImages(data),
     specs,
+    // brand = primul spec cu code "brand" sau label "Бренд/Brand" (CRM îl returnează în specs).
+    brand: rawSpecs.find((s: any) => s.code === "brand" || /^(Бренд|Brand|Бренд)$/i.test(s.label))?.valueLabel,
     badge,
     availability: data.offerSummary?.availability || "OutOfStock",
     category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
     category_name: data.category?.translation?.name || data.category?.name || null,
     units_total: data.offerSummary?.inventoryUnitCount ?? data.units_total ?? undefined,
     unit_id: data.units?.[0]?.id ?? data.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? data.id,
+  };
+}
+
+function productPath(locale: string, id: number | string, slug?: string) {
+  return `/${locale}/product/${slug ? `${id}-${slug}` : id}`;
+}
+
+// ponytail: hreflang per-produs — același slug în toate locale (CRM returnează un singur slug),
+// dar locale-prefix diferit. Rezolvă duplicate-content pentru Google.
+function productLanguages(id: number, slug?: string) {
+  const languages: Record<string, string> = {};
+  for (const l of LOCALES) languages[l] = `${SITE_URL}${productPath(l, id, slug)}`;
+  languages["x-default"] = `${SITE_URL}${productPath("ro", id, slug)}`;
+  return languages;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; locale: string }>;
+}): Promise<Metadata> {
+  const { id: rawId, locale } = await params;
+  const id = rawId.split("-")[0];
+  let product: any = null;
+  try {
+    product = await getProduct(id, locale);
+  } catch {
+    return {};
+  }
+  if (!product) return {};
+
+  const slug = product.slug ? `${id}-${product.slug}` : id;
+  const url = `${SITE_URL}${productPath(locale, id, product.slug)}`;
+  const desc =
+    (product.description && product.description.slice(0, 160)) ||
+    `${product.name} la preț bun în magazinul Adamo. Livrare rapidă în toată Moldova.`;
+  const ogImages = (product.images?.length ? product.images : [])
+    .map((im: any) => im.url)
+    .filter(Boolean)
+    .slice(0, 4)
+    .map((u: string) => ({ url: u, width: 1000, height: 750, alt: product.name }));
+
+  return {
+    title: product.name,
+    description: desc,
+    alternates: {
+      canonical: productPath(locale, id, product.slug),
+      languages: productLanguages(Number(id), product.slug),
+    },
+    openGraph: {
+      // ponytail: Next 16 nu include "product" în OpenGraph.type union; Facebook îl
+      // afișează oricum ca produs via tag-urile product:* din `other` de mai jos.
+      type: "website",
+      url,
+      title: product.name,
+      description: desc,
+      images: ogImages,
+      siteName: "Adamo",
+      locale: locale === "ro" ? "ro_MD" : locale === "ru" ? "ru_MD" : "en_US",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: desc,
+      images: ogImages.map((i: any) => i.url),
+    },
+    // Facebook product OG tags
+    other: {
+      "product:price:amount": String(product.price || 0),
+      "product:price:currency": "MDL",
+      "product:availability":
+        product.availability === "InStock" ? "instock" : "oos",
+    },
   };
 }
 
@@ -96,12 +174,85 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const similar = product.category_slug ? await getSimilar(product.category_slug, product.id, locale) : [];
 
+  // JSON-LD: Product + Offer + BreadcrumbList (unu, nu duplicat ca openbox).
+  const url = `${SITE_URL}${productPath(locale, id, product.slug)}`;
+  const images = (product.images?.length ? product.images : [])
+    .map((im: any) => im.url)
+    .filter(Boolean);
+  const inStock = product.availability === "InStock" || (product.units_total ?? 0) > 0;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.name,
+        description: product.description || undefined,
+        sku: String(product.id),
+        url,
+        ...(images.length ? { image: images } : {}),
+        ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+        ...(product.category_name ? { category: product.category_name } : {}),
+        offers: {
+          "@type": "Offer",
+          price: String(product.price || 0),
+          priceCurrency: "MDL",
+          availability: inStock
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          itemCondition: "https://schema.org/NewCondition",
+          priceValidUntil: "2026-12-31",
+          url,
+          seller: { "@type": "Organization", name: "Adamo" },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Acasă", item: `${SITE_URL}/${locale}` },
+          ...(product.category_slug && product.category_name
+            ? [{
+                "@type": "ListItem",
+                position: 2,
+                name: product.category_name,
+                item: `${SITE_URL}/${locale}/category/${product.category_slug}`,
+              }]
+            : []),
+          { "@type": "ListItem", position: product.category_slug ? 3 : 2, name: product.name, item: url },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="py-8">
-      <Link href="/" className="inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline mb-6">
-        <ChevronLeft className="h-4 w-4" />
-        {tr.product.back}
-      </Link>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Breadcrumb vizual (ca openbox): semantic <nav>/<ol>/<li> */}
+      <nav aria-label="Breadcrumb" className="mb-6">
+        <ol className="flex flex-wrap items-center gap-2 text-sm text-[#6b6c6c]">
+          <li>
+            <Link href={`/${locale}`} className="hover:text-[#1d1d1f] transition-colors">Acasă</Link>
+          </li>
+          <li role="presentation" className="text-[#cccfcf]"><ChevronRight className="h-4 w-4" /></li>
+          {product.category_slug && product.category_name && (
+            <>
+              <li>
+                <Link href={`/${locale}/category/${product.category_slug}`} className="hover:text-[#1d1d1f] transition-colors">
+                  {product.category_name}
+                </Link>
+              </li>
+              <li role="presentation" className="text-[#cccfcf]"><ChevronRight className="h-4 w-4" /></li>
+            </>
+          )}
+          <li aria-current="page" className="text-[#1d1d1f] line-clamp-1 max-w-[200px] sm:max-w-md">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
 
       <div className="grid gap-[70px] md:grid-cols-2">
         <div className="min-w-0 md:sticky md:top-24 md:self-start">
@@ -132,6 +283,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       )}
+
+      <Link href="/" className="mt-[70px] inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline">
+        <ChevronLeft className="h-4 w-4" />
+        {tr.product.back}
+      </Link>
     </div>
   );
 }
