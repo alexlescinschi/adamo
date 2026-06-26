@@ -213,6 +213,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         <nav className="flex flex-col gap-1 px-4 py-4">
           {NAV_LINK_KEYS.map(({ href, key }) => {
             const isHome = href === "/";
+            const isContact = href === "/contact";
             const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
             const active = isHome ? pathname === `/${locale}` : pathname === localHref || pathname.startsWith(localHref + "/");
             return (
@@ -251,15 +252,13 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                     )}
                   </div>
                 )}
+                {isContact && <LocaleSwitcher />}
               </span>
             );
           })}
           <a href={`tel:${PHONE}`} className="mt-3 flex items-center gap-2 rounded-[9px] border border-[#e4e8e4] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:border-[#63ad36]">
             <Phone className="h-4 w-4 text-[#63ad36]" /> {PHONE_DISPLAY}
           </a>
-          <Link href={`/${locale}/account`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2 rounded-[9px] px-4 py-3 text-sm font-bold text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6]">
-            <User className="h-4 w-4" /> Cont
-          </Link>
         </nav>
       </div>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
