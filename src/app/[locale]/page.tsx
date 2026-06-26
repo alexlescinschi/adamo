@@ -55,6 +55,7 @@ async function fetchAndEnrich(locale: string) {
       badge: mapped.badge,
       badge_type: mapped.badge_type,
       specs: mapped.specs || p.specs,
+      images: mapped.images || p.images,
       is_popular: hasAttribute(detail, "popular"),
     };
   });
@@ -221,7 +222,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               key={item.title}
               className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-r border-[#e1e7ef] transition-colors duration-[.18s] hover:bg-[#f9fdf6] group ${i === arr.length - 1 ? "border-r-0" : ""}`}
             >
-              <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] text-[#111827] group-hover:text-[#2f7d25] transition-colors duration-[.18s]">
+              <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] bg-white rounded-full text-[#111827] group-hover:text-[#2f7d25] transition-colors duration-[.18s]">
                 <item.Icon className="h-[34px] w-[34px]" strokeWidth={1.5} />
               </span>
               <div className="min-w-0">

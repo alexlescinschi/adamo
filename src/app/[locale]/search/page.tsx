@@ -19,7 +19,7 @@ export default async function SearchPage({ searchParams, params }: { searchParam
           try {
             const detail = await getProductById(p.id, locale);
             const mapped = mapProductCard(detail);
-            return { ...p, specs: extractSpecs(detail), price: mapped.price || p.price, badge: mapped.badge, badge_type: mapped.badge_type };
+            return { ...p, specs: extractSpecs(detail), images: mapped.images || p.images, price: mapped.price || p.price, badge: mapped.badge, badge_type: mapped.badge_type };
           } catch { return p; }
         })
       );

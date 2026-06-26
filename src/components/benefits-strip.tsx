@@ -32,7 +32,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
               type="button"
               aria-expanded={isActive}
               onClick={() => handleClick(i)}
-              className={`flex items-center gap-[9px] min-h-[76px] py-[10px] px-3 border-r border-[#e1e7ef] text-left cursor-pointer transition-[background,color] duration-[.18s] outline-none group sm:flex-col sm:justify-center sm:text-center sm:min-h-[96px] sm:py-3 sm:px-[7px] sm:gap-[7px] border-b border-[#e1e7ef] lg:border-b-0 ${
+              className={`flex items-center gap-[9px] min-h-[76px] py-[10px] px-3 border-r border-[#e1e7ef] text-left cursor-pointer transition-[background,color] duration-[.18s] outline-none group sm:min-h-[96px] sm:py-3 sm:px-[7px] sm:gap-[7px] border-b border-[#e1e7ef] lg:border-b-0 ${
                 i === benefits.length - 1 ? "border-r-0" : ""
               } ${
                 isActive
@@ -40,7 +40,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
                   : "bg-transparent hover:bg-[#f9fdf6]/50"
               }`}
             >
-              <span className={`flex-shrink-0 grid place-items-center w-9 h-9 transition-colors duration-[.18s] ${
+              <span className={`flex-shrink-0 grid place-items-center w-9 h-9 bg-white rounded-full transition-colors duration-[.18s] ${
                 isActive ? "text-[#2f7d25]" : "text-[#111827] group-hover:text-[#2f7d25]"
               }`}>
                 <item.Icon className="h-8 w-8" strokeWidth={2} />
