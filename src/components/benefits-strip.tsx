@@ -37,10 +37,10 @@ export function BenefitsStrip({ tr }: { tr: any }) {
               } ${
                 isActive
                   ? "bg-[#f9fdf6]/50 shadow-[inset_0_2px_0_rgba(83,168,45,0.55)]"
-                  : "bg-transparent hover:bg-[#f9fdf6]/50"
+                  : "bg-white hover:bg-[#f9fdf6]/50"
               }`}
             >
-              <span className={`flex-shrink-0 grid place-items-center w-9 h-9 bg-white rounded-full transition-colors duration-[.18s] ${
+              <span className={`flex-shrink-0 grid place-items-center w-9 h-9 transition-colors duration-[.18s] ${
                 isActive ? "text-[#2f7d25]" : "text-[#111827] group-hover:text-[#2f7d25]"
               }`}>
                 <item.Icon className="h-8 w-8" strokeWidth={2} />
