@@ -80,7 +80,7 @@ function Section({ title, products, viewAllHref, tr }: { title: React.ReactNode;
           </a>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-[14px] md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
         {products.map((product: any) => (
           <ProductCard key={product.id} product={product} />
         ))}
