@@ -22,8 +22,8 @@ export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((s: any) => SPEC_LABELS.includes(s.label) && s.valueLabel)
-    .sort((a, b) => SPEC_LABELS.indexOf(a.label) - SPEC_LABELS.indexOf(b.label))
+    .filter((s: any) => SPEC_LABELS.includes(s.code) && s.valueLabel)
+    .sort((a, b) => SPEC_LABELS.indexOf(a.code) - SPEC_LABELS.indexOf(b.code))
     .map((s: any) => s.valueLabel);
 }
 
