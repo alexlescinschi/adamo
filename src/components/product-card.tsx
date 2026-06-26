@@ -70,9 +70,9 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
 
       {product.specs && product.specs.length > 0 && (
-        <ul className="mb-[8px] ml-[17px] list-disc p-0 text-[12px] leading-[1.42] text-[#526071]">
-          {product.specs.map((s, i) => <li key={i}>{s}</li>)}
-        </ul>
+        <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] truncate">
+          {product.specs.join(" | ")}
+        </p>
       )}
 
       <div className="mt-auto pt-2">

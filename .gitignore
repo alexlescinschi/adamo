@@ -43,3 +43,6 @@ next-env.d.ts
 # local reference template (not part of project)
 adamo-vercel-template 2/
 adamo-vercel-template 3/
+
+# CRM docs credentials (local only)
+.env.crm-docs

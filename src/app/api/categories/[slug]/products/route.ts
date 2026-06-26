@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const cacheKey = `category-products:${slug}:${locale}:${limit}`;
-    let data = await getCached(cacheKey, () => getCategoryProducts(slug, locale, limit), 120);
+    let data = await getCached(cacheKey, () => getCategoryProducts(slug, locale, { limit }), 120);
 
     // Fallback to all published products filtered by category
     if (!data?.items?.length) {

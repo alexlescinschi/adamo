@@ -1,5 +1,6 @@
 export const BADGE_LABELS = ["Sticker"];
 const POPULAR_LABELS = ["popular", "популярный"];
+const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "tip-stocare", "tip-placa-video"];
 
 function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   const specs = item.specs || item.attributes || [];
@@ -24,9 +25,9 @@ export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((s: any) => s.label && s.valueLabel && !BADGE_LABELS.includes(s.label))
-    .slice(0, 5)
-    .map((s: any) => `${s.label}: ${s.valueLabel}`);
+    .filter((s: any) => SPEC_LABELS.includes(s.label) && s.valueLabel)
+    .sort((a, b) => SPEC_LABELS.indexOf(a.label) - SPEC_LABELS.indexOf(b.label))
+    .map((s: any) => s.valueLabel);
 }
 
 export function mapProductCard(item: any) {
@@ -40,6 +41,8 @@ export function mapProductCard(item: any) {
     image_url: item.imageUrl || item.previewImageUrl || null,
     // unit_id real din CRM (ex: produs 1377 → unit 1882). ponytail: fallback product.id doar daca CRM nu intoarce unit.
     unit_id: item.units?.[0]?.id ?? item.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? item.id,
+    // stockCount vine pe cardul de storefront; units_on_warehouse pe detail.
+    stock: item.stockCount ?? item.units_on_warehouse ?? undefined,
     specs: extractSpecs(item),
     ...badge,
   };

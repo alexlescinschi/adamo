@@ -64,7 +64,7 @@ async function getProduct(id: string, locale = "ro") {
 
 async function getSimilar(slug: string, currentId: number, locale = "ro") {
   try {
-    const catData = await getCategoryProducts(slug, locale, 8);
+    const catData = await getCategoryProducts(slug, locale, { limit: 8 });
     const items = Array.isArray(catData) ? catData : catData?.items || [];
     return items.filter((p: any) => p.id !== currentId).slice(0, 4).map(mapProductCard);
   } catch {

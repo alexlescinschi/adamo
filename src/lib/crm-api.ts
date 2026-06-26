@@ -155,8 +155,32 @@ export async function getCategoryBySlug(slug: string, locale = "ro") {
   return crmFetch(`/category/categories/${slug}?locale=${locale}`);
 }
 
-export async function getCategoryProducts(slug: string, locale = "ro", limit = 24) {
-  return crmFetch(`/category/categories/${slug}/products?locale=${locale}&limit=${limit}`);
+export interface CategoryProductsQuery {
+  page?: number;
+  limit?: number;
+  sort?: string;
+  priceMin?: number;
+  priceMax?: number;
+  q?: string;
+}
+
+// Endpoint PUBLIC de storefront: carduri complete (preț/imagine/stoc) + paginare nativă.
+// ponytail: cardul de listă vine complet din API → zero enrich, zero apel CRM per-produs.
+export async function getCategoryProducts(
+  slug: string,
+  locale = "ro",
+  opts: CategoryProductsQuery = {}
+) {
+  const p = new URLSearchParams({
+    locale,
+    page: String(opts.page ?? 1),
+    limit: String(opts.limit ?? 24),
+  });
+  if (opts.sort) p.set("sort", opts.sort);
+  if (opts.priceMin != null) p.set("price_min", String(opts.priceMin));
+  if (opts.priceMax != null) p.set("price_max", String(opts.priceMax));
+  if (opts.q) p.set("q", opts.q);
+  return crmFetch(`/category/categories/${slug}/products?${p.toString()}`);
 }
 
 export async function getPickupWarehouses() {

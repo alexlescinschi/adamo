@@ -10,31 +10,55 @@ interface CategoryFilterProps {
   categoryName: string;
   page: number;
   perPage: number;
+  totalPages?: number;
   totalItems?: number;
+  // ponytail: paginare server-side — primește doar pagina curentă, totalPages din CRM.
+  serverPaginated?: boolean;
 }
 
-export function CategoryFilter({ products, categoryName, page, perPage, totalItems }: CategoryFilterProps) {
+export function CategoryFilter({
+  products,
+  categoryName,
+  page,
+  perPage,
+  totalPages: serverTotalPages,
+  totalItems,
+  serverPaginated,
+}: CategoryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const goToPage = useCallback((p: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (p <= 1) params.delete("page");
-    else params.set("page", String(p));
-    const qs = params.toString();
-    router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
-  }, [router, searchParams]);
+  const goToPage = useCallback(
+    (p: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (p <= 1) params.delete("page");
+      else params.set("page", String(p));
+      const qs = params.toString();
+      router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+    },
+    [router, searchParams]
+  );
 
+  // Filtre client-side pe produsele paginii curente (ceiling: pentru filtre reale
+  // peste tot catalogul, necesită filtre server-side pe attributeDefinitions).
   const specOptions = useMemo(() => {
     const options: Record<string, Set<string>> = {};
     for (const p of products) {
-      // ponytail: specMap vine din listă (toate produsele) → opțiuni consistente între pagini
       if (p.specMap) {
         for (const [label, value] of Object.entries(p.specMap)) {
           if (!options[label]) options[label] = new Set();
           options[label].add(String(value));
+        }
+      } else if (Array.isArray(p.specs)) {
+        for (const s of p.specs) {
+          const [label, ...rest] = String(s).split(":").map((x: string) => x.trim());
+          const value = rest.join(":");
+          if (!label) continue;
+          const v = value || label;
+          if (!options[label]) options[label] = new Set();
+          options[label].add(v);
         }
       }
     }
@@ -51,17 +75,34 @@ export function CategoryFilter({ products, categoryName, page, perPage, totalIte
       activeKeys.every((key) => {
         const selected = filters[key];
         if (!selected.length) return true;
-        const val = p.specMap?.[key];
-        return val && selected.includes(String(val));
+        if (p.specMap) {
+          const val = p.specMap[key];
+          return val && selected.includes(String(val));
+        }
+        if (Array.isArray(p.specs)) {
+          return p.specs.some((s: string) => {
+            const [label, ...rest] = String(s).split(":").map((x: string) => x.trim());
+            if (label !== key) return false;
+            const v = rest.join(":") || label;
+            return selected.includes(v);
+          });
+        }
+        return false;
       })
     );
   }, [products, filters]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  // ponytail: citește pagina din URL (nu din prop-ul mort page). goToPage scrie ?page=N aici.
-  const safePage = Math.min(Number(searchParams.get("page")) || 1, totalPages);
-  const start = (safePage - 1) * perPage;
-  const paginated = filtered.slice(start, start + perPage);
+  const totalPages = serverPaginated
+    ? Math.max(1, serverTotalPages || 1)
+    : Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage = Math.min(
+    Number(searchParams.get("page")) || page || 1,
+    totalPages
+  );
+
+  // serverPaginated: afișăm ce vine de la server (deja slice-ul paginii curente).
+  // Altfel: slice client-side pe filtered.
+  const visible = serverPaginated ? filtered : filtered.slice(0, perPage);
 
   const toggleFilter = (label: string, value: string) => {
     goToPage(1);
@@ -103,15 +144,27 @@ export function CategoryFilter({ products, categoryName, page, perPage, totalIte
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">{categoryName}</h1>
+        <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
+          {categoryName}
+        </h1>
         <div className="flex items-center gap-3">
+          {totalItems != null && (
+            <span className="text-sm text-[#6b6c6c]">{totalItems} produse</span>
+          )}
           {hasFilters && (
             <button onClick={clearFilters} className="text-sm text-[#4e8f28] hover:underline">
               Resetează
             </button>
           )}
           {specOptions.length > 0 && (
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className={`rounded-[28px] border px-4 py-2 text-sm transition-colors md:hidden ${sidebarOpen ? "border-[#63ad36] bg-[#63ad36] text-white" : "border-[#cccfcf] text-[#1d1d1f]"}`}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={`rounded-[28px] border px-4 py-2 text-sm transition-colors md:hidden ${
+                sidebarOpen
+                  ? "border-[#63ad36] bg-[#63ad36] text-white"
+                  : "border-[#cccfcf] text-[#1d1d1f]"
+              }`}
+            >
               Filtre
             </button>
           )}
@@ -186,14 +239,14 @@ export function CategoryFilter({ products, categoryName, page, perPage, totalIte
         )}
 
         <div className="flex-1">
-          {filtered.length === 0 ? (
+          {visible.length === 0 ? (
             <p className="text-[#6b6c6c] text-center py-12">
               Niciun produs nu corespunde filtrelor selectate.
             </p>
           ) : (
             <>
               <div className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
-                {paginated.map((p: any) => (
+                {visible.map((p: any) => (
                   <ProductCard key={p.id} product={p} />
                 ))}
               </div>
@@ -237,8 +290,8 @@ export function CategoryFilter({ products, categoryName, page, perPage, totalIte
               <div className="mt-8 py-10 border-t border-[#cccfcf]/50">
                 <h2 className="text-xl font-semibold text-[#1d1d1f] mb-3">Despre {categoryName}</h2>
                 <p className="text-[#6b6c6c] leading-relaxed max-w-3xl">
-                  {categoryName} de calitate la prețuri accesibile în magazinul Adamo. 
-                  Oferim o gamă variată de produse de la branduri renumite, 
+                  {categoryName} de calitate la prețuri accesibile în magazinul Adamo.
+                  Oferim o gamă variată de produse de la branduri renumite,
                   cu livrare rapidă în toată Moldova.
                 </p>
               </div>
