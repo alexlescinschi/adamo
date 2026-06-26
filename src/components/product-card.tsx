@@ -77,7 +77,7 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="mt-auto pt-2">
         {hasPrice ? (
-          <div className="flex items-end justify-between gap-3">
+          <div className="flex flex-row-reverse items-end justify-between gap-3 sm:flex-row">
             <div className="min-w-0">
               <strong className="block text-[25px] font-extrabold leading-none text-[#34781f] whitespace-nowrap">
                 {formatPrice(product.price)} <small className="text-[13px]">MDL</small>
@@ -103,7 +103,7 @@ export function ProductCard({ product }: { product: Product }) {
             </button>
           </div>
         ) : (
-          <div className="flex items-end justify-between gap-3">
+          <div className="flex flex-row-reverse items-end justify-between gap-3 sm:flex-row">
             <p className="text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
             <button
               onClick={handleAdd}
