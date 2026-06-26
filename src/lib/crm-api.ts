@@ -161,6 +161,9 @@ export interface CategoryProductsQuery {
   sort?: string;
   priceMin?: number;
   priceMax?: number;
+  // Atribute de filtrare server-side: { "memorie-ram": ["16gb", "32gb"], "producator": ["asus"] }.
+  // CRM: OR în interiorul facetării (virgulă), AND între facetări. Transformat în f_{code}=v1,v2.
+  attributes?: Record<string, string[]>;
   q?: string;
 }
 
@@ -179,6 +182,11 @@ export async function getCategoryProducts(
   if (opts.sort) p.set("sort", opts.sort);
   if (opts.priceMin != null) p.set("price_min", String(opts.priceMin));
   if (opts.priceMax != null) p.set("price_max", String(opts.priceMax));
+  if (opts.attributes) {
+    for (const [code, values] of Object.entries(opts.attributes)) {
+      if (values?.length) p.set(`f_${code}`, values.join(","));
+    }
+  }
   if (opts.q) p.set("q", opts.q);
   return crmFetch(`/category/categories/${slug}/products?${p.toString()}`);
 }
