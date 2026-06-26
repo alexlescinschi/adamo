@@ -67,7 +67,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
           <span key={href} className="contents">
             <Link
               href={localHref}
-              className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                    className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
             >
               {tr.nav[key as keyof typeof tr.nav]}
             </Link>
@@ -76,7 +76,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                 <button
                   type="button"
                   onClick={() => setCatalogOpen((v) => !v)}
-                  className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                        className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
                   aria-expanded={catalogOpen}
                 >
                   {tr.nav.catalog}
@@ -220,7 +220,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                 <Link
                   href={localHref}
                   onClick={() => setMenuOpen(false)}
-                  className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                  className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
                 >
                   {tr.nav[key as keyof typeof tr.nav]}
                 </Link>
@@ -229,7 +229,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                     <button
                       type="button"
                       onClick={() => setMobileCatalogOpen((v) => !v)}
-                      className={`flex w-full items-center justify-between rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${isCatalogActive || mobileCatalogOpen ? "bg-[#edf7e8] text-[#1e4b17]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                      className={`flex w-full items-center justify-between rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${isCatalogActive || mobileCatalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
                       aria-expanded={mobileCatalogOpen}
                     >
                       {tr.nav.catalog}
