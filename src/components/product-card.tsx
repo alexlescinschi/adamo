@@ -77,7 +77,7 @@ export function ProductCard({ product }: { product: Product }) {
 
       <div className="mt-auto pt-2">
         {hasPrice ? (
-          <div className="flex flex-row-reverse items-end justify-between gap-3 sm:flex-row">
+          <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <strong className="block text-[25px] font-extrabold leading-none text-[#34781f] whitespace-nowrap">
                 {formatPrice(product.price)} <small className="text-[13px]">MDL</small>
@@ -86,7 +86,7 @@ export function ProductCard({ product }: { product: Product }) {
                 <span className="block text-sm text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} MDL</span>
               )}
               <p className="m-0 mt-[3px] text-[12.5px] font-medium text-[#1d1d1f]">
-                {tr.product.installments}{" "}<img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />
+                {tr.product.installments}<br className="sm:hidden" /><img src="/iute_logo.svg" alt="iute" className="inline h-[1.1em] w-auto align-middle" />
               </p>
             </div>
             <button
@@ -103,7 +103,7 @@ export function ProductCard({ product }: { product: Product }) {
             </button>
           </div>
         ) : (
-          <div className="flex flex-row-reverse items-end justify-between gap-3 sm:flex-row">
+          <div className="flex items-end justify-between gap-3">
             <p className="text-sm font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</p>
             <button
               onClick={handleAdd}
