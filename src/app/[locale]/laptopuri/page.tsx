@@ -75,7 +75,13 @@ export default async function LaptopuriPage({ params, searchParams }: { params: 
 
   const allItems = Array.isArray(allProductsData) ? allProductsData : (allProductsData as any)?.items || [];
   const items = categoryId ? allItems.filter((p: any) => p.category_id === categoryId) : allItems;
-  const products = await enrichWithSpecs(items.map(extractBase), locale);
+
+  // ponytail: enrich only current page, not all 500
+  const allBase = items.map(extractBase);
+  const pageSlice = allBase.slice(0, PER_PAGE);
+  const enrichedPage = await enrichWithSpecs(pageSlice, locale);
+  const products = allBase.map((p: any, i: number) => (i < enrichedPage.length ? enrichedPage[i] : p));
+
   const categoryName = cat?.name || cat?.translation?.name || SLUG;
 
   const titleByType: Record<string, string> = {
