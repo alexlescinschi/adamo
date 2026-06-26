@@ -70,7 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
 
       {product.specs && product.specs.length > 0 && (
-        <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] truncate">
+        <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] line-clamp-2">
           {product.specs.join(" | ")}
         </p>
       )}
