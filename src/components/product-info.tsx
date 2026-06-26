@@ -51,7 +51,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <div className="flex items-baseline gap-3">
             <span className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} MDL</span>
             {product.old_price && product.old_price > product.price && (
-              <span className="text-lg text-[#6b6c6c] line-through">{formatPrice(product.old_price)} MDL</span>
+              <span className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} MDL</span>
             )}
           </div>
         ) : (
