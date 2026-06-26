@@ -12,7 +12,7 @@ import { formatPrice } from "@/lib/utils";
 import type { CatalogCategory } from "@/lib/categories";
 
 const PHONE = "+37379966909";
-const PHONE_DISPLAY = "079 966 909";
+const PHONE_DISPLAY = "0 799 66 909";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
@@ -161,10 +161,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
             className="mr-1 hidden items-center gap-[10px] min-w-[168px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] sm:mr-2 md:flex"
           >
             <Phone className="h-5 w-5 text-[#63ad36]" style={{ animation: "vibrate 2s ease-in-out infinite" }} />
-            <span className="grid leading-[1.1]">
-              <b className="text-[14px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
-              <small className="text-[11px] text-[#6b6c6c]">{tr.header.callNow}</small>
-            </span>
+            <b className="text-[14px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
           </a>
 
           <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Căutare">

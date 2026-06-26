@@ -24,7 +24,7 @@ export function QuickOrder({ tr }: { tr: any }) {
             {tr.home.quickOrderSubtitle}
           </span>
         </div>
-        <div className="flex flex-col items-center justify-center gap-3 overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)] min-h-[120px] text-center">
+        <div className="flex flex-col items-center justify-center gap-3 overflow-hidden border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] min-h-[120px] text-center">
           <ShoppingCart className="h-8 w-8 text-[#b8c4d2]" />
           <p className="text-[14px] text-[#6b6c6c]">{tr.home.quickOrderEmpty}</p>
         </div>
@@ -46,7 +46,7 @@ export function QuickOrder({ tr }: { tr: any }) {
         </span>
       </div>
 
-      <div className="overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)]">
+      <div className="overflow-hidden border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)]">
         {cart.items.map((item) => {
           const checked = item.selected !== false;
           return (

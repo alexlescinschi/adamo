@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "@/hooks/use-translations";
 
 const PHONE = "+37379966909";
-const PHONE_DISPLAY = "+373 799 669 09";
+const PHONE_DISPLAY = "0 799 66 909";
 const EMAIL = "adamocomputers@gmail.com";
 
 const socialLinks = [
@@ -39,7 +39,7 @@ export function Footer() {
 
   return (
     <footer
-      className="grid grid-cols-1 gap-[34px] mx-auto border-t border-[#e1e7ef] bg-white/90 px-[18px] py-[26px] md:grid-cols-2 md:px-[28px] md:py-[28px] lg:grid-cols-[1.3fr_0.7fr_0.9fr_1.2fr_1fr] lg:px-[28px] lg:py-[28px] pb-[82px] md:pb-4"
+      className="grid grid-cols-1 gap-[34px] mx-auto border-t border-[#e1e7ef] px-[18px] py-[26px] md:grid-cols-2 md:px-[28px] md:py-[28px] lg:grid-cols-[1.3fr_0.7fr_0.9fr_1.2fr_1fr] lg:px-[28px] lg:py-[28px] pb-[82px] md:pb-4"
       style={{ maxWidth: "1240px" }}
     >
       {/* Brand */}
@@ -124,7 +124,7 @@ export function Footer() {
       <div className="flex flex-col gap-4 pt-[18px] border-t border-[#e1e7ef] items-center text-center lg:grid lg:gap-5 lg:items-center lg:text-left lg:justify-items-start" style={{ gridColumn: "1 / -1", gridTemplateColumns: "minmax(220px, 1fr) auto minmax(156px, 1fr)" }}>
         <small className="text-[12px] leading-[1.35] text-[#697586]">&copy; {new Date().getFullYear()} ADAMO.MD - Toate drepturile rezervate.</small>
         <div className="flex items-center justify-center gap-3 text-[12px] font-semibold leading-[1.35] text-[#536070] whitespace-nowrap">
-          <span>Creat cu <span className="text-red-500">♥</span> în Moldova</span>
+          <span>Creat cu <span className="text-red-500 text-[15px]">♥</span> în Moldova</span>
           <span>Design by GPT</span>
         </div>
         <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-self-end" aria-label="Metode de plată">

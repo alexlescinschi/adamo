@@ -4,7 +4,7 @@ import { getDict } from "@/lib/translations";
 import { ADAMO_COMPANY } from "@/lib/company";
 
 const PHONE = "+37379966909";
-const PHONE_DISPLAY = "+373 799 669 09";
+const PHONE_DISPLAY = "0 799 66 909";
 const EMAIL = "adamocomputers@gmail.com";
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {

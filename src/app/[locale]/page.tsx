@@ -209,7 +209,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
           {tr.home.whyTitle}
         </h2>
-        <div className="grid grid-cols-2 overflow-hidden border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_18px_45px_rgba(31,41,55,0.08)] md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 overflow-hidden border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] md:grid-cols-3 lg:grid-cols-5">
           {[
             { Icon: CheckCircle, title: tr.home.whyVerifiedTitle, desc: tr.home.whyVerifiedDesc },
             { Icon: ShieldCheck, title: tr.home.whyWarrantyTitle, desc: tr.home.whyWarrantyDesc },
