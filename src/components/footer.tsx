@@ -11,23 +11,18 @@ const EMAIL = "adamocomputers@gmail.com";
 const socialLinks = [
   {
     label: "Facebook",
-    href: "https://facebook.com/adamo.md",
+    href: "https://www.facebook.com/share/1BQVQd9MQZ/",
     icon: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 5h-1.6c-1.9 0-3 1.2-3 3.4v10.8"/><path d="M7.9 11.5h6.7"/><path d="M16.8 3.8h-3.4"/></svg>,
   },
   {
     label: "Instagram",
-    href: "https://instagram.com/adamo.md",
+    href: "https://www.instagram.com/adamo_md?igsh=MWtlZmdyYW0wN2N6bA==",
     icon: <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.2" y="4.2" width="15.6" height="15.6" rx="4.6"/><path d="M15.7 12a3.7 3.7 0 1 1-7.4 0 3.7 3.7 0 0 1 7.4 0Z"/><path d="M17 7.2h.1"/></svg>,
   },
   {
     label: "TikTok",
-    href: "https://tiktok.com/@adamo.md",
+    href: "https://vt.tiktok.com/ZSCM2pVjo/",
     icon: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.1 4.2v10.4a4.2 4.2 0 1 1-4.2-4.2"/><path d="M14.2 4.8c.7 2.8 2.5 4.4 5.4 4.7"/><path d="M9.9 14.7a1.7 1.7 0 1 0 1.7 1.7"/></svg>,
-  },
-  {
-    label: "YouTube",
-    href: "https://youtube.com/@adamo.md",
-    icon: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12s0-3.2-.4-4.5c-.2-.8-.8-1.4-1.6-1.6-1.4-.4-7-.4-7-.4s-5.6 0-7 .4c-.8.2-1.4.8-1.6 1.6C3 8.8 3 12 3 12s0 3.2.4 4.5c.2.8.8 1.4 1.6 1.6 1.4.4 7 .4 7 .4s5.6 0 7-.4c.8-.2 1.4-.8 1.6-1.6.4-1.3.4-4.5.4-4.5Z"/><path d="m10.4 9.2 4.8 2.8-4.8 2.8V9.2Z"/></svg>,
   },
 ];
 

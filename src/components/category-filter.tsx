@@ -10,9 +10,10 @@ interface CategoryFilterProps {
   categoryName: string;
   page: number;
   perPage: number;
+  totalItems?: number;
 }
 
-export function CategoryFilter({ products, categoryName, page, perPage }: CategoryFilterProps) {
+export function CategoryFilter({ products, categoryName, page, perPage, totalItems }: CategoryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -29,8 +30,9 @@ export function CategoryFilter({ products, categoryName, page, perPage }: Catego
   const specOptions = useMemo(() => {
     const options: Record<string, Set<string>> = {};
     for (const p of products) {
-      if (p.specs) {
-        for (const [label, value] of Object.entries(p.specs)) {
+      // ponytail: specMap vine din listă (toate produsele) → opțiuni consistente între pagini
+      if (p.specMap) {
+        for (const [label, value] of Object.entries(p.specMap)) {
           if (!options[label]) options[label] = new Set();
           options[label].add(String(value));
         }
@@ -49,7 +51,7 @@ export function CategoryFilter({ products, categoryName, page, perPage }: Catego
       activeKeys.every((key) => {
         const selected = filters[key];
         if (!selected.length) return true;
-        const val = p.specs?.[key];
+        const val = p.specMap?.[key];
         return val && selected.includes(String(val));
       })
     );

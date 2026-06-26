@@ -5,9 +5,7 @@ import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
-import { mapProductCard } from "@/lib/product-mapper";
-
-const BADGE_LABELS = ["Recomandat", "Рекомендуем", "Recommended"];
+import { mapProductCard, BADGE_LABELS } from "@/lib/product-mapper";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +39,7 @@ async function getProduct(id: string, locale = "ro") {
   const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
   const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
-  const badge = rawSpecs.some((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel) ? rawSpecs.find((s: any) => BADGE_LABELS.includes(s.label))?.label : undefined;
+  const badge = rawSpecs.some((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel) ? rawSpecs.find((s: any) => BADGE_LABELS.includes(s.label))?.valueLabel : undefined;
   const localeTranslation = Array.isArray(data.translations)
     ? data.translations.find((t: any) => t.locale === locale)
     : null;

@@ -32,6 +32,9 @@ const getAccessToken = unstable_cache(
   { revalidate: 12 * 60 * 60 }
 );
 
+// ponytail: cap de 8s pe orice request CRM — unul blocat nu mai ține renderul la infinit.
+const CRM_TIMEOUT_MS = 8000;
+
 async function crmFetch(path: string, options?: RequestInit) {
   const token = await getAccessToken();
   const url = `${CRM_BASE_URL}${path}`;
@@ -45,6 +48,8 @@ async function crmFetch(path: string, options?: RequestInit) {
       "Content-Type": "application/json",
       ...(options?.headers || {}),
     },
+    // GET-urile cache-uite revalidă la 60s; mutațiile sunt no-store. Timeout pe toate.
+    signal: options?.signal ?? AbortSignal.timeout(CRM_TIMEOUT_MS),
     ...(isMutation
       ? { cache: "no-store" }
       : { next: { revalidate: 60 } }),
@@ -56,6 +61,31 @@ async function crmFetch(path: string, options?: RequestInit) {
   }
 
   return res.json();
+}
+
+// ponytail: limiter de concurență fără dependență (max `limit` request-uri simultan).
+// Ceiling: simplu, per-apel — dacă throughput-ul cere per-contorizare globală, treci pe p-limit.
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (x: T, i: number) => Promise<R>
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length);
+  let cursor = 0;
+  const worker = async () => {
+    while (cursor < items.length) {
+      const i = cursor++;
+      try {
+        results[i] = { status: "fulfilled", value: await fn(items[i], i) };
+      } catch (e) {
+        results[i] = { status: "rejected", reason: e };
+      }
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker)
+  );
+  return results;
 }
 
 export async function getPublishedProducts(locale = "ro", limit = 200) {

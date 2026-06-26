@@ -1,17 +1,11 @@
-const BADGE_LABELS = ["Recomandat", "Рекомендуем", "Recommended"];
+export const BADGE_LABELS = ["Sticker"];
 const POPULAR_LABELS = ["popular", "популярный"];
 
 function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   const specs = item.specs || item.attributes || [];
   if (Array.isArray(specs)) {
     const rec = specs.find((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel);
-    if (rec) return { badge: rec.label as string, badge_type: "green" };
-  }
-  if (typeof item.cardSpecs === "string") {
-    const parts = item.cardSpecs.split("|").map((s: string) => s.trim());
-    if (parts.some((p: string) => BADGE_LABELS.includes(p))) {
-      return { badge: "Recomandat", badge_type: "green" };
-    }
+    if (rec) return { badge: rec.valueLabel as string, badge_type: "green" };
   }
   return {};
 }
@@ -30,7 +24,7 @@ export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((s: any) => s.label && s.valueLabel && s.label !== "Recomandat")
+    .filter((s: any) => s.label && s.valueLabel && !BADGE_LABELS.includes(s.label))
     .slice(0, 5)
     .map((s: any) => `${s.label}: ${s.valueLabel}`);
 }
