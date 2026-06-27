@@ -7,7 +7,7 @@ import { getCategories, getPublishedProducts, getProductById } from "@/lib/crm-a
 import { extractCategories } from "@/lib/categories";
 import { extractProducts, mapProductCard, extractSpecs } from "@/lib/product-mapper";
 
-export const SITE_URL = "https://adamo3.vercel.app";
+export const SITE_URL = "https://adamo.md";
 const LOCALES = ["ro", "ru", "en"];
 
 export function generateStaticParams() {
@@ -39,8 +39,16 @@ export const metadata: Metadata = {
     url: SITE_URL,
     locale: "ro_MD",
     alternateLocale: ["ru_MD", "en_US"],
+    title: "Adamo — Laptopuri premium în Moldova",
+    description: "Laptopuri premium, business și gaming în Moldova. Garanție 12 luni, livrare gratuită și rate 0%.",
+    images: [{ url: "/hero-user-top.png", width: 1160, height: 540, alt: "Adamo — Laptopuri premium" }],
   },
-  twitter: { card: "summary_large_image", title: "Adamo — Magazin Online" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Adamo — Laptopuri premium",
+    description: "Laptopuri premium, business și gaming în Moldova.",
+    images: ["/hero-user-top.png"],
+  },
 };
 
 export default async function LocaleLayout({

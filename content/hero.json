@@ -1,7 +1,7 @@
 {
   "ro": {
     "titleLines": ["Laptopuri premium,", "business și gaming", "în Moldova"],
-    "emphasizeWord": "Moldova",
+    "emphasizeWord": "gaming",
     "subtitle": "Noi, ca noi și verificate — cu garanție 12 luni, livrare gratuită în RM și rate 0%.",
     "primaryCta": { "label": "Vezi laptopuri", "href": "/laptopuri" },
     "ghostCta": { "label": "Contactează-ne", "href": "https://wa.me/37379966909" },
@@ -9,7 +9,7 @@
   },
   "ru": {
     "titleLines": ["Премиум ноутбуки,", "бизнес и игры", "в Молдове"],
-    "emphasizeWord": "Молдове",
+    "emphasizeWord": "игры",
     "subtitle": "Как новые и проверенные — с гарантией 12 месяцев, бесплатной доставкой по РМ и рассрочкой 0%.",
     "primaryCta": { "label": "Смотреть ноутбуки", "href": "/laptopuri" },
     "ghostCta": { "label": "Связаться с нами", "href": "https://wa.me/37379966909" },

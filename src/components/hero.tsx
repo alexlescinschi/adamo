@@ -51,7 +51,7 @@ export function Hero({ content, images }: HeroProps) {
           src={bgImage}
           alt=""
           fill
-          className="object-cover"
+          className="object-cover object-left sm:object-center"
           sizes="100vw"
           priority
         />
@@ -70,7 +70,7 @@ export function Hero({ content, images }: HeroProps) {
         <div className="max-w-[500px]">
           <h1 className="mb-[10px] text-[28px] font-extrabold leading-[1.08] text-[#1d1d1f] sm:text-[32px] sm:[text-shadow:0_2px_18px_rgba(255,255,255,0.9)] lg:mb-[14px] lg:text-[45px] lg:leading-[1.06] lg:[text-shadow:none] xs:text-[30px]">
             {titleLines.map((line, i) => {
-              if (emphasizeWord && i === titleLines.length - 1 && line.includes(emphasizeWord)) {
+              if (emphasizeWord && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
                 return (
                   <span key={i} className="block whitespace-nowrap">
