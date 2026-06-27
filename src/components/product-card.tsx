@@ -31,6 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const hasPrice = product.price > 0;
+  const isOutOfStock = product.stock !== undefined && product.stock === 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
   // ponytail: image slider — desktop auto-play on hover, mobile swipe
@@ -66,7 +67,7 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <article className="group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)]">
+    <article className={`group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)] ${(!hasPrice || isOutOfStock) ? "opacity-60" : ""}`}>
       <Link
         href={href}
         className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]"
