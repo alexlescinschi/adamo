@@ -19,7 +19,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
   return (
     <div>
       <div className="relative w-full aspect-square overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]">
-        <Image src={images[selected]?.url} alt={name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
+        <Image key={images[selected]?.url} src={images[selected]?.url} alt={name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
 
         {images.length > 1 && (
           <>
