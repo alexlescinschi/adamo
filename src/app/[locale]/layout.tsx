@@ -7,7 +7,8 @@ import { getCategories, getPublishedProducts, getProductById } from "@/lib/crm-a
 import { extractCategories } from "@/lib/categories";
 import { extractProducts, mapProductCard, extractSpecs } from "@/lib/product-mapper";
 
-export const SITE_URL = "https://adamo.md";
+export const SITE_URL = "https://adamo3.vercel.app";
+// ponytail: schimbă în https://adamo.md după config domeniu Vercel
 const LOCALES = ["ro", "ru", "en"];
 
 export function generateStaticParams() {
