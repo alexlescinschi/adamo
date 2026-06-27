@@ -42,13 +42,13 @@ export const metadata: Metadata = {
     alternateLocale: ["ru_MD", "en_US"],
     title: "Adamo — Laptopuri premium în Moldova",
     description: "Laptopuri premium, business și gaming în Moldova. Garanție 12 luni, livrare gratuită și rate 0%.",
-    images: [{ url: "/hero-user-top.png", width: 1160, height: 540, alt: "Adamo — Laptopuri premium" }],
+    images: [{ url: "/og-image.png", width: 626, height: 352, alt: "Adamo — Laptopuri premium" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Adamo — Laptopuri premium",
     description: "Laptopuri premium, business și gaming în Moldova.",
-    images: ["/hero-user-top.png"],
+    images: ["/og-image.png"],
   },
 };
 
