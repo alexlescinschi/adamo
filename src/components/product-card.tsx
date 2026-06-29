@@ -118,10 +118,14 @@ export function ProductCard({ product }: { product: Product }) {
         {product.name}
       </Link>
 
-      {product.specs && product.specs.length > 0 && (
+      {product.specs && product.specs.length > 0 ? (
         <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] line-clamp-2">
-          {product.specs.join(" | ")}
+          {product.specs.map((s, i) => (
+            <span key={i}>{i > 0 ? (i === 5 ? " / " : " ") : ""}{s}</span>
+          ))}
         </p>
+      ) : (
+        <div className="min-h-[10px]" />
       )}
 
       <div className="mt-auto pt-2">
