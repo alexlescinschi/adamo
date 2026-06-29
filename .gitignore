@@ -44,5 +44,11 @@ next-env.d.ts
 adamo-vercel-template 2/
 adamo-vercel-template 3/
 
+# local scripts and samples (not part of project)
+scripts/
+
 # CRM docs credentials (local only)
 .env.crm-docs
+
+# 999 → CRM import state (local only, idempotency ledger)
+scripts/.imported-999-ids.json

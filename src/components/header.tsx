@@ -67,7 +67,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
           <span key={href} className="contents">
             <Link
               href={localHref}
-                    className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                    className={`rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#b5e79a] hover:text-[#1d1d1f]"}`}
             >
               {tr.nav[key as keyof typeof tr.nav]}
             </Link>
@@ -76,7 +76,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                 <button
                   type="button"
                   onClick={() => setCatalogOpen((v) => !v)}
-                        className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"}`}
+                        className={`flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold transition-colors ${isCatalogActive || catalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#b5e79a] hover:text-[#1d1d1f]"}`}
                   aria-expanded={catalogOpen}
                 >
                   {tr.nav.catalog}
@@ -91,7 +91,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                             key={c.id}
                             href={`/${locale}/category/${c.slug}`}
                             onClick={() => setCatalogOpen(false)}
-                            className="rounded-[7px] px-3 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
+                            className="rounded-[7px] px-3 py-2.5 text-[14px] font-medium text-[#444545] hover:bg-[#b5e79a] hover:text-[#34781f] transition-colors"
                           >
                             {c.name}
                           </Link>
@@ -158,7 +158,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         <div className="flex items-center gap-1 sm:gap-3">
           <a
             href={`tel:${PHONE}`}
-            className="mr-1 hidden items-center gap-[10px] min-w-[168px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] sm:mr-2 md:flex"
+            className="mr-1 hidden items-center gap-[10px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] sm:mr-2 md:flex"
           >
             <Phone className="h-5 w-5 text-[#63ad36]" style={{ animation: "vibrate 2s ease-in-out infinite" }} />
             <b className="text-[14px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
@@ -203,7 +203,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
       <div className={`fixed right-0 top-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col bg-white shadow-xl transition-transform duration-300 md:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex items-center justify-between border-b border-[#e4e8e4]/60 px-5 py-4">
           <span className="text-base font-semibold text-[#1d1d1f]">{tr.nav.menu}</span>
-          <button onClick={() => setMenuOpen(false)} className="rounded-full p-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
+          <button onClick={() => setMenuOpen(false)} className="rounded-full p-1.5 text-[#1d1d1f] hover:bg-[#b5e79a] transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -218,7 +218,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                 <Link
                   href={localHref}
                   onClick={() => setMenuOpen(false)}
-                  className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                  className={`rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${active ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#b5e79a]"}`}
                 >
                   {tr.nav[key as keyof typeof tr.nav]}
                 </Link>
@@ -227,7 +227,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                     <button
                       type="button"
                       onClick={() => setMobileCatalogOpen((v) => !v)}
-                      className={`flex w-full items-center justify-between rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${isCatalogActive || mobileCatalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#f3f6f6]"}`}
+                      className={`flex w-full items-center justify-between rounded-[9px] px-4 py-3 text-sm font-semibold transition-colors ${isCatalogActive || mobileCatalogOpen ? "bg-[#f3f6f6] text-[#1d1d1f]" : "text-[#444545] hover:bg-[#b5e79a]"}`}
                       aria-expanded={mobileCatalogOpen}
                     >
                       {tr.nav.catalog}
@@ -240,7 +240,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                             key={c.id}
                             href={`/${locale}/category/${c.slug}`}
                             onClick={() => { setMenuOpen(false); setMobileCatalogOpen(false); }}
-                            className="rounded-[7px] px-3 py-2 text-[13px] font-medium text-[#444545] hover:bg-[#f3f6f6] hover:text-[#34781f] transition-colors"
+                            className="rounded-[7px] px-3 py-2 text-[13px] font-medium text-[#444545] hover:bg-[#b5e79a] hover:text-[#34781f] transition-colors"
                           >
                             {c.name}
                           </Link>
