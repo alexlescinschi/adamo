@@ -27,6 +27,7 @@ const dict = {
       notFound: "Produsul nu a fost găsit",
       notFoundSub: "Produsul căutat nu există sau a fost eliminat.",
       back: "Înapoi la produse",
+      scanCode: "Codul produsului",
     },
     cart: {
       title: "Coș de cumpărături",
@@ -232,6 +233,7 @@ const dict = {
       notFound: "Товар не найден",
       notFoundSub: "Товар не существует или был удалён.",
       back: "Назад к товарам",
+      scanCode: "Код товара",
     },
     cart: {
       title: "Корзина",
@@ -437,6 +439,7 @@ const dict = {
       notFound: "Product not found",
       notFoundSub: "The product does not exist or has been removed.",
       back: "Back to products",
+      scanCode: "Product code",
     },
     cart: {
       title: "Shopping cart",
