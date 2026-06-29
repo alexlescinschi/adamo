@@ -49,7 +49,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
                 <b className={`text-[10.8px] font-medium uppercase transition-colors duration-[.18s] mb-[4px] sm:text-[11px] sm:whitespace-normal sm:leading-[1.12] ${
                   isActive ? "text-[#2f7d25]" : "text-[#1d1d1f] group-hover:text-[#2f7d25]"
                 }`}>{item.title}</b>
-                <span className={`text-[12.3px] whitespace-nowrap transition-colors duration-[.18s] sm:text-[12.4px] sm:whitespace-normal ${
+                <span className={`text-[12.3px] transition-colors duration-[.18s] sm:text-[12.4px] ${
                   isActive ? "text-[#2f7d25]" : "text-[#6b6c6c] group-hover:text-[#2f7d25]"
                 }`}>{item.sub}</span>
               </span>
