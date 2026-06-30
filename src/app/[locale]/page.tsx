@@ -54,6 +54,7 @@ async function fetchAndEnrich(locale: string) {
       old_price: mapped.old_price || p.old_price,
       badge: mapped.badge,
       badge_type: mapped.badge_type,
+      badge_gradient: mapped.badge_gradient,
       specs: mapped.specs || p.specs,
       images: mapped.images || p.images,
       is_popular: hasAttribute(detail, "popular"),

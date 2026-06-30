@@ -21,6 +21,7 @@ interface Product {
   stock?: number;
   badge?: string;
   badge_type?: "green" | "blue";
+  badge_gradient?: string;
   specs?: string[];
 }
 
@@ -81,7 +82,7 @@ export function ProductCard({ product }: { product: Product }) {
         }}
       >
         {product.badge && (
-          <span className="absolute top-2 left-2 z-10 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
+          <span className={`absolute top-2 left-2 z-10 rounded-[6px] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)] bg-gradient-to-r ${product.badge_gradient || "from-[#7cc44e] to-[#63ad36]"}`}>
             {product.badge}
           </span>
         )}

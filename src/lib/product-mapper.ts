@@ -1,14 +1,24 @@
 export const BADGE_LABELS = ["Sticker"];
+
+const BADGE_STYLES: Record<string, { label: string; gradient: string }> = {
+  gaming:  { label: "Gaming",  gradient: "from-[#833AB4] via-[#FD1D1D] to-[#FCB045]" },
+  premium: { label: "Premium", gradient: "from-[#020024] via-[#090979] to-[#2C8799]" },
+  ieftin:  { label: "Ieftin",  gradient: "from-red-600 to-red-500" },
+  oled:    { label: "OLED",    gradient: "from-gray-900 to-gray-700" },
+};
+
 const POPULAR_LABELS = ["popular", "популярный"];
 const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "tip-placa-video"];
 
-function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
+function extractBadge(item: any): { badge?: string; badge_type?: "green"; badge_gradient?: string } {
   const specs = item.specs || item.attributes || [];
-  if (Array.isArray(specs)) {
-    const rec = specs.find((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel);
-    if (rec) return { badge: rec.valueLabel as string, badge_type: "green" };
-  }
-  return {};
+  if (!Array.isArray(specs)) return {};
+  const sticker = specs.find((s: any) => s.code === "sticker" && s.valueLabel && s.valueLabel !== "No");
+  if (!sticker) return {};
+  const slug = sticker.filterLink?.value || "";
+  const style = BADGE_STYLES[slug];
+  if (!style) return {};
+  return { badge: style.label, badge_type: "green", badge_gradient: style.gradient };
 }
 
 export function hasAttribute(item: any, label: string): boolean {
@@ -22,7 +32,7 @@ export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
   return raw
-    .filter((s: any) => SPEC_LABELS.includes(s.code) && s.valueLabel)
+    .filter((s: any) => SPEC_LABELS.includes(s.code) && s.valueLabel && s.valueLabel !== "No")
     .sort((a, b) => SPEC_LABELS.indexOf(a.code) - SPEC_LABELS.indexOf(b.code))
     .map((s: any) => s.valueLabel);
 }
