@@ -42,7 +42,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </Link>
       )}
       <h1 className="text-[34px] font-medium leading-tight tracking-[-0.031em] text-[#1d1d1f]">{product.name}</h1>
-      {product.scan_code && (
+      {product.product_code && (
         <p className="mt-2 text-[13px] text-[#6b6c6c]">{tr.product.scanCode}: {product.product_code}</p>
       )}
       {product.availability === "OutOfStock" && (
