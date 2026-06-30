@@ -261,11 +261,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <h3 className="text-[18px] font-bold text-[#1d1d1f]">{tr.home.reviewTitle}</h3>
             <div className="flex items-center gap-2">
               <span className="text-[#f5a623] text-[20px]">★★★★★</span>
-              <span className="text-[14px] text-[#6b6c6c]">{tr.home.reviewRating}</span>
+              <span className="text-[14px] text-[#6b6c6c]">5.0 — {tr.home.reviewRating}</span>
             </div>
-            <p className="text-[14px] text-[#536070]">{tr.home.reviewCta}</p>
+            <p className="text-[14px] text-[#536070]">{tr.home.reviewCta} {tr.home.reviewCount}</p>
             <a
-              href="https://search.google.com/local/writereview?placeid=ChIJqbe37d99ykARgIxH6nVzOKM"
+              href="https://search.google.com/local/writereview?placeid=4668400889461913513"
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 self-start rounded-[9px] bg-gradient-to-r from-[#78bb45] to-[#55a02d] px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_10px_20px_rgba(85,160,45,0.25)] hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
             >
