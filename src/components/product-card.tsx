@@ -118,13 +118,20 @@ export function ProductCard({ product }: { product: Product }) {
         {product.name}
       </Link>
 
-      {product.specs && product.specs.length > 0 ? (
-        <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] line-clamp-2">
-          {product.specs.map((s, i) => (
-            <span key={i}>{i > 0 ? (i === 5 ? " / " : " ") : ""}{s}</span>
-          ))}
-        </p>
-      ) : (
+      {product.specs && product.specs.length > 0 ? (() => {
+        const s = product.specs;
+        const lines = [
+          `· ${s[0] || ""} ${s[1] || ""}`,
+          `· ${s[2] || ""}`,
+          `· ${s[3] || ""} / ${s[4] || ""} ${s[5] || ""}`,
+          `· ${s[6] || ""}`,
+        ].filter(l => l.length > 2);
+        return (
+          <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] line-clamp-3 whitespace-pre-line">
+            {lines.join("\n")}
+          </p>
+        );
+      })() : (
         <div className="min-h-[10px]" />
       )}
 

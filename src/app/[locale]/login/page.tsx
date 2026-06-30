@@ -4,18 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import GoogleFinishModal from "@/components/auth/GoogleFinishModal";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
-
-type PendingGoogle = { email: string; firstName: string; lastName: string } | null;
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", password: "" });
-  const [googlePending, setGooglePending] = useState<PendingGoogle>(null);
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,11 +49,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Autentificare Google eșuată");
-      setGooglePending({
-        email: data.email,
-        firstName: data.firstName || "",
-        lastName: data.lastName || "",
-      });
+      router.push("/account");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -131,10 +123,6 @@ export default function LoginPage() {
           Înregistrează-te
         </Link>
       </p>
-
-      {googlePending && (
-        <GoogleFinishModal pending={googlePending} onClose={() => setGooglePending(null)} />
-      )}
     </div>
   );
 }

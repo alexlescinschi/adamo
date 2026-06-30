@@ -26,6 +26,8 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   const [cartOpen, setCartOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const catalogRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const params = useParams();
@@ -52,6 +54,18 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
 
   useEffect(() => {
     try { localStorage.removeItem("adamo-favorites"); } catch {}
+  }, []);
+
+  // ponytail: hide header on scroll down, show on scroll up
+  useEffect(() => {
+    const handleScroll = () => {
+      const current = window.scrollY;
+      if (current > lastScrollY.current && current > 120) setHeaderHidden(true);
+      else setHeaderHidden(false);
+      lastScrollY.current = current;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
@@ -136,7 +150,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   return (
     <>
       <header
-        className="sticky top-0 z-30 grid items-center gap-6 w-full bg-white/95 backdrop-blur-[18px]"
+        className={`sticky top-0 z-30 grid items-center gap-6 w-full bg-white/95 backdrop-blur-[18px] transition-transform duration-300 ${headerHidden ? "-translate-y-full" : "translate-y-0"}`}
         style={{
           gridTemplateColumns: "auto 1fr auto",
           padding: "11px max(24px, calc((100vw - 1048px) / 2))",

@@ -246,6 +246,34 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ))}
         </div>
       </section>
+
+      {/* Google My Business */}
+      <section className="mb-[70px]">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="overflow-hidden rounded-[9px] border border-[#e1e7ef] h-[300px]">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1sro!2s!4v1"
+              width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade" title="Adamo"
+            />
+          </div>
+          <div className="flex flex-col justify-center gap-4 p-6 rounded-[9px] border border-[#e1e7ef]">
+            <h3 className="text-[18px] font-bold text-[#1d1d1f]">{tr.home.reviewTitle}</h3>
+            <div className="flex items-center gap-2">
+              <span className="text-[#f5a623] text-[20px]">★★★★★</span>
+              <span className="text-[14px] text-[#6b6c6c]">{tr.home.reviewRating}</span>
+            </div>
+            <p className="text-[14px] text-[#536070]">{tr.home.reviewCta}</p>
+            <a
+              href="https://search.google.com/local/writereview?placeid=ChIJqbe37d99ykARgIxH6nVzOKM"
+              target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 self-start rounded-[9px] bg-gradient-to-r from-[#78bb45] to-[#55a02d] px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_10px_20px_rgba(85,160,45,0.25)] hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
+            >
+              ⭐ {tr.home.writeReview}
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -27,7 +27,7 @@ const dict = {
       notFound: "Produsul nu a fost găsit",
       notFoundSub: "Produsul căutat nu există sau a fost eliminat.",
       back: "Înapoi la produse",
-      scanCode: "Codul produsului",
+      scanCode: "ID produs",
     },
     cart: {
       title: "Coș de cumpărături",
@@ -136,6 +136,10 @@ const dict = {
       whyServiceDesc: "Reparații rapide și piese originale.",
       whySupportTitle: "Suport rapid",
       whySupportDesc: "Echipa noastră răspunde rapid la orice întrebare.",
+      reviewTitle: "Recenzii Google",
+      reviewRating: "Clienții noștri ne recomandă",
+      reviewCta: "Apreciem feedback-ul tău!",
+      writeReview: "Scrie o recenzie",
     },
     footer: {
       shop: "Magazin",
@@ -233,7 +237,7 @@ const dict = {
       notFound: "Товар не найден",
       notFoundSub: "Товар не существует или был удалён.",
       back: "Назад к товарам",
-      scanCode: "Код товара",
+      scanCode: "ID товара",
     },
     cart: {
       title: "Корзина",
@@ -342,6 +346,10 @@ const dict = {
       whyServiceDesc: "Быстрый ремонт и оригинальные запчасти.",
       whySupportTitle: "Быстрая поддержка",
       whySupportDesc: "Наша команда быстро отвечает на любые вопросы.",
+      reviewTitle: "Отзывы Google",
+      reviewRating: "Наши клиенты нас рекомендуют",
+      reviewCta: "Мы ценим ваш отзыв!",
+      writeReview: "Написать отзыв",
     },
     footer: {
       shop: "Магазин",
@@ -439,7 +447,7 @@ const dict = {
       notFound: "Product not found",
       notFoundSub: "The product does not exist or has been removed.",
       back: "Back to products",
-      scanCode: "Product code",
+      scanCode: "Product ID",
     },
     cart: {
       title: "Shopping cart",
@@ -548,6 +556,10 @@ const dict = {
       whyServiceDesc: "Fast repairs and original parts.",
       whySupportTitle: "Fast support",
       whySupportDesc: "Our team responds quickly to any question.",
+      reviewTitle: "Google Reviews",
+      reviewRating: "Our customers recommend us",
+      reviewCta: "We appreciate your feedback!",
+      writeReview: "Write a review",
     },
     footer: {
       shop: "Shop",

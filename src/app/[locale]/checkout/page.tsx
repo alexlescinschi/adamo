@@ -515,7 +515,7 @@ export default function CheckoutPage() {
                   ⚠ {tr.checkout.bankTransferInstruction}
                 </p>
                 {/* Pre-order invoice download */}
-                {company.name && (
+                {(
                   <a
                     href={buildInvoiceUrl("—")}
                     target="_blank"

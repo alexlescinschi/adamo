@@ -64,7 +64,7 @@ async function getProduct(id: string, locale = "ro") {
     category_name: data.category?.translation?.name || data.category?.name || null,
     units_total: data.offerSummary?.inventoryUnitCount ?? data.units_total ?? undefined,
     unit_id: data.units?.[0]?.id ?? data.offerSummary?.priceTiers?.[0]?.representativeUnitId ?? data.id,
-    scan_code: data.units?.[0]?.sku || null,
+    product_code: data.id,
   };
 }
 

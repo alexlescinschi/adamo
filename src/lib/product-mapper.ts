@@ -1,6 +1,6 @@
 export const BADGE_LABELS = ["Sticker"];
 const POPULAR_LABELS = ["popular", "популярный"];
-const SPEC_LABELS = ["display", "rezolutie", "tip", "serie-procesor", "memorie-ram", "tip-stocare", "capacitatea-hard-disk", "tip-placa-video"];
+const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "tip-placa-video"];
 
 function extractBadge(item: any): { badge?: string; badge_type?: "green" } {
   const specs = item.specs || item.attributes || [];
