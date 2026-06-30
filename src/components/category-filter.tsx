@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
@@ -56,6 +56,17 @@ export function CategoryFilter({
     min: activePrice?.min?.toString() || "",
     max: activePrice?.max?.toString() || "",
   });
+
+  // ponytail: "vezi mai multe" — acumulează pagini fără refresh
+  const [loadedProducts, setLoadedProducts] = useState<any[]>([]);
+  const [loadedPages, setLoadedPages] = useState(serverPaginated ? 1 : 0);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Reset acumulare când se schimbă filtrele sau pagina inițială
+  useEffect(() => {
+    setLoadedProducts([]);
+    setLoadedPages(1);
+  }, [searchParams.toString()]);
 
   // Reconstruiește query-ul: suprascrie/scoate un filtru, păstrează restul, resetează page.
   const buildUrl = useCallback(
@@ -128,10 +139,31 @@ export function CategoryFilter({
   );
   const visible = serverPaginated ? products : products.slice(0, perPage);
 
+  const canLoadMore = serverPaginated && loadedPages < totalPages;
+  const displayProducts = loadedProducts.length > 0 ? loadedProducts : visible;
+
   const totalActive =
     Object.values(activeFilters).reduce((n, v) => n + v.length, 0) +
     (activePrice?.min != null ? 1 : 0) +
     (activePrice?.max != null ? 1 : 0);
+  const loadMore = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      const nextPage = loadedPages + 1;
+      const p = new URLSearchParams(searchParams.toString());
+      p.set("page", String(nextPage));
+      p.set("limit", String(perPage));
+      p.set("locale", document.documentElement.lang || "ro");
+      const res = await fetch(`/api/category/${categorySlug}?${p.toString()}`);
+      const data = await res.json();
+      if (data.items?.length) {
+        setLoadedProducts((prev) => [...prev, ...data.items]);
+        setLoadedPages(nextPage);
+      }
+    } catch {} finally {
+      setLoadingMore(false);
+    }
+  }, [loadedPages, searchParams, perPage, categorySlug]);
 
   const pageNumbers = useMemo(() => {
     const pages: (number | "...")[] = [];
@@ -332,7 +364,7 @@ export function CategoryFilter({
           ) : (
             <>
               <div className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
-                {visible.map((p: any) => (
+                {displayProducts.map((p: any) => (
                   <ProductCard key={p.id} product={p} />
                 ))}
               </div>
@@ -374,6 +406,19 @@ export function CategoryFilter({
                     className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6] disabled:pointer-events-none disabled:opacity-30"
                   >
                     <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Vezi mai multe — sub paginare */}
+              {canLoadMore && (
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="rounded-[28px] border-2 border-[#63ad36] bg-white px-6 py-2.5 text-[14px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-50"
+                  >
+                    {loadingMore ? "Se încarcă..." : `Vezi mai multe (+${perPage})`}
                   </button>
                 </div>
               )}
