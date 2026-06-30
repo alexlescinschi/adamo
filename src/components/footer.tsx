@@ -86,17 +86,6 @@ export function Footer() {
         <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">
           mun. Chișinău, Rîșcani<br />str. Dumitru Rîșcanu 11<br />intrarea lângă scara 5
         </p>
-        <div className="overflow-hidden rounded-[7px] border border-[#e1e7ef] w-[120px] h-[80px] mt-[10px] mb-[10px]">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1sro!2s!4v1"
-            width="120" height="80"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Adamo"
-          />
-        </div>
         <a href={`tel:${PHONE}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{PHONE_DISPLAY}</a>
         <a href={`mailto:${EMAIL}`} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors break-all">{EMAIL}</a>
         <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">Luni - Vineri: 09:00 - 18:00<br />Sâmbătă: 10:00 - 16:00</p>
