@@ -10,7 +10,7 @@ const BADGE_STYLES: Record<string, { label: string; gradient: string }> = {
 const POPULAR_LABELS = ["popular", "популярный"];
 const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "tip-placa-video"];
 
-function extractBadge(item: any): { badge?: string; badge_type?: "green"; badge_gradient?: string } {
+export function extractBadge(item: any): { badge?: string; badge_type?: "green"; badge_gradient?: string } {
   const specs = item.specs || item.attributes || [];
   if (!Array.isArray(specs)) return {};
   const sticker = specs.find((s: any) => s.code === "sticker" && s.valueLabel && s.valueLabel !== "No");

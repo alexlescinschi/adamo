@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategoryProducts } from "@/lib/crm-api";
+import { mapProductCard } from "@/lib/product-mapper";
 
 export async function GET(request: NextRequest) {
   const { searchParams, pathname } = request.nextUrl;
@@ -28,7 +29,10 @@ export async function GET(request: NextRequest) {
       priceMin: priceMin != null ? Number(priceMin) : undefined,
       priceMax: priceMax != null ? Number(priceMax) : undefined,
     });
-    return NextResponse.json(data);
+    return NextResponse.json({
+      ...data,
+      items: (data?.items || []).map(mapProductCard),
+    });
   } catch {
     return NextResponse.json({ items: [], total: 0, totalPages: 1 });
   }

@@ -5,7 +5,7 @@ import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
-import { mapProductCard, BADGE_LABELS } from "@/lib/product-mapper";
+import { mapProductCard, extractBadge } from "@/lib/product-mapper";
 import { SITE_URL } from "@/app/[locale]/layout";
 import type { Metadata } from "next";
 
@@ -42,7 +42,7 @@ async function getProduct(id: string, locale = "ro") {
   const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
   const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
-  const badge = rawSpecs.some((s: any) => BADGE_LABELS.includes(s.label) && s.valueLabel) ? rawSpecs.find((s: any) => BADGE_LABELS.includes(s.label))?.valueLabel : undefined;
+  const { badge, badge_gradient } = extractBadge(data);
   const localeTranslation = Array.isArray(data.translations)
     ? data.translations.find((t: any) => t.locale === locale)
     : null;
@@ -59,6 +59,7 @@ async function getProduct(id: string, locale = "ro") {
     // brand = primul spec cu code "brand" sau label "Бренд/Brand" (CRM îl returnează în specs).
     brand: rawSpecs.find((s: any) => s.code === "brand" || /^(Бренд|Brand|Бренд)$/i.test(s.label))?.valueLabel,
     badge,
+    badge_gradient,
     availability: data.offerSummary?.availability || "OutOfStock",
     category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
     category_name: data.category?.translation?.name || data.category?.name || null,
@@ -263,7 +264,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               name={product.name}
             />
             {product.badge && (
-              <span className="absolute top-3 left-3 z-10 rounded-[6px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)]">
+              <span className={`absolute top-3 left-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)] bg-gradient-to-r ${product.badge_gradient || "from-[#7cc44e] to-[#63ad36]"}`}>
                 {product.badge}
               </span>
             )}
