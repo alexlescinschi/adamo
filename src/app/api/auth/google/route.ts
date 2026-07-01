@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createContact, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
+import { CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
 export async function POST(request: NextRequest) {
   try {
-    const { credential, phone } = await request.json();
+    const { credential } = await request.json();
     if (!credential) {
       return NextResponse.json({ error: "Missing credential" }, { status: 400 });
     }
@@ -33,29 +33,18 @@ export async function POST(request: NextRequest) {
     const firstName = user.first_name || user.name?.split(" ")[0] || "";
     const lastName = user.last_name || user.name?.split(" ").slice(1).join(" ") || "";
 
-    // ponytail: no phone yet → return user data for phone collection step, no cookies
-    if (!phone) {
-      return NextResponse.json({
-        needsPhone: true,
-        email: userEmail,
-        name: [firstName, lastName].filter(Boolean).join(" ") || user.name || "",
-      });
-    }
+    const needsPhone = !user.phone && !user.contact_id;
+    const responseBody: Record<string, unknown> = needsPhone
+      ? {
+          needsPhone: true,
+          email: userEmail,
+          name: [firstName, lastName].filter(Boolean).join(" ") || user.name || "",
+        }
+      : data;
 
-    // Full login: sync CRM contact + set cookies
-    // ponytail: createContact after Google OAuth is required because CRM doesn't auto-create contacts
-    try {
-      await createContact({
-        first_name: firstName,
-        last_name: lastName,
-        phone,
-        email: userEmail,
-      });
-    } catch {
-      // Non-critical: contact might already exist or CRM might reject
-    }
+    const response = NextResponse.json(responseBody);
 
-    const response = NextResponse.json(data);
+    // ponytail: always set cookies — user is authenticated via CRM OAuth
     if (data.accessToken) {
       response.cookies.set("ecommerceAccessToken", data.accessToken, {
         httpOnly: true,

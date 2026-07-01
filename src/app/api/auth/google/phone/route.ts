@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
+
+export async function POST(request: NextRequest) {
+  try {
+    const { phone } = await request.json();
+    if (!phone) {
+      return NextResponse.json({ error: "Missing phone" }, { status: 400 });
+    }
+
+    const token = request.cookies.get("ecommerceAccessToken")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/phone`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ phone }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error("[google/phone] CRM error:", res.status, err);
+      return NextResponse.json(
+        { error: err.message || err.error || "Failed to set phone" },
+        { status: res.status },
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("[google/phone]", error?.message || error);
+    return NextResponse.json({ error: "Failed to set phone" }, { status: 500 });
+  }
+}

@@ -16,18 +16,13 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [phoneStep, setPhoneStep] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
-  const [googleCred, setGoogleCred] = useState("");
   const [googleName, setGoogleName] = useState("");
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !googleBtnRef.current || (window as any).google?.accounts?.id) return;
+    if (!GOOGLE_CLIENT_ID || !googleBtnRef.current) return;
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
+    const initGoogle = () => {
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
@@ -41,6 +36,18 @@ export default function LoginPage() {
         width: 320,
       });
     };
+
+    // ponytail: script already loaded from previous SPA navigation → re-init directly
+    if ((window as any).google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
     document.body.appendChild(script);
   }, []);
 
@@ -56,10 +63,8 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Autentificare Google eșuată");
       if (data.needsPhone) {
-        setGoogleCred(response.credential);
         setGoogleName(data.name || "");
         setPhoneStep(true);
-        setLoading(false);
         return;
       }
       router.push("/account");
@@ -76,13 +81,13 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/google", {
+      const res = await fetch("/api/auth/google/phone", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: googleCred, phone: phoneInput.trim() }),
+        body: JSON.stringify({ phone: phoneInput.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Autentificare eșuată");
+      if (!res.ok) throw new Error(data.error || "Eroare la setarea telefonului");
       router.push("/account");
     } catch (err: any) {
       setError(err.message);
