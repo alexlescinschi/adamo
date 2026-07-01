@@ -11,6 +11,12 @@ const dict = {
       contact: "Contacte",
       menu: "Meniu",
     },
+    login: {
+      phoneRequired: "Completează numărul de telefon",
+      phoneDescription: "Numărul de telefon este obligatoriu pentru a continua.",
+      phonePlaceholder: "07xx-xxxxx",
+      continue: "Continuă",
+    },
     header: {
       search: "Caută produse...",
       callNow: "Sună acum",
@@ -228,6 +234,12 @@ const dict = {
       contact: "Контакты",
       menu: "Меню",
     },
+    login: {
+      phoneRequired: "Укажите номер телефона",
+      phoneDescription: "Номер телефона обязателен для продолжения.",
+      phonePlaceholder: "07xx-xxxxx",
+      continue: "Продолжить",
+    },
     header: {
       search: "Поиск товаров...",
       callNow: "Позвонить",
@@ -444,6 +456,12 @@ const dict = {
       warranty: "Warranty",
       contact: "Contact",
       menu: "Menu",
+    },
+    login: {
+      phoneRequired: "Enter your phone number",
+      phoneDescription: "A phone number is required to continue.",
+      phonePlaceholder: "07xx-xxxxx",
+      continue: "Continue",
     },
     header: {
       search: "Search products...",
