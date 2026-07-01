@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRegions, getCities, getStreets, getBlocksForStreet } from "@/lib/posta-rapida";
+import { getRegions, getCities, getBlocksForStreet } from "@/lib/posta-rapida";
 
 export async function GET(req: NextRequest) {
   const type = req.nextUrl.searchParams.get("type");
@@ -12,10 +12,6 @@ export async function GET(req: NextRequest) {
     if (type === "cities" && regionId) {
       const cities = await getCities(Number(regionId), search);
       return NextResponse.json(cities);
-    }
-    if (type === "streets" && cityId) {
-      const streets = await getStreets(Number(cityId));
-      return NextResponse.json(streets);
     }
     if (type === "blocks" && cityId && streetId) {
       const blocks = await getBlocksForStreet(Number(cityId), Number(streetId));

@@ -73,15 +73,15 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, [postaDelivery.regionId]);
 
-  // Fetch streets for selected city
+  // Fetch streets for selected city — direct from public API
   useEffect(() => {
     if (!postaDelivery.cityId) return;
     setPostaDelivery((d) => ({ ...d, street: "" }));
     setPostaStreetId(0);
     setPostaBlocks([]);
-    fetch(`/api/posta-rapida/nomenclatures?type=streets&city=${postaDelivery.cityId}`)
+    fetch(`https://main-api.posta.md/nomenclatures/streets?city=${postaDelivery.cityId}`)
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setPostaStreets(data); })
+      .then((data) => { if (Array.isArray(data?.results)) setPostaStreets(data.results); })
       .catch(() => {});
   }, [postaDelivery.cityId]);
 

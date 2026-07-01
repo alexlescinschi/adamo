@@ -242,9 +242,11 @@ export async function updateOrderPaymentStatus(orderId: number, status: string) 
 }
 
 export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string; notes?: string }) {
+  // ponytail: CRM expects digits-only phone (E.164 without +), strip formatting
+  const cleanPhone = data.phone.replace(/[^\d]/g, "");
   return crmFetch(`/contacts`, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, phone: cleanPhone }),
   });
 }
 

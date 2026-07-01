@@ -6,6 +6,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    // ponytail: CRM expects digits-only phone, strip formatting
+    if (body.contact?.phone) {
+      body.contact.phone = body.contact.phone.replace(/[^\d]/g, "");
+    }
+
     const payload: CheckoutPayload = {
       items: body.items,
       delivery_method: body.delivery_method,

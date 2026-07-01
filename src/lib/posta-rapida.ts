@@ -121,18 +121,6 @@ export async function getCities(
   return json.results || [];
 }
 
-// ponytail: public API, no auth needed — streets from main-api.posta.md
-export async function getStreets(
-  cityId: number,
-): Promise<{ id: number; name: string }[]> {
-  const res = await fetch(
-    `https://main-api.posta.md/nomenclatures/streets?city=${cityId}`,
-  );
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.results || [];
-}
-
 // ponytail: fetch all blocks for city, cache 24h, filter by street — zip codes don't change daily
 const blocksCache = new Map<number, { fetched: number; blocks: { street: number; name: string; zip_code: string; code: string }[] }>();
 

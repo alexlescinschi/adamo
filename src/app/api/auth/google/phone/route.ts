@@ -5,11 +5,14 @@ const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, firstName, lastName, email } = await request.json();
-    console.error("[google/phone] received:", { phone, firstName, lastName, email });
-    if (!phone) {
+    const { phone: rawPhone, firstName, lastName, email } = await request.json();
+    console.error("[google/phone] received:", { phone: rawPhone, firstName, lastName, email });
+    if (!rawPhone) {
       return NextResponse.json({ error: "Missing phone" }, { status: 400 });
     }
+
+    // ponytail: CRM expects digits-only phone, strip formatting
+    const phone = rawPhone.replace(/[^\d]/g, "");
 
     const token = request.cookies.get("ecommerceAccessToken")?.value;
     if (!token) {
