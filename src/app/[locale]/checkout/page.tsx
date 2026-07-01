@@ -413,7 +413,7 @@ export default function CheckoutPage() {
           </section>
 
           {/* Delivery */}
-          <section className="rounded-[14px] border border-[#e4e8e4] p-6">
+          <section className="rounded-[14px] border border-[#e4e8e4] p-6 overflow-visible">
             <h2 className="text-lg font-bold mb-4 text-[#1d1d1f]">{tr.checkout.deliveryMethod}</h2>
             <div className="flex gap-3 mb-4">
               <button
@@ -526,7 +526,7 @@ export default function CheckoutPage() {
                         className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                       />
                       {streetOpen && postaDelivery.street && !postaStreetId && (
-                        <div className="absolute z-10 w-full mt-1 max-h-[200px] overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
+                        <div className="absolute z-50 w-full mt-1 max-h-[200px] overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
                           {postaStreets
                             .filter((s) => s.name.toLowerCase().includes(streetSearch))
                             .map((s) => (
