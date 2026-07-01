@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createContact } from "@/lib/crm-api";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone } = await request.json();
+    const { phone, firstName, lastName, email } = await request.json();
     if (!phone) {
       return NextResponse.json({ error: "Missing phone" }, { status: 400 });
     }
@@ -30,6 +31,18 @@ export async function POST(request: NextRequest) {
         { error: err.message || err.error || "Failed to set phone" },
         { status: res.status },
       );
+    }
+
+    // ponytail: create CRM contact immediately so user appears in contacts list (same pattern as register)
+    try {
+      await createContact({
+        first_name: firstName || "",
+        last_name: lastName || "",
+        phone,
+        email: email || undefined,
+      });
+    } catch {
+      // Non-critical: contact might already exist
     }
 
     return NextResponse.json({ success: true });

@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [phoneStep, setPhoneStep] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
   const [googleName, setGoogleName] = useState("");
+  const [googleEmail, setGoogleEmail] = useState("");
   const googleBtnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.error || data.message || "Autentificare Google eșuată");
       if (data.needsPhone) {
         setGoogleName(data.name || "");
+        setGoogleEmail(data.email || "");
         setPhoneStep(true);
         return;
       }
@@ -84,7 +86,12 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/google/phone", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: phoneInput.trim() }),
+        body: JSON.stringify({
+          phone: phoneInput.trim(),
+          firstName: googleName.split(" ")[0],
+          lastName: googleName.split(" ").slice(1).join(" "),
+          email: googleEmail,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Eroare la setarea telefonului");
