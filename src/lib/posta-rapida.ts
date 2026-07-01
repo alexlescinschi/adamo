@@ -22,8 +22,8 @@ async function postaFetch<T = Record<string, unknown>>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const token = process.env.POSTA_RAPIDA_API_KEY;
-  if (!token) throw new Error("POSTA_RAPIDA_API_KEY not set");
+  const token = process.env.CURIERRAPID_API_KEY;
+  if (!token) throw new Error("CURIERRAPID_API_KEY not set");
 
   const res = await fetch(`${BASE}${path}`, {
     ...init,
