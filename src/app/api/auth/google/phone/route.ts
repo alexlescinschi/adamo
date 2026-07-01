@@ -6,6 +6,7 @@ const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 export async function POST(request: NextRequest) {
   try {
     const { phone, firstName, lastName, email } = await request.json();
+    console.error("[google/phone] received:", { phone, firstName, lastName, email });
     if (!phone) {
       return NextResponse.json({ error: "Missing phone" }, { status: 400 });
     }
@@ -35,14 +36,15 @@ export async function POST(request: NextRequest) {
 
     // ponytail: create CRM contact immediately so user appears in contacts list (same pattern as register)
     try {
-      await createContact({
+      const contactResult = await createContact({
         first_name: firstName || "",
         last_name: lastName || "",
         phone,
         email: email || undefined,
       });
-    } catch {
-      // Non-critical: contact might already exist
+      console.error("[google/phone] createContact OK:", JSON.stringify(contactResult).slice(0, 200));
+    } catch (err) {
+      console.error("[google/phone] createContact failed:", err);
     }
 
     return NextResponse.json({ success: true });
