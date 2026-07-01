@@ -520,12 +520,12 @@ export default function CheckoutPage() {
                           setStreetOpen(true);
                         }}
                         onFocus={() => {
-                          if (postaStreets.length > 0 && !postaStreetId) setStreetOpen(true);
+                          if (postaStreets.length > 0) setStreetOpen(true);
                         }}
-                        onBlur={() => setTimeout(() => setStreetOpen(false), 200)}
+                        onBlur={() => setTimeout(() => setStreetOpen(false), 300)}
                         className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                       />
-                      {streetOpen && postaDelivery.street && !postaStreetId && (
+                      {streetOpen && postaDelivery.street && (
                         <div className="absolute z-50 w-full mt-1 max-h-[200px] overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
                           {postaStreets
                             .filter((s) => s.name.toLowerCase().includes(streetSearch))
@@ -533,7 +533,8 @@ export default function CheckoutPage() {
                               <button
                                 key={s.id}
                                 type="button"
-                                onMouseDown={() => {
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
                                   setPostaDelivery({ ...postaDelivery, street: s.name });
                                   setPostaStreetId(s.id);
                                   setStreetOpen(false);
