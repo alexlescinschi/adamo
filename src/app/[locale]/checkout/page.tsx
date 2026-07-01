@@ -121,7 +121,7 @@ export default function CheckoutPage() {
         // /me dă doar email+phone; nu suprascrie ce a pus localStorage pt nume/adresă
         setContact((c) => ({
           full_name: c.full_name || data.user?.username || "",
-          phone: c.phone || data.user?.phone || "",
+          phone: data.user?.phone || c.phone || "",
           email: data.user?.email || data.email || c.email,
         }));
       })
@@ -448,7 +448,7 @@ export default function CheckoutPage() {
               >
                 <option value="" disabled>{tr.checkout.selectPickup}</option>
                 {warehouses.map((w: any) => (
-                  <option key={w.id} value={w.id}>{w.name || w.address}</option>
+                  <option key={w.id} value={w.id}>{w.title || w.name || w.address || String(w.id)}</option>
                 ))}
                 {warehouses.length === 0 && (
                   <option value="-1">mun. Chișinău, Rîșcani, str. Dumitru Rîșcanu 11</option>

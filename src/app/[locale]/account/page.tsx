@@ -70,6 +70,7 @@ export default function AccountPage() {
         </div>
         <button
           onClick={async () => {
+            localStorage.removeItem("adamo-checkout");
             await fetch("/api/auth/logout", { method: "POST" });
             router.push("/");
           }}
