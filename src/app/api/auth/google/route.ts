@@ -17,7 +17,14 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ idToken: credential }),
     });
 
-    const data = await res.json();
+    const rawText = await res.text();
+    console.error("CRM Google OAuth response:", res.status, rawText.slice(0, 500));
+    let data: any;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      return NextResponse.json({ error: `CRM returned non-JSON (${res.status}): ${rawText.slice(0, 200)}` }, { status: 502 });
+    }
     if (!res.ok) {
       return NextResponse.json(data, { status: res.status });
     }
@@ -41,8 +48,9 @@ export async function POST(request: NextRequest) {
     }
 
     return response;
-  } catch (error) {
-    console.error("Google OAuth error:", error);
+  } catch (error: any) {
+    console.error("Google OAuth error:", error?.message || error);
+    console.error("Google OAuth stack:", error?.stack);
     return NextResponse.json({ error: "Google authentication failed" }, { status: 500 });
   }
 }
