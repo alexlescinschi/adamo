@@ -171,6 +171,13 @@ export default function CheckoutPage() {
 
       if (deliveryMethod === "PICKUP" && warehouseId != null && warehouseId > 0) {
         payload.warehouse_id = warehouseId;
+      } else if (courierProvider === "POSTA_RAPIDA") {
+        const regionName = postaRegions.find((r) => r.id === postaDelivery.regionId)?.name || "";
+        const cityName = postaCities.find((c) => c.id === postaDelivery.cityId)?.name || "";
+        payload.delivery = {
+          city: [cityName, regionName].filter(Boolean).join(", "),
+          address: [postaDelivery.street, postaDelivery.block].filter(Boolean).join(", "),
+        };
       } else {
         payload.delivery = { city: delivery.city, address: delivery.address };
       }
