@@ -46,8 +46,8 @@ async function postaFetch<T = Record<string, unknown>>(
 export async function createPostaAwb(p: PostaAwbParams): Promise<PostaAwbResult> {
   const body: Record<string, unknown> = {
     sender_address: {
-      region: 2259, // mun. Chişinău
-      city: 14797, // Chişinău — ponytail: hardcoded sender IDs, add env vars if moving warehouse
+      region: 2034, // mun. Chişinău
+      city: 659826, // or. Chișinău — ponytail: hardcoded sender IDs, add env vars if moving warehouse
       street: "Dumitru Rîșcanu",
       block: "11",
       zip_code: "MD-2051",
@@ -127,8 +127,8 @@ export async function getPostaTariff(p: PostaAwbParams): Promise<{ cost: number;
       method: "POST",
       body: JSON.stringify({
         sender_address: {
-          region: 2259,
-          city: 14797,
+          region: 2034,
+          city: 659826,
           street: "Dumitru Rîșcanu",
         },
         receiver_address: {

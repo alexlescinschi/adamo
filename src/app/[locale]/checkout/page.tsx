@@ -226,6 +226,9 @@ export default function CheckoutPage() {
             if (prRes.ok) {
               const prData = await prRes.json();
               awbNumber = prData.shippingNumber ?? prData.awb ?? "";
+            } else {
+              const errBody = await prRes.text().catch(() => "");
+              console.error("[checkout] Poșta AWB error:", prRes.status, errBody);
             }
           } else {
             const awbRes = await fetch("/api/fancourier/awb", {
@@ -250,7 +253,9 @@ export default function CheckoutPage() {
               awbNumber = awbData.awb ?? "";
             }
           }
-        } catch {}
+        } catch (err) {
+          console.error("[checkout] AWB creation failed:", err);
+        }
       }
 
       const successBase = `/account/orders?success=true&orderId=${orderId}`;
