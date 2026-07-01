@@ -79,7 +79,7 @@ export default function CheckoutPage() {
     setPostaDelivery((d) => ({ ...d, street: "" }));
     setPostaStreetId(0);
     setPostaBlocks([]);
-    fetch(`https://main-api.posta.md/nomenclatures/streets?city=${postaDelivery.cityId}`)
+    fetch(`https://main-api.posta.md/nomenclatures/streets?city=${postaDelivery.cityId}&per_page=1000`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data?.results)) setPostaStreets(data.results); })
       .catch(() => {});
