@@ -218,10 +218,15 @@ export interface CheckoutPayload {
   };
 }
 
-export async function createOrder(payload: CheckoutPayload) {
+export async function createOrder(payload: CheckoutPayload, ecommerceToken?: string) {
+  const headers: Record<string, string> = {};
+  if (ecommerceToken) {
+    headers["Cookie"] = `ecommerceAccessToken=${ecommerceToken}`;
+  }
   return crmFetch(`/ecommerce/checkout/orders`, {
     method: "POST",
     body: JSON.stringify(payload),
+    headers,
   });
 }
 

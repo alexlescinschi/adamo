@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
 
     console.log("[checkout] payload to CRM:", JSON.stringify(payload));
 
-    const data = await createOrder(payload);
+    const ecommerceToken = request.cookies.get("ecommerceAccessToken")?.value;
+    const data = await createOrder(payload, ecommerceToken);
     // ponytail: CRM întoarce { order: { id }, invoice_access_token }. Frontend-ul citește
     // order.id || order.orderId (top-level) → adăugăm id+orderId top-level pentru compat.
     const orderId = data?.order?.id ?? data?.id ?? data?.orderId;
