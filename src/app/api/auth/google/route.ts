@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
 
     const user = data.user || data;
     const userEmail = user.email || data.email || "";
-    const firstName = user.first_name || user.name?.split(" ")[0] || "";
-    const lastName = user.last_name || user.name?.split(" ").slice(1).join(" ") || "";
+    const displayName = user.first_name || user.username || user.name || "";
+    const firstName = displayName.split(" ")[0] || "";
+    const lastName = displayName.split(" ").slice(1).join(" ") || "";
 
     const needsPhone = !user.phone && !user.contact_id;
     const responseBody: Record<string, unknown> = needsPhone

@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ponytail: create CRM contact immediately so user appears in contacts list (same pattern as register)
+    let contactWarning: string | undefined;
     try {
       const contactResult = await createContact({
         first_name: firstName || "",
@@ -45,9 +46,10 @@ export async function POST(request: NextRequest) {
       console.error("[google/phone] createContact OK:", JSON.stringify(contactResult).slice(0, 200));
     } catch (err) {
       console.error("[google/phone] createContact failed:", err);
+      contactWarning = "Contact creation failed — user authenticated but not in CRM contacts";
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, contactWarning });
   } catch (error: any) {
     console.error("[google/phone]", error?.message || error);
     return NextResponse.json({ error: "Failed to set phone" }, { status: 500 });

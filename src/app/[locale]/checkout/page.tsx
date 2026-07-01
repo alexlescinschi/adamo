@@ -27,6 +27,11 @@ export default function CheckoutPage() {
   const [postaDelivery, setPostaDelivery] = useState({ regionId: 0, cityId: 0, street: "", block: "", zipCode: "" });
   const [postaRegions, setPostaRegions] = useState<{ id: number; name: string }[]>([]);
   const [postaCities, setPostaCities] = useState<{ id: number; name: string }[]>([]);
+  const [postaStreets, setPostaStreets] = useState<{ id: number; name: string }[]>([]);
+  const [postaBlocks, setPostaBlocks] = useState<{ name: string; zip_code: string }[]>([]);
+  const [postaStreetId, setPostaStreetId] = useState(0);
+  const [streetSearch, setStreetSearch] = useState("");
+  const [streetOpen, setStreetOpen] = useState(false);
   const [payMode, setPayMode] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -68,6 +73,36 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, [postaDelivery.regionId]);
 
+  // Fetch streets for selected city
+  useEffect(() => {
+    if (!postaDelivery.cityId) return;
+    setPostaDelivery((d) => ({ ...d, street: "" }));
+    setPostaStreetId(0);
+    setPostaBlocks([]);
+    fetch(`/api/posta-rapida/nomenclatures?type=streets&city=${postaDelivery.cityId}`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPostaStreets(data); })
+      .catch(() => {});
+  }, [postaDelivery.cityId]);
+
+  // Fetch blocks/zip codes for selected street
+  useEffect(() => {
+    if (!postaStreetId || !postaDelivery.cityId) return;
+    setPostaBlocks([]);
+    setPostaDelivery((d) => ({ ...d, zipCode: "" }));
+    fetch(`/api/posta-rapida/nomenclatures?type=blocks&city=${postaDelivery.cityId}&street=${postaStreetId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setPostaBlocks(data);
+          // Auto-fill first available zip code
+          const zip = data[0]?.zip_code || "";
+          if (zip) setPostaDelivery((d) => ({ ...d, zipCode: zip }));
+        }
+      })
+      .catch(() => {});
+  }, [postaStreetId, postaDelivery.cityId]);
+
   // Pre-fill din localStorage (ultima comandă) + profil CRM dacă e logat.
   // ponytail: localStorage = sursa universală (guest + logat), zero DB pe site.
   useEffect(() => {
@@ -85,9 +120,9 @@ export default function CheckoutPage() {
         if (!data?.user) return;
         // /me dă doar email+phone; nu suprascrie ce a pus localStorage pt nume/adresă
         setContact((c) => ({
-          full_name: c.full_name || data.user.username || "",
-          phone: c.phone || data.user.phone || "",
-          email: data.user.email || c.email,
+          full_name: c.full_name || data.user?.username || "",
+          phone: c.phone || data.user?.phone || "",
+          email: data.user?.email || data.email || c.email,
         }));
       })
       .catch(() => {});
@@ -472,14 +507,45 @@ export default function CheckoutPage() {
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
-                    <input
-                      type="text"
-                      placeholder={tr.checkout.address}
-                      required
-                      value={postaDelivery.street}
-                      onChange={(e) => setPostaDelivery({ ...postaDelivery, street: e.target.value })}
-                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={tr.checkout.address}
+                        required
+                        value={postaDelivery.street}
+                        onChange={(e) => {
+                          setPostaDelivery({ ...postaDelivery, street: e.target.value });
+                          setStreetSearch(e.target.value.toLowerCase());
+                          setPostaStreetId(0);
+                          setStreetOpen(true);
+                        }}
+                        onFocus={() => {
+                          if (postaStreets.length > 0 && !postaStreetId) setStreetOpen(true);
+                        }}
+                        onBlur={() => setTimeout(() => setStreetOpen(false), 200)}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      />
+                      {streetOpen && postaDelivery.street && !postaStreetId && (
+                        <div className="absolute z-10 w-full mt-1 max-h-[200px] overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
+                          {postaStreets
+                            .filter((s) => s.name.toLowerCase().includes(streetSearch))
+                            .map((s) => (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onMouseDown={() => {
+                                  setPostaDelivery({ ...postaDelivery, street: s.name });
+                                  setPostaStreetId(s.id);
+                                  setStreetOpen(false);
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm hover:bg-[#edf7e8] hover:text-[#34781f]"
+                              >
+                                {s.name}
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
                     <input
                       type="text"
                       placeholder={tr.checkout.blockLabel}
@@ -488,13 +554,25 @@ export default function CheckoutPage() {
                       onChange={(e) => setPostaDelivery({ ...postaDelivery, block: e.target.value })}
                       className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                     />
-                    <input
-                      type="text"
-                      placeholder={tr.checkout.postalCode}
-                      value={postaDelivery.zipCode}
-                      onChange={(e) => setPostaDelivery({ ...postaDelivery, zipCode: e.target.value })}
-                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                    />
+                    {postaBlocks.length > 0 ? (
+                      <select
+                        value={postaDelivery.zipCode}
+                        onChange={(e) => setPostaDelivery({ ...postaDelivery, zipCode: e.target.value })}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      >
+                        {postaBlocks.map((b, i) => (
+                          <option key={i} value={b.zip_code}>{b.zip_code}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder={tr.checkout.postalCode}
+                        value={postaDelivery.zipCode}
+                        onChange={(e) => setPostaDelivery({ ...postaDelivery, zipCode: e.target.value })}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="grid gap-4">

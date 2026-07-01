@@ -20,18 +20,13 @@ export async function GET(request: NextRequest) {
     if (refreshToken) {
       const refreshed = await refreshCrmToken(refreshToken);
       if (refreshed) {
-        // Retry with new token
         res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/me`, {
           headers: { Authorization: `Bearer ${refreshed.accessToken}` },
         });
 
         if (res.ok) {
           const data = await res.json();
-          const response = NextResponse.json({
-            user: data.user || data,
-            email: data.user?.email || data.email,
-          });
-          // Set new cookies on response so client gets refreshed tokens
+          const response = buildMeResponse(data);
           setTokenCookies(response, refreshed);
           return response;
         }
@@ -45,6 +40,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: res.status });
   }
 
+  return buildMeResponse(data);
+}
+
+// ponytail: single response builder prevents drift between normal & refresh paths
+function buildMeResponse(data: any) {
   return NextResponse.json({
     user: data.user || data,
     email: data.user?.email || data.email,

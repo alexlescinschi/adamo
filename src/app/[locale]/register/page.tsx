@@ -19,15 +19,15 @@ export default function RegisterPage() {
     password: "",
   });
   const googleBtnRef = useRef<HTMLDivElement>(null);
+  const [phoneStep, setPhoneStep] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [googleName, setGoogleName] = useState("");
+  const [googleEmail, setGoogleEmail] = useState("");
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !googleBtnRef.current || (window as any).google?.accounts?.id) return;
+    if (!GOOGLE_CLIENT_ID || !googleBtnRef.current) return;
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
+    const initGoogle = () => {
       (window as any).google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
@@ -41,6 +41,18 @@ export default function RegisterPage() {
         width: 320,
       });
     };
+
+    // ponytail: script already loaded from previous SPA navigation — re-init directly
+    if ((window as any).google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
     document.body.appendChild(script);
   }, []);
 
@@ -55,6 +67,38 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Înregistrare Google eșuată");
+      if (data.needsPhone) {
+        setGoogleName(data.name || "");
+        setGoogleEmail(data.email || "");
+        setPhoneStep(true);
+        return;
+      }
+      router.push("/account");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phoneInput.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/google/phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: phoneInput.trim(),
+          firstName: googleName.split(" ")[0],
+          lastName: googleName.split(" ").slice(1).join(" "),
+          email: googleEmail,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Eroare la setarea telefonului");
       router.push("/account");
     } catch (err: any) {
       setError(err.message);
@@ -88,81 +132,111 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-md py-[70px]">
-      <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] text-center mb-8">Înregistrare</h1>
+      <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] text-center mb-8">
+        {phoneStep ? "Completează profilul" : "Înregistrare"}
+      </h1>
 
       {error && <div className="mb-4 rounded-[28px] bg-red-50 p-4 text-sm text-red-700">{error}</div>}
 
-      {GOOGLE_CLIENT_ID && (
-        <div className="flex justify-center mb-6" ref={googleBtnRef} />
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Prenume</label>
-            <input
-              required
-              value={form.first_name}
-              onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Nume</label>
-            <input
-              required
-              value={form.last_name}
-              onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-              className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Email</label>
-          <input
-            type="email"
-            required
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Telefon</label>
+      {phoneStep ? (
+        <form onSubmit={handlePhoneSubmit} className="space-y-4">
+          {googleName && (
+            <p className="text-center text-sm text-[#6b6c6c]">
+              Bun venit, <span className="font-semibold text-[#1d1d1f]">{googleName}</span>
+            </p>
+          )}
+          <p className="text-center text-sm text-[#6b6c6c]">Completează numărul de telefon pentru a continua.</p>
           <input
             type="tel"
             required
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+            value={phoneInput}
+            onChange={(e) => setPhoneInput(e.target.value)}
+            placeholder="De ex. 069 123 456"
+            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Parolă</label>
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Înregistrare"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Continuă"}
+          </button>
+        </form>
+      ) : (
+        <>
+          {GOOGLE_CLIENT_ID && (
+            <div className="flex justify-center mb-6" ref={googleBtnRef} />
+          )}
 
-      <p className="mt-6 text-center text-sm text-[#6b6c6c]">
-        Ai deja cont?{" "}
-        <Link href="/login" className="text-[#4e8f28] hover:underline">
-          Autentifică-te
-        </Link>
-      </p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Prenume</label>
+                <input
+                  required
+                  value={form.first_name}
+                  onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+                  className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Nume</label>
+                <input
+                  required
+                  value={form.last_name}
+                  onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                  className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Email</label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Telefon</label>
+              <input
+                type="tel"
+                required
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Parolă</label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Înregistrare"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-[#6b6c6c]">
+            Ai deja cont?{" "}
+            <Link href="/login" className="text-[#4e8f28] hover:underline">
+              Autentifică-te
+            </Link>
+          </p>
+        </>
+      )}
     </div>
   );
 }
