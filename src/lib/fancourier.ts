@@ -34,21 +34,23 @@ export async function createFanCourierAwb(p: AwbParams): Promise<AwbResult> {
     to_name: p.toName,
     to_city: p.toCity,
     to_country: "MD",
-    to_zipcode: p.toZipcode || "2000",
+    ...(p.toZipcode ? { to_zipcode: p.toZipcode } : {}),
     to_str: p.toStreet,
     ...(p.toNr ? { to_nr: p.toNr } : {}),
     ...(p.toBl ? { to_bl: p.toBl } : {}),
     ...(p.toAp ? { to_ap: p.toAp } : {}),
     to_phone: p.toPhone,
-    to_email: p.toEmail ?? "",
-    type: "Colet",
-    service_type: "Standard",
+    ...(p.toEmail ? { to_email: p.toEmail } : {}),
+    type: "package",
+    service_type: "standard",
     weight: WEIGHT,
-    dimensions: process.env.FANCOURIER_DIMENSIONS ?? "20x20x10",
+    length: process.env.FANCOURIER_LENGTH ?? "20",
+    height: process.env.FANCOURIER_HEIGHT ?? "20",
+    width: process.env.FANCOURIER_WIDTH ?? "10",
     content: "Electronice",
     cnt: "1",
     ...(p.orderRef ? { customer_reference: p.orderRef } : {}),
-    ...(p.cod !== undefined && p.cod > 0 ? { ramburs: String(p.cod) } : {}),
+    ...(p.cod !== undefined && p.cod > 0 ? { ramburs: String(p.cod), ramburs_type: "cash" } : {}),
   });
 
   const res = await fetch(`${BASE}/create_shipment`, {
@@ -82,10 +84,10 @@ export async function getFanCourierPrice(
       from_country: "MD",
       to_city: city,
       to_country: "MD",
-      to_zipcode: zipcode || "2000",
+      ...(zipcode ? { to_zipcode: zipcode } : {}),
       weight: WEIGHT,
-      type: "Colet",
-      service_type: "Standard",
+      type: "package",
+      service_type: "standard",
     });
 
     const res = await fetch(`${BASE}/get_price?${params.toString()}`);

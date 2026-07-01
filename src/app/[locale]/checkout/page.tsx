@@ -8,7 +8,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Loader2, ShoppingCart, ChevronLeft, Copy, Check, Building2, FileText } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { ADAMO_COMPANY } from "@/lib/company";
-import { resolvePaymentMethod } from "@/lib/checkout";
+import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { formatPrice } from "@/lib/utils";
 
 export default function CheckoutPage() {
@@ -23,6 +23,10 @@ export default function CheckoutPage() {
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
   const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
+  const [courierProvider, setCourierProvider] = useState<CourierProvider>("POSTA_RAPIDA");
+  const [postaDelivery, setPostaDelivery] = useState({ regionId: 0, cityId: 0, street: "", block: "", zipCode: "" });
+  const [postaRegions, setPostaRegions] = useState<{ id: number; name: string }[]>([]);
+  const [postaCities, setPostaCities] = useState<{ id: number; name: string }[]>([]);
   const [payMode, setPayMode] = useState<"CASH" | "BANK_TRANSFER">("CASH");
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -47,6 +51,23 @@ export default function CheckoutPage() {
       .catch(() => {});
   }, [warehouseId]);
 
+  useEffect(() => {
+    fetch("/api/posta-rapida/nomenclatures?type=regions")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPostaRegions(data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!postaDelivery.regionId) return;
+    setPostaCities([]);
+    setPostaDelivery((d) => ({ ...d, cityId: 0 }));
+    fetch(`/api/posta-rapida/nomenclatures?type=cities&region=${postaDelivery.regionId}`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPostaCities(data); })
+      .catch(() => {});
+  }, [postaDelivery.regionId]);
+
   // Pre-fill din localStorage (ultima comandă) + profil CRM dacă e logat.
   // ponytail: localStorage = sursa universală (guest + logat), zero DB pe site.
   useEffect(() => {
@@ -54,6 +75,8 @@ export default function CheckoutPage() {
       const saved = JSON.parse(localStorage.getItem("adamo-checkout") || "{}");
       if (saved.contact) setContact(saved.contact);
       if (saved.delivery) setDelivery(saved.delivery);
+      if (saved.courierProvider) setCourierProvider(saved.courierProvider);
+      if (saved.postaDelivery) setPostaDelivery(saved.postaDelivery);
     } catch {}
 
     fetch("/api/account/me")
@@ -169,33 +192,56 @@ export default function CheckoutPage() {
       clearCart();
       localStorage.setItem(
         "adamo-checkout",
-        JSON.stringify({ contact, delivery: { ...delivery } })
+        JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery })
       );
 
-      // Create FanCourier AWB for courier deliveries (non-blocking)
+      // Create courier AWB (non-blocking)
       let awbNumber = "";
       if (deliveryMethod === "COURIER") {
         try {
-          const awbRes = await fetch("/api/fancourier/awb", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              toName: contact.full_name,
-              toCity: delivery.city,
-              toZipcode: delivery.postalCode || "2000",
-              toStreet: delivery.address,
-              toNr: delivery.addressNr || undefined,
-              toBl: delivery.addressBl || undefined,
-              toAp: delivery.addressAp || undefined,
-              toPhone: contact.phone,
-              toEmail: contact.email || "",
-              orderRef: String(orderId),
-              cod: payMode === "BANK_TRANSFER" ? 0 : total,
-            }),
-          });
-          if (awbRes.ok) {
-            const awbData = await awbRes.json();
-            awbNumber = awbData.awb ?? "";
+          if (courierProvider === "POSTA_RAPIDA") {
+            const prRes = await fetch("/api/posta-rapida/awb", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                toName: contact.full_name,
+                toPhone: contact.phone,
+                toEmail: contact.email || undefined,
+                regionId: postaDelivery.regionId,
+                cityId: postaDelivery.cityId,
+                street: postaDelivery.street,
+                block: postaDelivery.block,
+                zipCode: postaDelivery.zipCode || undefined,
+                orderRef: String(orderId),
+                cod: payMode === "BANK_TRANSFER" ? 0 : total,
+              }),
+            });
+            if (prRes.ok) {
+              const prData = await prRes.json();
+              awbNumber = prData.shippingNumber ?? prData.awb ?? "";
+            }
+          } else {
+            const awbRes = await fetch("/api/fancourier/awb", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                toName: contact.full_name,
+                toCity: delivery.city,
+                toZipcode: delivery.postalCode || undefined,
+                toStreet: delivery.address,
+                toNr: delivery.addressNr || undefined,
+                toBl: delivery.addressBl || undefined,
+                toAp: delivery.addressAp || undefined,
+                toPhone: contact.phone,
+                toEmail: contact.email || undefined,
+                orderRef: String(orderId),
+                cod: payMode === "BANK_TRANSFER" ? 0 : total,
+              }),
+            });
+            if (awbRes.ok) {
+              const awbData = await awbRes.json();
+              awbNumber = awbData.awb ?? "";
+            }
           }
         } catch {}
       }
@@ -362,54 +408,133 @@ export default function CheckoutPage() {
                 )}
               </select>
             ) : (
-              <div className="grid gap-4">
-                <input
-                  type="text"
-                  placeholder={tr.checkout.city}
-                  required
-                  value={delivery.city}
-                  onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
-                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder={tr.checkout.address}
-                  required
-                  value={delivery.address}
-                  onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
-                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                />
-                <div className="grid grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder={tr.checkout.addressNr}
-                    required
-                    value={delivery.addressNr}
-                    onChange={(e) => setDelivery({ ...delivery, addressNr: e.target.value })}
-                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder={tr.checkout.addressBl}
-                    value={delivery.addressBl}
-                    onChange={(e) => setDelivery({ ...delivery, addressBl: e.target.value })}
-                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder={tr.checkout.addressAp}
-                    value={delivery.addressAp}
-                    onChange={(e) => setDelivery({ ...delivery, addressAp: e.target.value })}
-                    className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                  />
+              <div className="space-y-4">
+                {/* Courier provider toggle */}
+                <div className="flex gap-3 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setCourierProvider("POSTA_RAPIDA")}
+                    className={`flex-1 rounded-[10px] border-2 px-3 py-2 text-xs font-semibold transition-colors ${
+                      courierProvider === "POSTA_RAPIDA"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    {tr.checkout.postaRapida}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCourierProvider("FANCOURIER")}
+                    className={`flex-1 rounded-[10px] border-2 px-3 py-2 text-xs font-semibold transition-colors ${
+                      courierProvider === "FANCOURIER"
+                        ? "border-[#63ad36] bg-[#edf7e8] text-[#34781f]"
+                        : "border-[#e4e8e4] text-[#444545] hover:border-[#63ad36]/50"
+                    }`}
+                  >
+                    {tr.checkout.fanCourier}
+                  </button>
                 </div>
-                <input
-                  type="text"
-                  placeholder={tr.checkout.postalCode}
-                  value={delivery.postalCode}
-                  onChange={(e) => setDelivery({ ...delivery, postalCode: e.target.value })}
-                  className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
-                />
+
+                {courierProvider === "POSTA_RAPIDA" ? (
+                  <div className="grid gap-4">
+                    <select
+                      value={postaDelivery.regionId || ""}
+                      onChange={(e) => setPostaDelivery({ ...postaDelivery, regionId: Number(e.target.value) })}
+                      required
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    >
+                      <option value="" disabled>{tr.checkout.selectRegion}</option>
+                      {postaRegions.map((r) => (
+                        <option key={r.id} value={r.id}>{r.name}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={postaDelivery.cityId || ""}
+                      onChange={(e) => setPostaDelivery({ ...postaDelivery, cityId: Number(e.target.value) })}
+                      required
+                      disabled={!postaDelivery.regionId}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    >
+                      <option value="" disabled>{tr.checkout.city}</option>
+                      {postaCities.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.address}
+                      required
+                      value={postaDelivery.street}
+                      onChange={(e) => setPostaDelivery({ ...postaDelivery, street: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.blockLabel}
+                      required
+                      value={postaDelivery.block}
+                      onChange={(e) => setPostaDelivery({ ...postaDelivery, block: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.postalCode}
+                      value={postaDelivery.zipCode}
+                      onChange={(e) => setPostaDelivery({ ...postaDelivery, zipCode: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.city}
+                      required
+                      value={delivery.city}
+                      onChange={(e) => setDelivery({ ...delivery, city: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.address}
+                      required
+                      value={delivery.address}
+                      onChange={(e) => setDelivery({ ...delivery, address: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                    <div className="grid grid-cols-3 gap-3">
+                      <input
+                        type="text"
+                        placeholder={tr.checkout.addressNr}
+                        required
+                        value={delivery.addressNr}
+                        onChange={(e) => setDelivery({ ...delivery, addressNr: e.target.value })}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder={tr.checkout.addressBl}
+                        value={delivery.addressBl}
+                        onChange={(e) => setDelivery({ ...delivery, addressBl: e.target.value })}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder={tr.checkout.addressAp}
+                        value={delivery.addressAp}
+                        onChange={(e) => setDelivery({ ...delivery, addressAp: e.target.value })}
+                        className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={tr.checkout.postalCode}
+                      value={delivery.postalCode}
+                      onChange={(e) => setDelivery({ ...delivery, postalCode: e.target.value })}
+                      className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </section>

@@ -3,6 +3,8 @@
 //   ONLINE, BANK_TRANSFER, IUTE, FAN_COURIER_RAMBUS, MICROINVEST
 // (CASH/CARD exist in the wider deal enum but are rejected at checkout.)
 
+export type CourierProvider = "FANCOURIER" | "POSTA_RAPIDA";
+
 export type CrmPaymentMethod =
   | "ONLINE"
   | "BANK_TRANSFER"
