@@ -561,8 +561,8 @@ export default function CheckoutPage() {
                         onChange={(e) => setPostaDelivery({ ...postaDelivery, zipCode: e.target.value })}
                         className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                       >
-                        {postaBlocks.map((b, i) => (
-                          <option key={i} value={b.zip_code}>{b.zip_code}</option>
+                        {[...new Set(postaBlocks.map((b) => b.zip_code))].map((zip) => (
+                          <option key={zip} value={zip}>{zip}</option>
                         ))}
                       </select>
                     ) : (
