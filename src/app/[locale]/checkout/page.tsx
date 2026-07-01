@@ -525,7 +525,7 @@ export default function CheckoutPage() {
                         onBlur={() => setTimeout(() => setStreetOpen(false), 300)}
                         className="w-full rounded-[10px] border border-[#e4e8e4] px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none"
                       />
-                      {streetOpen && postaDelivery.street && (
+                      {streetOpen && (
                         <div className="absolute z-50 w-full mt-1 max-h-[200px] overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
                           {postaStreets
                             .filter((s) => s.name.toLowerCase().includes(streetSearch))
