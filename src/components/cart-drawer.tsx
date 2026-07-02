@@ -143,7 +143,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               </div>
               {hasSelected ? (
                 <Link
-                  href="/checkout"
+                  href="/cart"
                   onClick={onClose}
                   className="flex w-full items-center justify-center rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
                 >
