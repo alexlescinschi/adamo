@@ -200,6 +200,13 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     setTimeout(() => setIbanCopied(false), 2000);
   }
 
+  // ponytail: URL factură pre-order (orderId —) ca pe checkout
+  function buildInvoiceUrl(orderId: string) {
+    const now = new Date();
+    const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
+    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(selectedItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
+  }
+
   const inputCls = "w-full rounded-[10px] border border-[#e4e8e4] bg-white px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none";
 
   // ponytail: invoice success screen pt transfer bancar
@@ -586,6 +593,16 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               <p className="mt-3 rounded-[8px] border border-[#f0d060] bg-[#fff9e6] px-3 py-2 text-[11px] text-[#7a6000]">
                 ⚠ {tr.checkout.bankTransferInstruction}
               </p>
+              {/* ponytail: descarcă cont spre plată (pre-order) ca pe checkout */}
+              <a
+                href={buildInvoiceUrl("—")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#63ad36] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
+              >
+                <FileText className="h-4 w-4" />
+                {tr.checkout.downloadInvoice}
+              </a>
             </div>
           </div>
         )}
