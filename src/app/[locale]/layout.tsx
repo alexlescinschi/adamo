@@ -4,9 +4,10 @@ import { Footer } from "@/components/footer";
 import { ContactWidget } from "@/components/contact-widget";
 import { IuteScript } from "@/components/iute-script";
 import { CartProvider } from "@/hooks/use-cart";
-import { getCategories, getPublishedProducts, getProductById } from "@/lib/crm-api";
+import { getCategories, getNewProducts } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
-import { extractProducts, mapProductCard, extractSpecs } from "@/lib/product-mapper";
+import { extractProducts } from "@/lib/product-mapper";
+import { getCached } from "@/lib/redis";
 import { IUTE_CONFIGURED, IUTE_PUBLIC_KEY_BROWSER, IUTE_SCRIPT_URL, IUTE_STYLE_URL, IUTE_LANG_BROWSER } from "@/lib/iute-api";
 
 export const SITE_URL = "https://adamo3.vercel.app";
@@ -73,19 +74,13 @@ export default async function LocaleLayout({
 
   let products: any[] = [];
   try {
-    const data = await getPublishedProducts(locale, 8);
-    const basic = extractProducts(data);
-    // ponytail: enrich header products for correct specs
-    const enriched = await Promise.allSettled(
-      basic.map(async (p) => {
-        try {
-          const detail = await getProductById(p.id, locale);
-          const mapped = mapProductCard(detail);
-          return { ...p, specs: extractSpecs(detail), images: mapped.images || p.images, price: mapped.price || p.price, badge: mapped.badge, badge_type: mapped.badge_type, badge_gradient: mapped.badge_gradient };
-        } catch { return p; }
-      })
+    // ponytail: storefront endpoint (new) vine cu preț/imagine/badge complete, zero enrichment
+    const data = await getCached(
+      `header-products:${locale}:8`,
+      () => getNewProducts(locale, 8),
+      300
     );
-    products = enriched.map((r) => (r.status === "fulfilled" ? r.value : null)).filter(Boolean);
+    products = extractProducts(data);
   } catch {
     products = [];
   }

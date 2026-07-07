@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -11,6 +11,10 @@ interface ImageGalleryProps {
 
 export function ImageGallery({ images, name }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
+  const touchStart = useRef(0);
+
+  const prev = () => setSelected((s) => (s - 1 + images.length) % images.length);
+  const next = () => setSelected((s) => (s + 1) % images.length);
 
   if (images.length === 0) {
     return <div className="flex h-80 items-center justify-center rounded-[14px] md:rounded-[28px] bg-[#f3f6f6] text-[#6b6c6c]">Fără imagine</div>;
@@ -18,15 +22,23 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
 
   return (
     <div>
-      <div className="relative w-full aspect-square overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]">
+      <div
+        className="relative w-full aspect-square overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
+        onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          const diff = touchStart.current - e.changedTouches[0].clientX;
+          if (diff > 40) next();
+          else if (diff < -40) prev();
+        }}
+      >
         <Image key={images[selected]?.url} src={images[selected]?.url} alt={name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
 
         {images.length > 1 && (
           <>
-            <button onClick={() => setSelected((selected - 1 + images.length) % images.length)} className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-sm hover:bg-white transition-colors">
+            <button onClick={prev} className="hidden sm:block absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-sm hover:bg-white transition-colors">
               <ChevronLeft className="h-5 w-5 text-[#1d1d1f]" />
             </button>
-            <button onClick={() => setSelected((selected + 1) % images.length)} className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-sm hover:bg-white transition-colors">
+            <button onClick={next} className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-sm hover:bg-white transition-colors">
               <ChevronRight className="h-5 w-5 text-[#1d1d1f]" />
             </button>
             <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs text-white">{selected + 1} / {images.length}</span>

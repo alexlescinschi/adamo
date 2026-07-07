@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Loader2, Check } from "lucide-react";
@@ -35,22 +35,11 @@ export function ProductCard({ product }: { product: Product }) {
   const isOutOfStock = product.stock !== undefined && product.stock === 0;
   const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
-  // ponytail: image slider — desktop auto-play on hover, mobile swipe
+  // ponytail: mobile swipe only, no desktop auto-play
   const imgs = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
   const hasSlider = imgs.length > 1;
   const [imgIdx, setImgIdx] = useState(0);
-  const [hovering, setHovering] = useState(false);
   const touchStart = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (hovering && hasSlider) {
-      intervalRef.current = setInterval(() => {
-        setImgIdx((i) => (i + 1) % imgs.length);
-      }, 2000);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [hovering, hasSlider, imgs.length]);
 
   const nextImg = useCallback(() => setImgIdx((i) => (i + 1) % imgs.length), [imgs.length]);
   const prevImg = useCallback(() => setImgIdx((i) => (i - 1 + imgs.length) % imgs.length), [imgs.length]);
@@ -72,8 +61,6 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         href={href}
         className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]"
-        onMouseEnter={() => setHovering(true)}
-        onMouseLeave={() => { setHovering(false); setImgIdx(0); }}
         onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
         onTouchEnd={(e) => {
           const diff = touchStart.current - e.changedTouches[0].clientX;

@@ -97,7 +97,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
                   <ChevronDown className={`h-4 w-4 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
                 </button>
                 {catalogOpen && (
-                  <div className="fixed inset-x-0 top-[57px] z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
+                  <div className="fixed inset-x-0 top-16 z-50 rounded-b-[12px] border border-[#e4e8e4] bg-white shadow-[0_16px_40px_rgba(31,41,55,0.14)]">
                     <div className="mx-auto max-w-[1048px] px-4 py-6 grid grid-cols-3 gap-6">
                       <div className="flex flex-col gap-0.5 border-r border-[#e4e8e4]/60 pr-4">
                         {categories.map((c) => (
