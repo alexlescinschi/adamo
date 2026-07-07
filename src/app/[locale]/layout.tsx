@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ContactWidget } from "@/components/contact-widget";
+import { IuteScript } from "@/components/iute-script";
 import { CartProvider } from "@/hooks/use-cart";
 import { getCategories, getPublishedProducts, getProductById } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
@@ -101,21 +101,13 @@ export default async function LocaleLayout({
         </CartProvider>
 
         {/* ponytail: IutePay iutepay.js — doar cu public key. Admin key niciodată în browser. */}
-        {IUTE_CONFIGURED && (
-          <>
-            <link rel="stylesheet" href={IUTE_STYLE_URL} />
-            <Script
-              id="iutepay-js"
-              src={IUTE_SCRIPT_URL}
-              strategy="afterInteractive"
-              onLoad={() => {
-                if (typeof window !== "undefined" && window.iute) {
-                  window.iute.configure(IUTE_PUBLIC_KEY_BROWSER, IUTE_LANG_BROWSER);
-                }
-              }}
-            />
-          </>
-        )}
+        <IuteScript
+          enabled={IUTE_CONFIGURED}
+          publicKey={IUTE_PUBLIC_KEY_BROWSER}
+          lang={IUTE_LANG_BROWSER}
+          scriptUrl={IUTE_SCRIPT_URL}
+          styleUrl={IUTE_STYLE_URL}
+        />
       </body>
     </html>
   );

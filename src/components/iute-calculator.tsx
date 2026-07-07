@@ -12,15 +12,6 @@ interface Props {
   pageType?: "product" | "category";
 }
 
-declare global {
-  interface Window {
-    iute?: {
-      configure: (publicKey: string, country: string) => void;
-      render?: (el: HTMLElement) => void;
-    };
-  }
-}
-
 export function IuteCalculator({ price, sku, pageType = "product" }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasSdk, setHasSdk] = useState(false);
