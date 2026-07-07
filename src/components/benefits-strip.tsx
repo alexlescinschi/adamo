@@ -32,7 +32,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
               type="button"
               aria-expanded={isActive}
               onClick={() => handleClick(i)}
-              className={`flex items-center gap-[9px] min-h-[76px] py-[10px] px-3 border-r border-[#e1e7ef] text-left cursor-pointer transition-[background,color] duration-[.18s] outline-none group sm:min-h-[96px] sm:py-3 sm:px-[7px] sm:gap-[7px] border-b border-[#e1e7ef] lg:border-b-0 ${
+              className={`flex items-center gap-[9px] min-h-[76px] py-[10px] px-3 border-r border-[#e1e7ef] text-left cursor-pointer transition-[background,color] duration-[.18s] outline-none group sm:min-h-[70px] sm:py-3 sm:px-[7px] sm:gap-[7px] border-b border-[#e1e7ef] lg:border-b-0 ${
                 i === benefits.length - 1 ? "border-r-0" : ""
               } ${
                 isActive

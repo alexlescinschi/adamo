@@ -416,15 +416,21 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* ===== PRODUSE ===== */}
       <div>
-        <div className="mb-3 flex items-center gap-3">
-          <Checkbox
-            checked={allSelected}
-            indeterminate={someSelected}
-            onChange={() => selectAll(!allSelected)}
-            label={tr.cart.selectAll}
-          />
-        </div>
         <div className="space-y-2.5">
+          <div className="flex items-center gap-3 rounded-[12px] border border-[#e4e8e4] bg-white px-3 py-2.5">
+            <Checkbox
+              checked={allSelected}
+              indeterminate={someSelected}
+              onChange={() => selectAll(!allSelected)}
+              label={tr.cart.selectAll}
+            />
+            <span
+              className="text-[13px] font-semibold text-[#1d1d1f] cursor-pointer select-none"
+              onClick={() => selectAll(!allSelected)}
+            >
+              {tr.cart.selectAll}
+            </span>
+          </div>
           {items.map((item) => {
             const isSelected = item.selected !== false;
             return (

@@ -29,6 +29,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   const [headerHidden, setHeaderHidden] = useState(false);
   const lastScrollY = useRef(0);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
@@ -67,6 +68,12 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
 
   const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
 
@@ -197,19 +204,19 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
           </button>
         </div>
 
-        {searchOpen && (
-          <div className="col-span-full border-t border-[#e4e8e4]/60" style={{ padding: "12px max(24px, calc((100vw - 1048px) / 2))" }}>
-            <form action={`/${locale}/search`}>
+        <div className={`absolute left-0 right-0 top-full z-40 overflow-hidden border-t border-[#e4e8e4]/60 bg-white/95 backdrop-blur-[18px] transition-all duration-300 ${searchOpen ? "max-h-16 opacity-100" : "max-h-0 opacity-0 pointer-events-none"}`}>
+          <div style={{ padding: "12px max(24px, calc((100vw - 1048px) / 2))" }}>
+            <form action={`/${locale}/search`} onSubmit={() => setSearchOpen(false)}>
               <input
+                ref={searchInputRef}
                 name="q"
                 type="text"
                 placeholder={tr.header.search}
                 className="w-full rounded-[9px] border border-[#e4e8e4] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
-                autoFocus
               />
             </form>
           </div>
-        )}
+        </div>
       </header>
 
       {/* Mobile menu overlay */}
