@@ -194,6 +194,15 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       .catch(() => {});
   }, []);
 
+  // ponytail: verific dacă IutePay e activ (chei prezente). Activează opțiune RATE.
+  const [iuteEnabled, setIuteEnabled] = useState(false);
+  useEffect(() => {
+    fetch("/api/payments/iute")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setIuteEnabled(Boolean(data?.enabled)))
+      .catch(() => setIuteEnabled(false));
+  }, []);
+
   function copyIban() {
     navigator.clipboard.writeText(ADAMO_COMPANY.iban).catch(() => {});
     setIbanCopied(true);
@@ -258,7 +267,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
   const isPickup = deliveryChoice === "PICKUP";
   const deliveryMethod: "PICKUP" | "COURIER" = isPickup ? "PICKUP" : "COURIER";
-  const payMode: "CASH" | "BANK_TRANSFER" = payChoice === "BANK" ? "BANK_TRANSFER" : "CASH";
+  // ponytail: RATE = IutePay BNPL redirect. Treate ca pre-plată (cod 0 la curier).
+  const payMode: "CASH" | "BANK_TRANSFER" | "RATE" =
+    payChoice === "BANK" ? "BANK_TRANSFER" : payChoice === "RATE" ? "RATE" : "CASH";
+  const isPrepaid = payMode === "BANK_TRANSFER" || payMode === "RATE";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -327,7 +339,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                 regionId: postaDelivery.regionId, cityId: postaDelivery.cityId,
                 street: postaDelivery.street, block: postaDelivery.block,
                 zipCode: postaDelivery.zipCode || undefined, orderRef: String(orderId),
-                cod: payMode === "BANK_TRANSFER" ? 0 : total,
+                cod: isPrepaid ? 0 : total,
               }),
             });
             if (prRes.ok) {
@@ -343,7 +355,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                 toStreet: delivery.address, toNr: delivery.addressNr || undefined,
                 toBl: delivery.addressBl || undefined, toAp: delivery.addressAp || undefined,
                 toPhone: contact.phone, toEmail: contact.email || undefined,
-                orderRef: String(orderId), cod: payMode === "BANK_TRANSFER" ? 0 : total,
+                orderRef: String(orderId), cod: isPrepaid ? 0 : total,
               }),
             });
             if (awbRes.ok) {
@@ -362,6 +374,34 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         setInvoiceData({ orderId: String(orderId), date, orderItems: selectedItems, orderTotal: total });
         setSubmitting(false);
         onDone?.();
+      } else if (payMode === "RATE") {
+        // ponytail: IutePay BNPL — creează redirect session, trimite client la IuteCredit.
+        const iuteRes = await fetch("/api/payments/iute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            items: selectedItems.map((i) => ({
+              product_id: i.product_id,
+              name: i.name,
+              price: i.price,
+              qty: i.qty,
+              image: i.image,
+            })),
+            contact,
+            total,
+            locale: typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "ro",
+          }),
+        });
+        if (!iuteRes.ok) {
+          const err = await iuteRes.json().catch(() => ({}));
+          throw new Error(err.error || "IutePay indisponibil. Încearcă altă plată.");
+        }
+        const iuteData = await iuteRes.json();
+        setSubmitting(false);
+        onDone?.();
+        // Redirect extern la pagina IutePay (nu router.push — e alt domeniu).
+        window.location.href = iuteData.redirectUrl;
       } else {
         onDone?.();
         router.push(`/account/orders?success=true&orderId=${orderId}${awbNumber ? `&awb=${awbNumber}` : ""}`);
@@ -557,7 +597,15 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           <OptionRow selected={payChoice === "CASH"} icon={Wallet} label={tr.cart.payCash} onClick={() => setPayChoice("CASH")} />
           <OptionRow selected={false} disabled comingSoon icon={CreditCard} label={tr.cart.payCard} badge={tr.checkout.comingSoon} onClick={() => setPayChoice("CARD")} />
           <OptionRow selected={payChoice === "BANK"} icon={Landmark} label={tr.cart.payBank} onClick={() => setPayChoice("BANK")} />
-          <OptionRow selected={false} disabled comingSoon icon={Percent} label={tr.cart.payInstallments} badge={tr.checkout.comingSoon} onClick={() => setPayChoice("RATE")} />
+          <OptionRow
+            selected={payChoice === "RATE"}
+            disabled={!iuteEnabled}
+            comingSoon={!iuteEnabled}
+            icon={Percent}
+            label={tr.cart.payInstallments}
+            badge={iuteEnabled ? "0% dobândă" : tr.checkout.comingSoon}
+            onClick={() => setPayChoice("RATE")}
+          />
         </div>
 
         {payChoice === "BANK" && (
