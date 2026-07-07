@@ -35,6 +35,12 @@ const dict = {
       back: "Înapoi la produse",
       scanCode: "ID produs",
     },
+    badges: {
+      gaming: "Gaming",
+      premium: "Premium",
+      ieftin: "Ieftin",
+      oled: "OLED",
+    },
     cart: {
       title: "Coș de cumpărături",
       empty: "Coșul tău este gol",
@@ -271,6 +277,12 @@ const dict = {
       back: "Назад к товарам",
       scanCode: "ID товара",
     },
+    badges: {
+      gaming: "Игровой",
+      premium: "Премиум",
+      ieftin: "Доступный",
+      oled: "OLED",
+    },
     cart: {
       title: "Корзина",
       empty: "Ваша корзина пуста",
@@ -506,6 +518,12 @@ const dict = {
       notFoundSub: "The product does not exist or has been removed.",
       back: "Back to products",
       scanCode: "Product ID",
+    },
+    badges: {
+      gaming: "Gaming",
+      premium: "Premium",
+      ieftin: "Budget",
+      oled: "OLED",
     },
     cart: {
       title: "Shopping cart",

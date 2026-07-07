@@ -265,7 +265,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             />
             {product.badge && (
               <span className={`absolute top-3 left-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)] bg-gradient-to-r ${product.badge_gradient || "from-[#7cc44e] to-[#63ad36]"}`}>
-                {product.badge}
+                {(tr as any).badges?.[product.badge] ?? product.badge}
               </span>
             )}
           </div>

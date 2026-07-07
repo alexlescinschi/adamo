@@ -1,10 +1,10 @@
 export const BADGE_LABELS = ["Sticker"];
 
-const BADGE_STYLES: Record<string, { label: string; gradient: string }> = {
-  gaming:  { label: "Gaming",  gradient: "from-[#833AB4] via-[#FD1D1D] to-[#FCB045]" },
-  premium: { label: "Premium", gradient: "from-[#020024] via-[#090979] to-[#2C8799]" },
-  ieftin:  { label: "Ieftin",  gradient: "from-red-600 to-red-500" },
-  oled:    { label: "OLED",    gradient: "from-gray-900 to-gray-700" },
+const BADGE_GRADIENTS: Record<string, string> = {
+  gaming:  "from-[#833AB4] via-[#FD1D1D] to-[#FCB045]",
+  premium: "from-[#020024] via-[#090979] to-[#2C8799]",
+  ieftin:  "from-red-600 to-red-500",
+  oled:    "from-gray-900 to-gray-700",
 };
 
 const POPULAR_LABELS = ["popular", "популярный"];
@@ -16,9 +16,9 @@ export function extractBadge(item: any): { badge?: string; badge_type?: "green";
   const sticker = specs.find((s: any) => s.code === "sticker" && s.valueLabel && s.valueLabel !== "No");
   if (!sticker) return {};
   const slug = sticker.filterLink?.value || "";
-  const style = BADGE_STYLES[slug];
-  if (!style) return {};
-  return { badge: style.label, badge_type: "green", badge_gradient: style.gradient };
+  const gradient = BADGE_GRADIENTS[slug];
+  if (!gradient) return {};
+  return { badge: slug, badge_type: "green", badge_gradient: gradient };
 }
 
 export function hasAttribute(item: any, label: string): boolean {
