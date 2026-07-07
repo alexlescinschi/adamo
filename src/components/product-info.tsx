@@ -7,6 +7,7 @@ import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { ShoppingCart, Loader2, Check } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
+import { IuteCalculator } from "@/components/iute-calculator";
 import { formatPrice } from "@/lib/utils";
 
 interface ProductInfoProps {
@@ -63,6 +64,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       </div>
 
       <RateCalculator price={product.price} productName={product.name} />
+
+      {/* ponytail: widget IutePay "X MDL/lună" (BNPL). Apare doar cu chei configurate. */}
+      <IuteCalculator price={product.price} sku={String(product.id)} />
 
       <button
         onClick={handleAdd}

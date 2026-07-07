@@ -6,6 +6,10 @@
     {
       "path": "/api/cron/revalidate",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/iute-sync",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
