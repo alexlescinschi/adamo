@@ -323,8 +323,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       const order = await res.json();
       const orderId = order.id || order.orderId;
 
-      clearCart();
-      localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
+      const saveCheckout = () => {
+        localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
+        clearCart();
+      };
 
       // ponytail: creare AWB curier (non-blocking) — skip for RATE (payment not confirmed yet)
       let awbNumber = "";
@@ -369,22 +371,61 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       }
 
       if (payMode === "BANK_TRANSFER") {
+        saveCheckout();
         const now = new Date();
         const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
         setInvoiceData({ orderId: String(orderId), date, orderItems: selectedItems, orderTotal: total });
         setSubmitting(false);
         onDone?.();
       } else if (payMode === "RATE") {
-        // ponytail: IutePay BNPL — redirectUrl vine direct din checkout API (CRM /iute/prepare).
-        const redirectUrl = order.redirectUrl;
-        if (!redirectUrl) {
-          throw new Error("IutePay redirect URL not returned from checkout. Încearcă altă plată.");
+        // ponytail: IutePay iframe/modal mode via iute.checkout().
+        // CRM /iute/prepare returns signed anti-fraud payload:
+        //   { signature, signature_timestamp, merchant_order_id, items, total, currency }
+        // iutepay.js SDK opens modal inline — customer completes app on site.
+        const p = order.iutePayload;
+        if (!p?.signature) {
+          throw new Error("IutePay nu a returnat datele necesare. Încearcă altă plată.");
+        }
+        if (typeof window === "undefined" || !window.iute || typeof window.iute.checkout !== "function") {
+          throw new Error("IutePay SDK nu s-a încărcat. Reîncearcă sau alege altă plată.");
         }
         setSubmitting(false);
         onDone?.();
-        // Redirect extern la pagina IutePay (nu router.push — e alt domeniu).
-        window.location.href = redirectUrl;
+
+        const nameParts = (contact.full_name || "").trim().split(/\s+/).filter(Boolean);
+        const firstName = nameParts[0] || "Client";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : firstName;
+
+        window.iute.checkout(
+          {
+            orderId: String(p.merchant_order_id),
+            signature: String(p.signature),
+            signatureTimestamp: String(p.signature_timestamp),
+            items: p.items || [],
+            currency: p.currency || "mdl",
+            shippingAmount: Number(p.shipping_amount ?? 0),
+            taxAmount: Number(p.tax_amount ?? 0),
+            subtotal: Number(p.subtotal ?? p.total ?? 0),
+            total: Number(p.total ?? 0),
+            shipping: {
+              name: { first: firstName, last: lastName },
+              phoneNumber: contact.phone || "",
+              email: contact.email || "",
+              address: { country: "mda" },
+            },
+          },
+          {
+            onSuccess: () => {
+              saveCheckout();
+              router.push(`/account/orders?success=true&orderId=${orderId}`);
+            },
+            onFailure: (result: { message?: string }) => {
+              setError(result?.message || "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.");
+            },
+          }
+        );
       } else {
+        saveCheckout();
         onDone?.();
         router.push(`/account/orders?success=true&orderId=${orderId}${awbNumber ? `&awb=${awbNumber}` : ""}`);
       }

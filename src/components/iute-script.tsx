@@ -42,6 +42,13 @@ declare global {
     iute?: {
       configure: (publicKey: string, lang: string) => void;
       render?: (el: HTMLElement) => void;
+      checkout?: (
+        payload: Record<string, unknown>,
+        callbacks?: {
+          onSuccess?: (result: { checkoutSessionId?: string }) => void;
+          onFailure?: (result: { message?: string }) => void;
+        }
+      ) => void;
     };
   }
 }
