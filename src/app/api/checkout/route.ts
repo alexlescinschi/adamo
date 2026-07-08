@@ -21,15 +21,25 @@ export async function POST(request: NextRequest) {
       comment: body.comment,
     };
 
-    // ponytail: IUTE → CRM /ecommerce/checkout/iute/prepare (order + redirect session)
+    // ponytail: IUTE → CRM /ecommerce/checkout/iute/prepare (order + redirect session).
+    // CRM docs: POST /iute/prepare returns EcommerceIuteConfigResponse (addl props).
+    // redirectUrl is expected via additionalProperties (not a documented required field).
     if (body.payment_method === "IUTE") {
       const data = await crmFetch("/ecommerce/checkout/iute/prepare", {
         method: "POST",
         body: JSON.stringify(payload),
       });
+      const redirectUrl = data?.redirectUrl;
+      if (!redirectUrl) {
+        console.error("[checkout] CRM /iute/prepare missing redirectUrl:", data);
+        return NextResponse.json(
+          { error: "IutePay este momentan indisponibilă. Încearcă altă metodă de plată." },
+          { status: 503 }
+        );
+      }
       const orderId = data?.order?.id ?? data?.id ?? data?.orderId;
       return NextResponse.json({
-        redirectUrl: data.redirectUrl || data.checkout?.url,
+        redirectUrl,
         id: orderId,
         orderId,
       }, { status: 201 });
