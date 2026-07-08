@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { CartCheckoutContent } from "./cart-checkout";
@@ -8,6 +8,13 @@ import { CartCheckoutContent } from "./cart-checkout";
 export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const tr = useTranslations();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [checkoutKey, setCheckoutKey] = useState(0);
+
+  // ponytail: remount CartCheckoutContent când se deschide coșul,
+  // ca useEffect-ul din interior să facă fetch la /api/account/me → pre-fill CRM.
+  useEffect(() => {
+    if (open) setCheckoutKey(k => k + 1);
+  }, [open]);
 
   // ponytail: lock body scroll + escape to close
   useEffect(() => {
@@ -41,7 +48,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
         {/* Scroll area cu tot checkout-ul */}
         <div className="flex-1 overflow-y-auto px-4 py-4">
-          <CartCheckoutContent onDone={onClose} />
+          <CartCheckoutContent key={checkoutKey} onDone={onClose} />
         </div>
       </div>
     </>
