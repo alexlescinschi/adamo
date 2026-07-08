@@ -1,27 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, type CheckoutPayload } from "@/lib/crm-api";
+import { createOrder, crmFetch, type CheckoutPayload } from "@/lib/crm-api";
 import { ADAMO_COMPANY } from "@/lib/company";
-
-// ponytail: re-export from crm-api for internal use
-// (avoids circular imports by defining locally)
-const CRM_BASE = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
-
-async function iutePrepare(payload: CheckoutPayload) {
-  const res = await fetch(`${CRM_BASE}/ecommerce/checkout/iute/prepare`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-ecom-category-secret": process.env.ECOM_CATEGORY_WRITE_SECRET || "",
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`CRM iute/prepare failed ${res.status}: ${text}`);
-  }
-  return res.json();
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,7 +23,10 @@ export async function POST(request: NextRequest) {
 
     // ponytail: IUTE → CRM /ecommerce/checkout/iute/prepare (order + redirect session)
     if (body.payment_method === "IUTE") {
-      const data = await iutePrepare(payload);
+      const data = await crmFetch("/ecommerce/checkout/iute/prepare", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
       const orderId = data?.order?.id ?? data?.id ?? data?.orderId;
       return NextResponse.json({
         redirectUrl: data.redirectUrl || data.checkout?.url,

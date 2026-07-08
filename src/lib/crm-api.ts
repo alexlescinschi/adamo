@@ -35,7 +35,7 @@ const getAccessToken = unstable_cache(
 // ponytail: cap de 8s pe orice request CRM — unul blocat nu mai ține renderul la infinit.
 const CRM_TIMEOUT_MS = 8000;
 
-async function crmFetch(path: string, options?: RequestInit) {
+export async function crmFetch(path: string, options?: RequestInit) {
   const token = await getAccessToken();
   const url = `${CRM_BASE_URL}${path}`;
 
