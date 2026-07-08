@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      const redirectUrl = data?.redirectUrl;
+      const redirectUrl = data?.redirect_url || data?.redirectUrl;
       if (!redirectUrl) {
         console.error("[checkout] CRM /iute/prepare missing redirectUrl:", data);
         return NextResponse.json(

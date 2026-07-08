@@ -93,10 +93,10 @@ export default async function LocaleLayout({
     });
     iuteConfig = {
       enabled: iuteData?.enabled ?? false,
-      publicKey: iuteData?.merchant?.publicKey || iuteData?.publicKey,
-      lang: iuteData?.merchant?.lang || iuteData?.lang || locale,
-      scriptUrl: iuteData?.merchant?.scriptUrl || iuteData?.scriptUrl,
-      styleUrl: iuteData?.merchant?.styleUrl || iuteData?.styleUrl,
+      publicKey: iuteData?.public_api_key,
+      lang: locale,
+      scriptUrl: iuteData?.base_url ? `${iuteData.base_url}/iutepay.js` : undefined,
+      styleUrl: iuteData?.base_url ? `${iuteData.base_url}/iutepay.css` : undefined,
     };
   } catch {
     // CRM unreachable — IutePay disabled
