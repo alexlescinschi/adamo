@@ -326,9 +326,9 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       clearCart();
       localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
 
-      // ponytail: creare AWB curier (non-blocking)
+      // ponytail: creare AWB curier (non-blocking) — skip for RATE (payment not confirmed yet)
       let awbNumber = "";
-      if (!isPickup) {
+      if (!isPickup && payMode !== "RATE") {
         try {
           if (courierProvider === "POSTA_RAPIDA") {
             const prRes = await fetch("/api/posta-rapida/awb", {
@@ -375,33 +375,15 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         setSubmitting(false);
         onDone?.();
       } else if (payMode === "RATE") {
-        // ponytail: IutePay BNPL — creează redirect session, trimite client la IuteCredit.
-        const iuteRes = await fetch("/api/payments/iute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId,
-            items: selectedItems.map((i) => ({
-              product_id: i.product_id,
-              name: i.name,
-              price: i.price,
-              qty: i.qty,
-              image: i.image,
-            })),
-            contact,
-            total,
-            locale: typeof window !== "undefined" ? window.location.pathname.split("/")[1] : "ro",
-          }),
-        });
-        if (!iuteRes.ok) {
-          const err = await iuteRes.json().catch(() => ({}));
-          throw new Error(err.error || "IutePay indisponibil. Încearcă altă plată.");
+        // ponytail: IutePay BNPL — redirectUrl vine direct din checkout API (CRM /iute/prepare).
+        const redirectUrl = order.redirectUrl;
+        if (!redirectUrl) {
+          throw new Error("IutePay redirect URL not returned from checkout. Încearcă altă plată.");
         }
-        const iuteData = await iuteRes.json();
         setSubmitting(false);
         onDone?.();
         // Redirect extern la pagina IutePay (nu router.push — e alt domeniu).
-        window.location.href = iuteData.redirectUrl;
+        window.location.href = redirectUrl;
       } else {
         onDone?.();
         router.push(`/account/orders?success=true&orderId=${orderId}${awbNumber ? `&awb=${awbNumber}` : ""}`);
@@ -416,8 +398,8 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* ===== PRODUSE ===== */}
       <div>
-        <div className="space-y-2.5">
-          <div className="flex items-center gap-3 rounded-[12px] border border-[#e4e8e4] bg-white px-3 py-2.5">
+        <div className="rounded-[12px] border border-[#e4e8e4] bg-white divide-y divide-[#e4e8e4]">
+          <div className="flex items-center gap-3 px-3 py-2.5">
             <Checkbox
               checked={allSelected}
               indeterminate={someSelected}
@@ -436,7 +418,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             return (
               <div
                 key={`${item.product_id}-${item.unit_id}`}
-                className={`flex gap-3 rounded-[12px] border border-[#e4e8e4] bg-white p-3 transition-opacity ${isSelected ? "" : "opacity-50"}`}
+                className={`flex gap-3 p-3 transition-opacity ${isSelected ? "" : "opacity-50"}`}
               >
                 <div className="flex items-center">
                   <Checkbox

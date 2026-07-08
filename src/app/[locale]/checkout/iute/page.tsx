@@ -1,48 +1,17 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2, Headphones } from "lucide-react";
 
 // ponytail: pagină return după redirect IutePay (browser).
 // Query: ?status=success|cancelled&orderId=123
-// useSearchParams cere Suspense boundary în Next 16 → componentă inner separată.
+// CRM gestionează IutePay intern — ADAMO doar arată rezultatul.
 function IuteReturnContent() {
   const params = useSearchParams();
   const status = params.get("status") || "success";
   const orderId = params.get("orderId") || "";
-
-  const [liveStatus, setLiveStatus] = useState<string>("");
-  // Inițializat cu false dacă orderId lipsește — fără setState în effect.
-  const [checking, setChecking] = useState(Boolean(orderId));
-
-  // ponytail: poll status live (webhook poate întârzia). 1 încercare + retry la 4s.
-  useEffect(() => {
-    if (!orderId) return;
-
-    let cancelled = false;
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/payments/iute/status?orderId=${orderId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (!cancelled) setLiveStatus(data.status || "");
-        }
-      } catch {
-        /* webhook va marca oricum */
-      } finally {
-        if (!cancelled) setChecking(false);
-      }
-    };
-
-    poll();
-    const t = setTimeout(poll, 4000);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [orderId]);
 
   const isCancelled = status === "cancelled";
 
@@ -85,23 +54,9 @@ function IuteReturnContent() {
           </h1>
           <p className="mt-2 text-[#6b6c6c]">
             Comanda #{orderId} e înregistrată. IuteCredit procesează aplicația
-            ta de credit (verificare IDN, scor). Vei primi confirmarea pe phone
-            și email.
+            ta de credit (verificare IDN, scor). Vei primi confirmarea pe telefon
+            și email de la IuteCredit.
           </p>
-
-          {/* Status live */}
-          <div className="mt-5 inline-flex items-center gap-2 rounded-[10px] border border-[#e4e8e4] bg-white px-4 py-2 text-[13px]">
-            {checking ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin text-[#63ad36]" />
-                <span className="text-[#6b6c6c]">Verific status aplicație…</span>
-              </>
-            ) : (
-              <span className="text-[#34781f]">
-                Status IuteCredit: <strong>{liveStatus || "procesare"}</strong>
-              </span>
-            )}
-          </div>
 
           <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
