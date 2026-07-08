@@ -2,9 +2,9 @@
 
 import Script from "next/script";
 
-// ponytail: încarcă iutepay.js + rulează iute.configure(public_key, lang).
-// Trebuie client component pt onLoad handler (server components nu pot pasa funcții).
-// Public key doar în browser — admin key niciodată aici.
+// ponytail: încarcă iutepay.js + rulează iute.configure(publicKey, lang).
+// Toate config-urile vin din CRM (/ecommerce/checkout/iute/config).
+// Zero env vars — layout.tsx (server) face fetch, trimite ca props.
 export function IuteScript({
   publicKey,
   lang,
@@ -12,24 +12,24 @@ export function IuteScript({
   styleUrl,
   enabled,
 }: {
-  publicKey: string;
-  lang: string;
-  scriptUrl: string;
-  styleUrl: string;
-  enabled: boolean;
+  publicKey?: string;
+  lang?: string;
+  scriptUrl?: string;
+  styleUrl?: string;
+  enabled?: boolean;
 }) {
-  if (!enabled) return null;
+  if (!enabled || !publicKey || !scriptUrl) return null;
 
   return (
     <>
-      <link rel="stylesheet" href={styleUrl} />
+      {styleUrl && <link rel="stylesheet" href={styleUrl} />}
       <Script
         id="iutepay-js"
         src={scriptUrl}
         strategy="afterInteractive"
         onLoad={() => {
           if (typeof window !== "undefined" && window.iute) {
-            window.iute.configure(publicKey, lang);
+            window.iute.configure(publicKey, lang || "ro");
           }
         }}
       />

@@ -4,11 +4,10 @@ import { Footer } from "@/components/footer";
 import { ContactWidget } from "@/components/contact-widget";
 import { IuteScript } from "@/components/iute-script";
 import { CartProvider } from "@/hooks/use-cart";
-import { getCategories, getNewProducts } from "@/lib/crm-api";
+import { getCategories, getNewProducts, crmFetch } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
 import { extractProducts } from "@/lib/product-mapper";
 import { getCached } from "@/lib/redis";
-import { IUTE_CONFIGURED, IUTE_PUBLIC_KEY_BROWSER, IUTE_SCRIPT_URL, IUTE_STYLE_URL, IUTE_LANG_BROWSER } from "@/lib/iute-api";
 
 export const SITE_URL = "https://adamo3.vercel.app";
 // ponytail: schimbă în https://adamo.md după config domeniu Vercel
@@ -85,6 +84,24 @@ export default async function LocaleLayout({
     products = [];
   }
 
+  // ponytail: IutePay config from CRM (public key, base URL, lang).
+  // CRM endpoint: GET /ecommerce/checkout/iute/config → { enabled, merchant }
+  let iuteConfig: { enabled: boolean; publicKey?: string; lang?: string; scriptUrl?: string; styleUrl?: string } = { enabled: false };
+  try {
+    const iuteData = await crmFetch("/ecommerce/checkout/iute/config", {
+      signal: AbortSignal.timeout(5000),
+    });
+    iuteConfig = {
+      enabled: iuteData?.enabled ?? false,
+      publicKey: iuteData?.merchant?.publicKey || iuteData?.publicKey,
+      lang: iuteData?.merchant?.lang || iuteData?.lang || locale,
+      scriptUrl: iuteData?.merchant?.scriptUrl || iuteData?.scriptUrl,
+      styleUrl: iuteData?.merchant?.styleUrl || iuteData?.styleUrl,
+    };
+  } catch {
+    // CRM unreachable — IutePay disabled
+  }
+
   return (
     <html lang={locale} className="h-full scroll-smooth">
       <body className="min-h-full flex flex-col font-sans text-[15px] text-[#111827] overflow-x-hidden overflow-x-clip" style={{ backgroundImage: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
@@ -95,13 +112,13 @@ export default async function LocaleLayout({
           <ContactWidget />
         </CartProvider>
 
-        {/* ponytail: IutePay iutepay.js — doar cu public key. Admin key niciodată în browser. */}
+        {/* ponytail: IutePay config from CRM. Zero env vars — everything from /config endpoint. */}
         <IuteScript
-          enabled={IUTE_CONFIGURED}
-          publicKey={IUTE_PUBLIC_KEY_BROWSER}
-          lang={IUTE_LANG_BROWSER}
-          scriptUrl={IUTE_SCRIPT_URL}
-          styleUrl={IUTE_STYLE_URL}
+          enabled={iuteConfig.enabled}
+          publicKey={iuteConfig.publicKey}
+          lang={iuteConfig.lang}
+          scriptUrl={iuteConfig.scriptUrl}
+          styleUrl={iuteConfig.styleUrl}
         />
       </body>
     </html>
