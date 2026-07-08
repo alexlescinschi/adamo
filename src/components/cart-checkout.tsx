@@ -421,6 +421,19 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                   country: "mda",
                 },
               },
+              billing: {
+                name: { first: firstName, last: lastName },
+                phoneNumber: contact.phone || "",
+                email: contact.email || "",
+                address: {
+                  line1: "",
+                  line2: "",
+                  city: "",
+                  state: "",
+                  zipcode: "",
+                  country: "mda",
+                },
+              },
             },
             {
               onSuccess: () => {
