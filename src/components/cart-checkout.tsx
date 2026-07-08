@@ -185,7 +185,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     try {
       const saved = JSON.parse(localStorage.getItem("adamo-checkout") || "{}");
       if (saved.delivery) setDelivery(saved.delivery);
-      if (saved.courierProvider) setCourierProvider(saved.courierProvider);
+      if (saved.courierProvider) {
+        // ponytail: FanCourier hidden, force POSTA_RAPIDA if old value persists
+        setCourierProvider(saved.courierProvider === "FANCOURIER" ? "POSTA_RAPIDA" : saved.courierProvider);
+      }
       if (saved.postaDelivery) setPostaDelivery(saved.postaDelivery);
     } catch {}
 
@@ -594,6 +597,8 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               >
                 {tr.cart.courierRapid}
               </button>
+              {/* ponytail: FanCourier ascuns, păstrat ca funcționalitate */}
+              {false && (
               <button
                 type="button"
                 onClick={() => setCourierProvider("FANCOURIER")}
@@ -603,6 +608,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               >
                 {tr.checkout.fanCourier}
               </button>
+              )}
             </div>
 
             {courierProvider === "POSTA_RAPIDA" ? (
