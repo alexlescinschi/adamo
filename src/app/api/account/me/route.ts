@@ -45,9 +45,10 @@ export async function GET(request: NextRequest) {
 
 // ponytail: single response builder prevents drift between normal & refresh paths
 function buildMeResponse(data: any) {
+  const user = data.user || data;
   return NextResponse.json({
-    user: data.user || data,
-    email: data.user?.email || data.email,
+    user: { ...user, phone: user.phone || data.phone || "" },
+    email: user.email || data.email || "",
   });
 }
 

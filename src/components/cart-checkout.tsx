@@ -171,11 +171,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       .catch(() => {});
   }, [postaStreetId, postaDelivery.cityId]);
 
-  // ponytail: pre-fill din localStorage + profil CRM
+  // ponytail: pre-fill contact din CRM (sursa de adevăr). Delivery prefs din localStorage.
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("adamo-checkout") || "{}");
-      if (saved.contact) setContact(saved.contact);
       if (saved.delivery) setDelivery(saved.delivery);
       if (saved.courierProvider) setCourierProvider(saved.courierProvider);
       if (saved.postaDelivery) setPostaDelivery(saved.postaDelivery);
@@ -185,11 +184,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!data?.user) return;
-        setContact((c) => ({
-          full_name: c.full_name || data.user?.username || "",
-          phone: data.user?.phone || c.phone || "",
-          email: data.user?.email || data.email || c.email,
-        }));
+        setContact({
+          full_name: data.user?.username || "",
+          phone: data.user?.phone || "",
+          email: data.user?.email || data.email || "",
+        });
       })
       .catch(() => {});
   }, []);
