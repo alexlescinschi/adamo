@@ -396,34 +396,48 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         const firstName = nameParts[0] || "Client";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : firstName;
 
-        window.iute.checkout(
-          {
-            orderId: String(p.merchant_order_id),
-            signature: String(p.signature),
-            signatureTimestamp: String(p.signature_timestamp),
-            items: p.items || [],
-            currency: p.currency || "mdl",
-            shippingAmount: Number(p.shipping_amount ?? 0),
-            taxAmount: Number(p.tax_amount ?? 0),
-            subtotal: Number(p.subtotal ?? p.total ?? 0),
-            total: Number(p.total ?? 0),
-            shipping: {
-              name: { first: firstName, last: lastName },
-              phoneNumber: contact.phone || "",
-              email: contact.email || "",
-              address: { country: "mda" },
+        // ponytail: IutePay SDK requires full address fields even if empty
+        const deliveryAddr = p.delivery || {};
+        const city = deliveryAddr.city || delivery.city || "Chișinău";
+        const address = deliveryAddr.address || delivery.address || "";
+
+        try {
+          window.iute.checkout(
+            {
+              orderId: String(p.merchant_order_id),
+              signature: String(p.signature),
+              signatureTimestamp: String(p.signature_timestamp),
+              items: p.items || [],
+              currency: p.currency || "mdl",
+              shippingAmount: Number(p.shipping_amount ?? 0),
+              taxAmount: Number(p.tax_amount ?? 0),
+              subtotal: Number(p.subtotal ?? p.total ?? 0),
+              total: Number(p.total ?? 0),
+              shipping: {
+                name: { first: firstName, last: lastName },
+                phoneNumber: contact.phone || "",
+                email: contact.email || "",
+                address: {
+                  line1: address,
+                  city: city,
+                  country: "mda",
+                },
+              },
             },
-          },
-          {
-            onSuccess: () => {
-              saveCheckout();
-              router.push(`/account/orders?success=true&orderId=${orderId}`);
-            },
-            onFailure: (result: { message?: string }) => {
-              setError(result?.message || "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.");
-            },
-          }
-        );
+            {
+              onSuccess: () => {
+                saveCheckout();
+                router.push(`/account/orders?success=true&orderId=${orderId}`);
+              },
+              onFailure: (result: { message?: string }) => {
+                setError(result?.message || "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.");
+              },
+            }
+          );
+        } catch (e) {
+          console.error("[iute] checkout call failed:", e);
+          setError("IutePay nu a putut fi inițializată. Încearcă altă metodă de plată.");
+        }
       } else {
         saveCheckout();
         onDone?.();
