@@ -396,11 +396,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         const firstName = nameParts[0] || "Client";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : firstName;
 
-        // ponytail: IutePay SDK requires full address fields even if empty
-        const deliveryAddr = p.delivery || {};
-        const city = deliveryAddr.city || delivery.city || "Chișinău";
-        const address = deliveryAddr.address || delivery.address || "";
-
         try {
           window.iute.checkout(
             {
@@ -418,8 +413,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                 phoneNumber: contact.phone || "",
                 email: contact.email || "",
                 address: {
-                  line1: address,
-                  city: city,
+                  line1: "",
+                  line2: "",
+                  city: "",
+                  state: "",
+                  zipcode: "",
                   country: "mda",
                 },
               },
