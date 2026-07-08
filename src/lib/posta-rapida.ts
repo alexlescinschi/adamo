@@ -121,6 +121,36 @@ export async function getCities(
   return json.results || [];
 }
 
+// ponytail: fetch all streets for city, cache 24h — avoid downloading 1000 streets in browser
+const streetsCache = new Map<number, { fetched: number; streets: { id: number; name: string }[] }>();
+
+async function fetchAllStreets(cityId: number) {
+  const cached = streetsCache.get(cityId);
+  if (cached && Date.now() - cached.fetched < 24 * 60 * 60 * 1000) return cached.streets;
+
+  const all: { id: number; name: string }[] = [];
+  let page = 1;
+  while (true) {
+    const res = await fetch(`https://main-api.posta.md/nomenclatures/streets?city=${cityId}&per_page=5000&page=${page}`);
+    if (!res.ok) break;
+    const data = await res.json();
+    all.push(...data.results);
+    if (!data.results || data.results.length < 5000) break;
+    page++;
+  }
+  streetsCache.set(cityId, { fetched: Date.now(), streets: all });
+  return all;
+}
+
+export async function getStreets(cityId: number, search?: string) {
+  const streets = await fetchAllStreets(cityId);
+  if (search) {
+    const q = search.toLowerCase();
+    return streets.filter((s) => s.name.toLowerCase().includes(q));
+  }
+  return streets;
+}
+
 // ponytail: fetch all blocks for city, cache 24h, filter by street — zip codes don't change daily
 const blocksCache = new Map<number, { fetched: number; blocks: { street: number; name: string; zip_code: string; code: string }[] }>();
 

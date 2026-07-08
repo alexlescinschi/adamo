@@ -127,21 +127,26 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   }, [warehouseId]);
 
   // ponytail: fetch posta regions
+  const [postaListsLoading, setPostaListsLoading] = useState({ regions: false, cities: false, streets: false, blocks: false });
   useEffect(() => {
+    setPostaListsLoading(l => ({ ...l, regions: true }));
     fetch("/api/posta-rapida/nomenclatures?type=regions")
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setPostaRegions(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPostaListsLoading(l => ({ ...l, regions: false })));
   }, []);
 
   useEffect(() => {
     if (!postaDelivery.regionId) return;
     setPostaCities([]);
     setPostaDelivery((d) => ({ ...d, cityId: 0 }));
+    setPostaListsLoading(l => ({ ...l, cities: true }));
     fetch(`/api/posta-rapida/nomenclatures?type=cities&region=${postaDelivery.regionId}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setPostaCities(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPostaListsLoading(l => ({ ...l, cities: false })));
   }, [postaDelivery.regionId]);
 
   useEffect(() => {
@@ -149,16 +154,19 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     setPostaDelivery((d) => ({ ...d, street: "" }));
     setPostaStreetId(0);
     setPostaBlocks([]);
-    fetch(`https://main-api.posta.md/nomenclatures/streets?city=${postaDelivery.cityId}&per_page=1000`)
+    setPostaListsLoading(l => ({ ...l, streets: true }));
+    fetch(`/api/posta-rapida/nomenclatures?type=streets&city=${postaDelivery.cityId}`)
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data?.results)) setPostaStreets(data.results); })
-      .catch(() => {});
+      .then((data) => { if (Array.isArray(data)) setPostaStreets(data); })
+      .catch(() => {})
+      .finally(() => setPostaListsLoading(l => ({ ...l, streets: false })));
   }, [postaDelivery.cityId]);
 
   useEffect(() => {
     if (!postaStreetId || !postaDelivery.cityId) return;
     setPostaBlocks([]);
     setPostaDelivery((d) => ({ ...d, zipCode: "" }));
+    setPostaListsLoading(l => ({ ...l, blocks: true }));
     fetch(`/api/posta-rapida/nomenclatures?type=blocks&city=${postaDelivery.cityId}&street=${postaStreetId}`)
       .then((r) => r.json())
       .then((data) => {
@@ -168,7 +176,8 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           if (zip) setPostaDelivery((d) => ({ ...d, zipCode: zip }));
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setPostaListsLoading(l => ({ ...l, blocks: false })));
   }, [postaStreetId, postaDelivery.cityId]);
 
   // ponytail: pre-fill contact din CRM (sursa de adevăr). Delivery prefs din localStorage.
@@ -598,14 +607,20 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
             {courierProvider === "POSTA_RAPIDA" ? (
               <div className="grid gap-2.5">
-                <select value={postaDelivery.regionId || ""} onChange={(e) => setPostaDelivery({ ...postaDelivery, regionId: Number(e.target.value) })} required className={inputCls}>
-                  <option value="" disabled>{tr.checkout.selectRegion}</option>
-                  {postaRegions.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
-                </select>
-                <select value={postaDelivery.cityId || ""} onChange={(e) => setPostaDelivery({ ...postaDelivery, cityId: Number(e.target.value) })} required disabled={!postaDelivery.regionId} className={`${inputCls} disabled:opacity-50`}>
-                  <option value="" disabled>{tr.checkout.city}</option>
-                  {postaCities.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
-                </select>
+                <div className="relative">
+                  <select value={postaDelivery.regionId || ""} onChange={(e) => setPostaDelivery({ ...postaDelivery, regionId: Number(e.target.value) })} required className={inputCls}>
+                    <option value="" disabled>{tr.checkout.selectRegion}</option>
+                    {postaRegions.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
+                  </select>
+                  {postaListsLoading.regions && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#63ad36]" />}
+                </div>
+                <div className="relative">
+                  <select value={postaDelivery.cityId || ""} onChange={(e) => setPostaDelivery({ ...postaDelivery, cityId: Number(e.target.value) })} required disabled={!postaDelivery.regionId} className={`${inputCls} disabled:opacity-50`}>
+                    <option value="" disabled>{tr.checkout.city}</option>
+                    {postaCities.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                  </select>
+                  {postaListsLoading.cities && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#63ad36]" />}
+                </div>
                 <div className="relative">
                   <input
                     type="text" placeholder={tr.checkout.address} required value={postaDelivery.street}
@@ -614,6 +629,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                     onBlur={() => setTimeout(() => setStreetOpen(false), 300)}
                     className={inputCls}
                   />
+                  {postaListsLoading.streets && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-[#63ad36]" />}
                   {streetOpen && (
                     <div className="absolute z-[60] mt-1 max-h-[180px] w-full overflow-y-auto rounded-[10px] border border-[#e4e8e4] bg-white shadow-lg">
                       {postaStreets.filter((s) => s.name.toLowerCase().includes(streetSearch)).map((s) => (
