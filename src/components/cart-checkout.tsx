@@ -402,7 +402,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               orderId: String(p.merchant_order_id),
               signature: String(p.signature),
               signatureTimestamp: String(p.signature_timestamp),
-              items: p.items || [],
+              items: (p.items || []).map((item: any) => ({
+                ...item,
+                itemUrl: item.itemUrl || `${window.location.origin}/product/${item.id}`,
+              })),
               currency: p.currency || "mdl",
               shippingAmount: Number(p.shipping_amount ?? 0),
               taxAmount: Number(p.tax_amount ?? 0),
