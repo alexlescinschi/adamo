@@ -103,40 +103,46 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <button
           onClick={() => handleBuy("CASH")}
           disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3.5 text-[15px] font-bold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
+          className="w-full rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-5 py-3.5 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
         >
-          <span className="flex items-center justify-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            {added ? tr.product.addedToCart : tr.product.buyNow}
-          </span>
-          <span className="block text-[11px] font-normal opacity-80 mt-0.5">{tr.product.buyNowSub}</span>
+          <div className="flex items-start gap-3">
+            <ShoppingCart className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div className="text-left">
+              <span className="text-[15px] font-bold">{added ? tr.product.addedToCart : tr.product.buyNow}</span>
+              <span className="block text-[11px] font-normal opacity-80">{tr.product.buyNowSub}</span>
+            </div>
+          </div>
         </button>
 
         {/* 2. Comandă */}
         <button
           onClick={() => handleBuy("CASH")}
           disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#55a02d] to-[#4a8f25] py-3.5 text-[15px] font-bold text-white hover:from-[#4a8f25] hover:to-[#3e7a1f] transition-all disabled:opacity-40"
+          className="w-full rounded-[12px] bg-gradient-to-r from-[#55a02d] to-[#4a8f25] px-5 py-3.5 text-white hover:from-[#4a8f25] hover:to-[#3e7a1f] transition-all disabled:opacity-40"
         >
-          <span className="flex items-center justify-center gap-2">
-            <Truck className="h-5 w-5" />
-            {tr.product.orderNow}
-          </span>
-          <span className="block text-[11px] font-normal opacity-80 mt-0.5">{tr.product.orderNowSub}</span>
+          <div className="flex items-start gap-3">
+            <Truck className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div className="text-left">
+              <span className="text-[15px] font-bold">{tr.product.orderNow}</span>
+              <span className="block text-[11px] font-normal opacity-80">{tr.product.orderNowSub}</span>
+            </div>
+          </div>
         </button>
 
         {/* 3. Achită în rate (IutePay) */}
         <button
           onClick={() => handleBuy("RATE")}
           disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] py-3.5 text-[15px] font-bold text-white hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
+          className="w-full rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] px-5 py-3.5 text-white hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
         >
-          <span className="flex items-center justify-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            {tr.product.payInstallments}
-          </span>
-          <span className="block text-[11px] font-normal opacity-80 mt-0.5">{tr.product.installmentSub}</span>
-          <span className="block text-[10px] font-normal opacity-60">{tr.product.partialSub}</span>
+          <div className="flex items-start gap-3">
+            <CreditCard className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div className="text-left">
+              <span className="text-[15px] font-bold">{tr.product.payInstallments}</span>
+              <span className="block text-[11px] font-normal opacity-80">{tr.product.installmentSub}</span>
+              <span className="block text-[10px] font-normal opacity-60">{tr.product.partialSub}</span>
+            </div>
+          </div>
         </button>
       </div>
 
