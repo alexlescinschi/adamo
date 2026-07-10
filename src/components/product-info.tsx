@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { ShoppingCart, Loader2, Check, Minus, Plus, Truck, CreditCard } from "lucide-react";
+import { ShoppingCart, Loader2, Check, Minus, Plus, Truck, ChevronDown } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 import { IuteCalculator } from "@/components/iute-calculator";
@@ -21,9 +21,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
+  const [rateOpen, setRateOpen] = useState(false);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
+
+  // ponytail: rate lunare calculate local (IutePay confirmă suma reală în modal)
+  const rateOptions = hasPrice ? [
+    { label: "Smart 0%", months: 4, pct: 0, desc: "4 luni · 0% dobândă" },
+    { label: "Flexi Shop", months: 6, pct: 6, desc: "6-36 luni · dobândă standard" },
+  ] : [];
+  const monthlyAmount = (months: number, pct: number) =>
+    Math.round((product.price * (1 + pct / 100)) / months);
 
   const handleBuy = async (payment?: "CASH" | "RATE") => {
     setAdding(true);
@@ -129,21 +138,42 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </div>
         </button>
 
-        {/* 3. Achită în rate (IutePay) */}
-        <button
-          onClick={() => handleBuy("RATE")}
-          disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] px-5 py-3.5 text-white hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
-        >
-          <div className="flex items-start gap-3">
-            <CreditCard className="h-5 w-5 flex-shrink-0 mt-0.5" />
-            <div className="text-left">
-              <span className="text-[15px] font-bold">{tr.product.payInstallments}</span>
-              <span className="block text-[11px] font-normal opacity-80">{tr.product.installmentSub}</span>
-              <span className="block text-[10px] font-normal opacity-60">{tr.product.partialSub}</span>
+        {/* 3. Achită în rate (IutePay) — expandabil */}
+        <div className="rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] text-white overflow-hidden">
+          <button
+            onClick={() => setRateOpen(!rateOpen)}
+            disabled={!hasPrice || product.availability === "OutOfStock"}
+            className="w-full px-5 py-3.5 hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
+          >
+            <div className="flex items-center gap-3">
+              <img src="/coins.svg" alt="" className="h-5 w-5 flex-shrink-0 brightness-0 invert" />
+              <div className="text-left flex-1">
+                <span className="text-[15px] font-bold">{tr.product.payInstallments}</span>
+                <span className="block text-[11px] font-normal opacity-80">{tr.product.installmentSub}</span>
+              </div>
+              <ChevronDown className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${rateOpen ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+          <div className={`transition-all duration-300 ${rateOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"}`}>
+            <div className="px-5 pb-3 space-y-1.5">
+              {rateOptions.map((r) => (
+                <button
+                  key={r.label}
+                  onClick={() => handleBuy("RATE")}
+                  disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+                  className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
+                >
+                  <div className="text-left">
+                    <span className="text-[13px] font-semibold">{r.label}</span>
+                    <span className="block text-[10px] opacity-70">{r.desc}</span>
+                  </div>
+                  <span className="text-[14px] font-bold">{formatPrice(monthlyAmount(r.months, r.pct))} <small className="text-[10px] font-normal">MDL/lună</small></span>
+                </button>
+              ))}
+              <p className="text-[10px] font-normal opacity-60 pt-1">{tr.product.partialSub}</p>
             </div>
           </div>
-        </button>
+        </div>
       </div>
 
       {product.description && (
