@@ -197,6 +197,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
                   <span className="text-[12px] opacity-50">Se încarcă ratele...</span>
                 </div>
               )}
+            </div>
+          </div>
         </div>
       </div>
 
