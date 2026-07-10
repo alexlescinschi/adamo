@@ -80,7 +80,7 @@ function OptionRow({
 
 export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   const router = useRouter();
-  const { items, selectedItems, total, updateQty, removeItem, toggleSelected, selectAll, allSelected, someSelected, clearCart } = useCart();
+  const { items, selectedItems, total, updateQty, removeItem, toggleSelected, selectAll, allSelected, someSelected, clearCart, preferredPayment } = useCart();
   const tr = useTranslations();
   const Checkbox = CartCheckbox;
 
@@ -105,7 +105,9 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   const [streetOpen, setStreetOpen] = useState(false);
 
   // --- Payment ---
-  const [payChoice, setPayChoice] = useState<PayChoice>("CASH");
+  const [payChoice, setPayChoice] = useState<PayChoice>(
+    preferredPayment === "RATE" ? "RATE" : "CASH"
+  );
   const [company, setCompany] = useState({ name: "", idno: "" });
   const [ibanCopied, setIbanCopied] = useState(false);
 

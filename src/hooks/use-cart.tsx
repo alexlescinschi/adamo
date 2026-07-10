@@ -13,6 +13,8 @@ export interface CartItem {
   selected?: boolean; // default true; legacy items without it are treated as selected
 }
 
+type PayChoice = "CASH" | "RATE";
+
 interface CartContextValue {
   items: CartItem[];
   selectedItems: CartItem[];
@@ -22,10 +24,13 @@ interface CartContextValue {
   toggleSelected: (product_id: number, unit_id: number) => void;
   selectAll: (selected: boolean) => void;
   clearCart: () => void;
+  buyNow: (item: CartItem, preferredPayment?: PayChoice) => void;
   total: number;       // sum of selected items only
   totalAll: number;    // sum of all items
   allSelected: boolean;
   someSelected: boolean;
+  cartOpenTrigger: number;
+  preferredPayment: PayChoice | null;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -35,6 +40,8 @@ const sameItem = (i: CartItem, product_id: number, unit_id: number) =>
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [cartOpenTrigger, setCartOpenTrigger] = useState(0);
+  const [preferredPayment, setPreferredPayment] = useState<PayChoice | null>(null);
 
   useEffect(() => {
     try {
@@ -105,6 +112,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   }, []);
 
+  // ponytail: add item as the ONLY selected item — used by buy buttons on product page
+  const buyNow = useCallback((item: CartItem, payment?: PayChoice) => {
+    setItems((prev) => {
+      const deselected = prev.map((i) => ({ ...i, selected: false }));
+      const existingIdx = deselected.findIndex((i) => sameItem(i, item.product_id, item.unit_id));
+      if (existingIdx >= 0) {
+        deselected[existingIdx] = { ...deselected[existingIdx], qty: item.qty, selected: true };
+        return deselected;
+      }
+      return [...deselected, { ...item, selected: true, qty: Math.min(item.qty, item.stock || 99) }];
+    });
+    if (payment) setPreferredPayment(payment);
+    setCartOpenTrigger((k) => k + 1);
+  }, []);
+
   const selectedItems = items.filter((i) => i.selected !== false);
   const total = selectedItems.reduce((sum, item) => sum + item.price * item.qty, 0);
   const totalAll = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -122,10 +144,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         toggleSelected,
         selectAll,
         clearCart,
+        buyNow,
         total,
         totalAll,
         allSelected,
         someSelected,
+        cartOpenTrigger,
+        preferredPayment,
       }}
     >
       {children}

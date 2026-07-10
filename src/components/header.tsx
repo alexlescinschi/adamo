@@ -34,7 +34,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
   const tr = useTranslations();
-  const { items } = useCart();
+  const { items, cartOpenTrigger } = useCart();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
 
   const randomProducts = useMemo(() => {
@@ -56,6 +56,11 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   useEffect(() => {
     try { localStorage.removeItem("adamo-favorites"); } catch {}
   }, []);
+
+  // ponytail: open cart drawer when buyNow() is called from product page
+  useEffect(() => {
+    if (cartOpenTrigger > 0) setCartOpen(true);
+  }, [cartOpenTrigger]);
 
   // ponytail: hide header on scroll down, show on scroll up
   useEffect(() => {
