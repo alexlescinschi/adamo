@@ -111,28 +111,28 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {stock > 0 && (
         <div className="mt-3 flex flex-col gap-2">
-          <div className="flex items-center gap-3">
+          <div className="flex items-stretch gap-3 min-h-[67px]">
             <div className="flex items-center rounded-[8px] border border-[#cccfcf]">
-              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
-                <Minus className="h-3 w-3" />
+              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-4 py-3 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
+                <Minus className="h-4 w-4" />
               </button>
-              <span className="min-w-[36px] text-center text-[13px] font-semibold">{qty}</span>
+              <span className="min-w-[40px] text-center text-[14px] font-semibold">{qty}</span>
               <button
                 type="button"
                 onClick={() => {
                   if (qty >= stock) showToast(tr.product.outOfStock);
                   else setQty(q => Math.min(stock, q + 1));
                 }}
-                className="px-3 py-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
+                className="px-4 py-3 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
             <button
               type="button"
               onClick={handleAddToCart}
               disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-              className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-5 py-2.5 text-[14px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
+              className="flex items-center justify-center gap-2 rounded-[9px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 text-[15px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40 flex-1"
             >
               {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
               {tr.product.addToCart}
