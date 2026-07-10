@@ -102,6 +102,15 @@ export function ProductInfo({ product }: ProductInfoProps) {
             </button>
           </div>
           <span className="text-[13px] font-semibold text-[#1d1d1f]">{formatPrice(product.price * qty)} MDL</span>
+          <button
+            type="button"
+            onClick={() => handleBuy("CASH")}
+            disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+            className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
+          >
+            {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+            {tr.product.addToCart}
+          </button>
         </div>
       )}
 
