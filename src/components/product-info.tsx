@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { ShoppingCart, Loader2, Check, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
+import { ShoppingCart, Loader2, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 import { IuteCalculator } from "@/components/iute-calculator";
@@ -19,7 +19,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const resolveUnit = useResolveUnit();
   const tr = useTranslations();
   const [adding, setAdding] = useState(false);
-  const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -66,8 +65,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
         { product_id: product.id, unit_id, name: product.name, price: product.price, qty, image: product.image_url, stock },
         payment,
       );
-      setAdded(true);
-      setTimeout(() => setAdded(false), 1500);
     } finally {
       setAdding(false);
     }
@@ -116,7 +113,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <div className="mt-3 flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <div className="flex items-center rounded-[8px] border border-[#cccfcf]">
-              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
+              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
                 <Minus className="h-3 w-3" />
               </button>
               <span className="min-w-[36px] text-center text-[13px] font-semibold">{qty}</span>
@@ -126,7 +123,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
                   if (qty >= stock) showToast(tr.product.outOfStock);
                   else setQty(q => Math.min(stock, q + 1));
                 }}
-                className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
+                className="px-3 py-2 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
               >
                 <Plus className="h-3 w-3" />
               </button>
@@ -135,9 +132,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
               type="button"
               onClick={handleAddToCart}
               disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-              className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-4 py-1.5 text-[13px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-5 py-2.5 text-[14px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
             >
-              {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+              {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
               {tr.product.addToCart}
             </button>
           </div>
@@ -150,62 +147,29 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </div>
       )}
 
-      <RateCalculator price={product.price} productName={product.name} />
-      <IuteCalculator price={product.price} sku={String(product.id)} />
-
-      {/* ponytail: Comandă într-un clic — buyNow, deschide coșul cu doar acest produs */}
-      {stock > 0 && (
-        <button
-          onClick={() => handleBuy("CASH")}
-          disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="mt-3 w-full flex items-start gap-3 rounded-[10px] border-2 border-[#63ad36] bg-[#edf7e8] px-4 py-2.5 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
-        >
-          <Truck className="h-5 w-5 flex-shrink-0 mt-0.5 text-[#34781f]" />
-          <div>
-            <span className="text-[14px] font-bold text-[#34781f]">{tr.product.orderNow}</span>
-            <span className="block text-[11px] text-[#4e8f28]">{tr.product.orderNowSub}</span>
-          </div>
-        </button>
-      )}
-
-      {/* ===== 3 BUTOANE VERZI ===== */}
-      <div className="mt-4 space-y-2.5">
-        {/* 1. Cumpără */}
-        <button
-          onClick={() => handleBuy("CASH")}
-          disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-5 py-3.5 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
-        >
-          <div className="flex items-start gap-3">
-            <ShoppingCart className="h-5 w-5 flex-shrink-0 mt-0.5" />
-            <div className="text-left">
-              <span className="text-[15px] font-bold">{added ? tr.product.addedToCart : tr.product.buyNow}</span>
-              <span className="block text-[11px] font-normal opacity-80">{tr.product.buyNowSub}</span>
+      {/* ===== COMANDA + ACHITA BUTOANE ===== */}
+      <div className="mt-3 space-y-2.5">
+        {/* Comandă într-un clic — buyNow, deschide coșul */}
+        {stock > 0 && (
+          <button
+            onClick={() => handleBuy("CASH")}
+            disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+            className="w-full flex items-start gap-3 rounded-[12px] border-2 border-[#63ad36] bg-[#edf7e8] px-5 py-3 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
+          >
+            <Truck className="h-5 w-5 flex-shrink-0 mt-0.5 text-[#34781f]" />
+            <div>
+              <span className="text-[15px] font-bold text-[#34781f]">{tr.product.orderNow}</span>
+              <span className="block text-[11px] text-[#4e8f28]">{tr.product.orderNowSub}</span>
             </div>
-          </div>
-        </button>
+          </button>
+        )}
 
-        {/* 2. Comandă */}
-        <button
-          onClick={() => handleBuy("CASH")}
-          disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-          className="w-full rounded-[12px] bg-gradient-to-r from-[#55a02d] to-[#4a8f25] px-5 py-3.5 text-white hover:from-[#4a8f25] hover:to-[#3e7a1f] transition-all disabled:opacity-40"
-        >
-          <div className="flex items-start gap-3">
-            <Truck className="h-5 w-5 flex-shrink-0 mt-0.5" />
-            <div className="text-left">
-              <span className="text-[15px] font-bold">{tr.product.orderNow}</span>
-              <span className="block text-[11px] font-normal opacity-80">{tr.product.orderNowSub}</span>
-            </div>
-          </div>
-        </button>
-
-        {/* 3. Achită în rate (IutePay) — expandabil */}
+        {/* Achită în rate (IutePay) — expandabil */}
         <div className="rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] text-white overflow-hidden">
           <button
             onClick={() => setRateOpen(!rateOpen)}
             disabled={!hasPrice || product.availability === "OutOfStock"}
-            className="w-full px-5 py-3.5 hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
+            className="w-full px-5 py-3 hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
           >
             <div className="flex items-center gap-3">
               <img src="/coins.svg" alt="" className="h-5 w-5 flex-shrink-0 brightness-0 invert" />
@@ -220,11 +184,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <div className="px-5 pb-3 space-y-1.5">
               {iuteRates ? (
                 <>
-                  <button
-                    onClick={() => handleBuy("RATE")}
-                    disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-                    className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
-                  >
+                  <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40">
                     <div className="text-left">
                       <span className="text-[13px] font-semibold">Smart 0%</span>
                       <span className="block text-[10px] opacity-70">{iuteRates.smartDesc}</span>
@@ -232,11 +192,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
                     <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">MDL/lună</small></span>
                   </button>
                   {iuteRates.flexi ? (
-                    <button
-                      onClick={() => handleBuy("RATE")}
-                      disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-                      className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
-                    >
+                    <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40">
                       <div className="text-left">
                         <span className="text-[13px] font-semibold">Flexi Shop</span>
                         <span className="block text-[10px] opacity-70">{iuteRates.flexiDesc}</span>
@@ -244,23 +200,20 @@ export function ProductInfo({ product }: ProductInfoProps) {
                       <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">MDL/lună</small></span>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2">
-                      <Loader2 className="h-3 w-3 animate-spin opacity-50" />
-                      <span className="text-[11px] opacity-50">Flexi Shop — se încarcă...</span>
-                    </div>
+                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2"><Loader2 className="h-3 w-3 animate-spin opacity-50" /><span className="text-[11px] opacity-50">Flexi Shop — se încarcă...</span></div>
                   )}
                   <p className="text-[10px] font-normal opacity-60 pt-1">{tr.product.partialSub}</p>
                 </>
               ) : (
-                <div className="flex items-center gap-2 px-3 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin opacity-50" />
-                  <span className="text-[12px] opacity-50">Se încarcă ratele...</span>
-                </div>
+                <div className="flex items-center gap-2 px-3 py-2"><Loader2 className="h-4 w-4 animate-spin opacity-50" /><span className="text-[12px] opacity-50">Se încarcă ratele...</span></div>
               )}
             </div>
           </div>
         </div>
       </div>
+
+      <RateCalculator price={product.price} productName={product.name} />
+      <IuteCalculator price={product.price} sku={String(product.id)} />
 
       {product.description && (
         <div className="mt-6 text-[17px] leading-relaxed text-[#6b6c6c] whitespace-pre-line">{product.description}</div>
