@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
@@ -22,17 +22,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
+  const [iuteRates, setIuteRates] = useState<{ smart: number; smartDesc: string; flexi: number | null; flexiDesc: string } | null>(null);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
 
-  // ponytail: rate lunare calculate local (IutePay confirmă suma reală în modal)
-  const rateOptions = hasPrice ? [
-    { label: "Smart 0%", months: 4, pct: 0, desc: "4 luni · 0% dobândă" },
-    { label: "Flexi Shop", months: 6, pct: 6, desc: "6-36 luni · dobândă standard" },
-  ] : [];
-  const monthlyAmount = (months: number, pct: number) =>
-    Math.round((product.price * (1 + pct / 100)) / months);
+  // ponytail: fetch real IutePay rates (Smart 0% from math, Flexi from live API)
+  useEffect(() => {
+    if (!hasPrice) return;
+    fetch(`/api/payments/iute/calculations?price=${product.price}`)
+      .then((r) => r.json())
+      .then(setIuteRates)
+      .catch(() => {});
+  }, [product.price, hasPrice]);
 
   const handleBuy = async (payment?: "CASH" | "RATE") => {
     setAdding(true);
@@ -156,23 +158,45 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </button>
           <div className={`transition-all duration-300 ${rateOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"}`}>
             <div className="px-5 pb-3 space-y-1.5">
-              {rateOptions.map((r) => (
-                <button
-                  key={r.label}
-                  onClick={() => handleBuy("RATE")}
-                  disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-                  className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
-                >
-                  <div className="text-left">
-                    <span className="text-[13px] font-semibold">{r.label}</span>
-                    <span className="block text-[10px] opacity-70">{r.desc}</span>
-                  </div>
-                  <span className="text-[14px] font-bold">{formatPrice(monthlyAmount(r.months, r.pct))} <small className="text-[10px] font-normal">MDL/lună</small></span>
-                </button>
-              ))}
-              <p className="text-[10px] font-normal opacity-60 pt-1">{tr.product.partialSub}</p>
-            </div>
-          </div>
+              {iuteRates ? (
+                <>
+                  <button
+                    onClick={() => handleBuy("RATE")}
+                    disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+                    className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
+                  >
+                    <div className="text-left">
+                      <span className="text-[13px] font-semibold">Smart 0%</span>
+                      <span className="block text-[10px] opacity-70">{iuteRates.smartDesc}</span>
+                    </div>
+                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">MDL/lună</small></span>
+                  </button>
+                  {iuteRates.flexi ? (
+                    <button
+                      onClick={() => handleBuy("RATE")}
+                      disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+                      className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40"
+                    >
+                      <div className="text-left">
+                        <span className="text-[13px] font-semibold">Flexi Shop</span>
+                        <span className="block text-[10px] opacity-70">{iuteRates.flexiDesc}</span>
+                      </div>
+                      <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">MDL/lună</small></span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2">
+                      <Loader2 className="h-3 w-3 animate-spin opacity-50" />
+                      <span className="text-[11px] opacity-50">Flexi Shop — se încarcă...</span>
+                    </div>
+                  )}
+                  <p className="text-[10px] font-normal opacity-60 pt-1">{tr.product.partialSub}</p>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2">
+                  <Loader2 className="h-4 w-4 animate-spin opacity-50" />
+                  <span className="text-[12px] opacity-50">Se încarcă ratele...</span>
+                </div>
+              )}
         </div>
       </div>
 
