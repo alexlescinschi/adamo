@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const IUTE_BASE = "https://ecom.iutecredit.md";
 const CRM_CONFIG_URL = "https://api.crm.adamo.md/v1/ecommerce/checkout/iute/config";
 
-let cachedPublicKey: string | null = null;
+let cachedPublicKey: string = "";
 let cachedAt = 0;
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
@@ -14,7 +14,7 @@ async function getPublicKey(): Promise<string> {
   const data = await res.json();
   cachedPublicKey = data?.public_api_key || "";
   cachedAt = Date.now();
-  return cachedPublicKey;
+  return cachedPublicKey || "";
 }
 
 export async function GET(request: NextRequest) {
