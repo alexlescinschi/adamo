@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { ShoppingCart, Loader2, Check, Minus, Plus, Truck, ChevronDown } from "lucide-react";
+import { ShoppingCart, Loader2, Check, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 import { IuteCalculator } from "@/components/iute-calculator";
@@ -15,13 +15,14 @@ interface ProductInfoProps {
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const { buyNow } = useCart();
+  const { buyNow, addItem } = useCart();
   const resolveUnit = useResolveUnit();
   const tr = useTranslations();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [iuteRates, setIuteRates] = useState<{ smart: number; smartDesc: string; flexi: number | null; flexiDesc: string } | null>(null);
 
   const hasPrice = product.price > 0;
@@ -35,6 +36,27 @@ export function ProductInfo({ product }: ProductInfoProps) {
       .then(setIuteRates)
       .catch(() => {});
   }, [product.price, hasPrice]);
+
+  const handleAddToCart = async () => {
+    if (qty > stock) {
+      setToast(tr.product.outOfStock);
+      return;
+    }
+    setAdding(true);
+    try {
+      const unit_id = await resolveUnit(product);
+      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty, image: product.image_url, stock });
+      setToast(tr.product.addedToCart);
+      setTimeout(() => setToast(null), 2500);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   const handleBuy = async (payment?: "CASH" | "RATE") => {
     setAdding(true);
@@ -91,31 +113,60 @@ export function ProductInfo({ product }: ProductInfoProps) {
       )}
 
       {stock > 0 && (
-        <div className="mt-3 flex items-center gap-3">
-          <div className="flex items-center rounded-[8px] border border-[#cccfcf]">
-            <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
-              <Minus className="h-3 w-3" />
-            </button>
-            <span className="min-w-[36px] text-center text-[13px] font-semibold">{qty}</span>
-            <button type="button" onClick={() => setQty(q => Math.min(stock, q + 1))} className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
-              <Plus className="h-3 w-3" />
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-[8px] border border-[#cccfcf]">
+              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
+                <Minus className="h-3 w-3" />
+              </button>
+              <span className="min-w-[36px] text-center text-[13px] font-semibold">{qty}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (qty >= stock) showToast(tr.product.outOfStock);
+                  else setQty(q => Math.min(stock, q + 1));
+                }}
+                className="px-3 py-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+              className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-4 py-1.5 text-[13px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
+            >
+              {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+              {tr.product.addToCart}
             </button>
           </div>
-          <span className="text-[13px] font-semibold text-[#1d1d1f]">{formatPrice(product.price * qty)} MDL</span>
-          <button
-            type="button"
-            onClick={() => handleBuy("CASH")}
-            disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-            className="flex items-center gap-1.5 rounded-[8px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-3 py-1.5 text-[12px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
-          >
-            {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingCart className="h-3.5 w-3.5" />}
-            {tr.product.addToCart}
-          </button>
+          {toast && (
+            <div className="flex items-center gap-1.5 rounded-[6px] bg-[#edf7e8] px-3 py-1.5 text-[12px] font-medium text-[#34781f] animate-in fade-in">
+              <Info className="h-3.5 w-3.5" />
+              {toast}
+            </div>
+          )}
         </div>
       )}
 
       <RateCalculator price={product.price} productName={product.name} />
       <IuteCalculator price={product.price} sku={String(product.id)} />
+
+      {/* ponytail: Comandă într-un clic — buyNow, deschide coșul cu doar acest produs */}
+      {stock > 0 && (
+        <button
+          onClick={() => handleBuy("CASH")}
+          disabled={!hasPrice || product.availability === "OutOfStock" || adding}
+          className="mt-3 w-full flex items-start gap-3 rounded-[10px] border-2 border-[#63ad36] bg-[#edf7e8] px-4 py-2.5 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
+        >
+          <Truck className="h-5 w-5 flex-shrink-0 mt-0.5 text-[#34781f]" />
+          <div>
+            <span className="text-[14px] font-bold text-[#34781f]">{tr.product.orderNow}</span>
+            <span className="block text-[11px] text-[#4e8f28]">{tr.product.orderNowSub}</span>
+          </div>
+        </button>
+      )}
 
       {/* ===== 3 BUTOANE VERZI ===== */}
       <div className="mt-4 space-y-2.5">
