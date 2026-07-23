@@ -13,6 +13,7 @@ function OrdersContent() {
   const router = useRouter();
   const success = searchParams?.get("success");
   const orderId = searchParams?.get("orderId");
+  const shipment = searchParams?.get("shipment");
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +47,11 @@ function OrdersContent() {
           <p className="text-green-700">
             Comanda a fost plasată cu succes!{orderId && ` Număr comanda: #${orderId}`}
           </p>
+        </div>
+      )}
+      {success && (shipment === "failed" || shipment === "pending" || shipment === "processing" || shipment === "pending_payment") && (
+        <div className="mb-6 rounded-lg bg-amber-50 p-4 text-amber-800">
+          Comanda este înregistrată, dar expedierea trebuie confirmată de echipa ADAMO. Nu plasa comanda din nou.
         </div>
       )}
 

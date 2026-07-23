@@ -1,28 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
+import { isRateLimited, publicAuthResponse } from "@/lib/request-security";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
 export async function POST(request: NextRequest) {
   try {
-    const { credential } = await request.json();
-    if (!credential) {
+    const body = await request.json();
+    const credential = typeof body?.credential === "string" ? body.credential : "";
+    if (credential.length < 100 || credential.length > 10_000) {
       return NextResponse.json({ error: "Missing credential" }, { status: 400 });
+    }
+    if (await isRateLimited(request, "google-auth", 10, 600, credential.slice(-64))) {
+      return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
     }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/oauth/google`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idToken: credential }),
+      signal: AbortSignal.timeout(8000),
     });
 
     const rawText = await res.text();
-    console.error("CRM Google OAuth response:", res.status, rawText.slice(0, 500));
     let data: any;
     try {
       data = JSON.parse(rawText);
     } catch {
-      return NextResponse.json({ error: `CRM returned non-JSON (${res.status}): ${rawText.slice(0, 200)}` }, { status: 502 });
+      return NextResponse.json({ error: "Authentication provider returned an invalid response" }, { status: 502 });
     }
     if (!res.ok) {
       return NextResponse.json(data, { status: res.status });
@@ -41,7 +46,7 @@ export async function POST(request: NextRequest) {
           email: userEmail,
           name: [firstName, lastName].filter(Boolean).join(" ") || user.name || "",
         }
-      : data;
+      : publicAuthResponse(data);
 
     const response = NextResponse.json(responseBody);
 
@@ -64,9 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     return response;
-  } catch (error: any) {
-    console.error("Google OAuth error:", error?.message || error);
-    console.error("Google OAuth stack:", error?.stack);
+  } catch {
     return NextResponse.json({ error: "Google authentication failed" }, { status: 500 });
   }
 }

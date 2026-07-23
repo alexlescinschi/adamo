@@ -22,17 +22,17 @@ export const PAYMENT_METHOD = {
 // payMode = UI selection ("Plată la livrare" vs "Transfer bancar" vs "Rate IutePay").
 // - BANK_TRANSFER: same regardless of delivery.
 // - RATE (IutePay BNPL): payment_method=IUTE, redirect la IutePay după creare order.
-// - CASH: ramburs by courier (FAN_COURIER_RAMBUS); at pickup the order is
-//   created and paid in-store, CRM uses ONLINE as the documented PICKUP value
-//   (spec example "Pickup + online payment"). ponytail: ONLINE = placeholder,
-//   no real online charge happens at pickup.
+// - CASH: FAN uses FAN_COURIER_RAMBUS. CRM has no Poșta COD enum, so Poșta and
+//   pickup use ONLINE to avoid an automatic FAN AWB; checkout adds an explicit
+//   [CURIER POSTA_RAPIDA RAMBURS] note. ponytail: replace when CRM adds Poșta COD.
 export function resolvePaymentMethod(
   payMode: "CASH" | "BANK_TRANSFER" | "RATE",
-  deliveryMethod: "PICKUP" | "COURIER"
+  deliveryMethod: "PICKUP" | "COURIER",
+  courierProvider?: CourierProvider,
 ): CrmPaymentMethod {
   if (payMode === "BANK_TRANSFER") return PAYMENT_METHOD.BANK_TRANSFER;
   if (payMode === "RATE") return PAYMENT_METHOD.IUTE;
-  return deliveryMethod === "COURIER"
+  return deliveryMethod === "COURIER" && courierProvider === "FANCOURIER"
     ? PAYMENT_METHOD.FAN_COURIER_RAMBUS
     : PAYMENT_METHOD.ONLINE;
 }

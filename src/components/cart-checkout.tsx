@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/use-cart";
-import { Trash2, Plus, Minus, ShoppingCart, Loader2, Copy, Check, Building2, FileText, ShieldCheck, RefreshCcw, Headphones, CheckCircle, Truck, MapPin, Store, CreditCard, Wallet, Landmark, Percent, ChevronDown } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingCart, Loader2, Copy, Check, Building2, ShieldCheck, RefreshCcw, Headphones, CheckCircle, Truck, MapPin, Store, CreditCard, Wallet, Landmark, Percent } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 import { CartCheckbox } from "@/components/cart-checkbox";
 import { ADAMO_COMPANY } from "@/lib/company";
-import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
+import type { CourierProvider } from "@/lib/checkout";
 import { formatPrice } from "@/lib/utils";
 
 type DeliveryChoice = "MD" | "PICKUP" | "CHISINAU";
@@ -80,6 +80,8 @@ function OptionRow({
 
 export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   const router = useRouter();
+  const params = useParams();
+  const locale = typeof params?.locale === "string" ? params.locale : "ro";
   const { items, selectedItems, total, updateQty, removeItem, toggleSelected, selectAll, allSelected, someSelected, clearCart, preferredPayment } = useCart();
   const tr = useTranslations();
   const Checkbox = CartCheckbox;
@@ -91,7 +93,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
   // --- Delivery ---
   const [deliveryChoice, setDeliveryChoice] = useState<DeliveryChoice>("MD");
-  const [courierProvider, setCourierProvider] = useState<CourierProvider>("POSTA_RAPIDA");
+  const [courierProvider, setCourierProvider] = useState<CourierProvider>("FANCOURIER");
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
   const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
@@ -114,7 +116,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   // --- Submit state ---
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [invoiceData, setInvoiceData] = useState<{ orderId: string; date: string; orderItems: typeof items; orderTotal: number } | null>(null);
+  const idempotencyKey = useRef("");
 
   // ponytail: fetch pickup warehouses
   useEffect(() => {
@@ -188,8 +190,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       const saved = JSON.parse(localStorage.getItem("adamo-checkout") || "{}");
       if (saved.delivery) setDelivery(saved.delivery);
       if (saved.courierProvider) {
-        // ponytail: FanCourier hidden, force POSTA_RAPIDA if old value persists
-        setCourierProvider(saved.courierProvider === "FANCOURIER" ? "POSTA_RAPIDA" : saved.courierProvider);
+        setCourierProvider(saved.courierProvider);
       }
       if (saved.postaDelivery) setPostaDelivery(saved.postaDelivery);
     } catch {}
@@ -222,42 +223,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     setTimeout(() => setIbanCopied(false), 2000);
   }
 
-  // ponytail: URL factură pre-order (orderId —) ca pe checkout
-  function buildInvoiceUrl(orderId: string) {
-    const now = new Date();
-    const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
-    return `/api/invoice?orderId=${encodeURIComponent(orderId)}&date=${encodeURIComponent(date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${total}&items=${encodeURIComponent(JSON.stringify(selectedItems.map((i) => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
-  }
-
   const inputCls = "w-full rounded-[10px] border border-[#e4e8e4] bg-white px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none";
-
-  // ponytail: invoice success screen pt transfer bancar
-  if (invoiceData) {
-    const invoiceUrl = `/api/invoice?orderId=${encodeURIComponent(invoiceData.orderId)}&date=${encodeURIComponent(invoiceData.date)}&buyerName=${encodeURIComponent(company.name)}&buyerIdno=${encodeURIComponent(company.idno)}&total=${invoiceData.orderTotal}&items=${encodeURIComponent(JSON.stringify(invoiceData.orderItems.map(i => ({ name: i.name, qty: i.qty, price: i.price }))))}`;
-    return (
-      <div className="py-16 text-center">
-        <div className="rounded-full bg-[#edf7e8] p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-          <FileText className="h-8 w-8 text-[#34781f]" />
-        </div>
-        <h1 className="text-2xl font-bold text-[#1d1d1f] mb-2">Comanda #{invoiceData.orderId} a fost plasată!</h1>
-        <p className="text-[#6b6c6c] mb-8 px-4">Descărcați contul spre plată și efectuați transferul bancar la detaliile din document.</p>
-        <a
-          href={invoiceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mx-auto inline-flex items-center gap-2 rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-8 py-4 text-[16px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
-        >
-          <FileText className="h-5 w-5" />
-          Descarcă Cont spre plată (PDF)
-        </a>
-        <div className="mt-6">
-          <Link href="/account/orders" className="text-sm text-[#4e8f28] hover:underline">
-            Vezi comenzile mele →
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -283,8 +249,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   // ponytail: RATE = IutePay BNPL redirect. Treate ca pre-plată (cod 0 la curier).
   const payMode: "CASH" | "BANK_TRANSFER" | "RATE" =
     payChoice === "BANK" ? "BANK_TRANSFER" : payChoice === "RATE" ? "RATE" : "CASH";
-  const isPrepaid = payMode === "BANK_TRANSFER" || payMode === "RATE";
-
+  const postaCashUnsupported = !isPickup && courierProvider === "POSTA_RAPIDA" && payMode === "CASH";
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedItems.length === 0) {
@@ -304,7 +269,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       const payload: Record<string, unknown> = {
         items: selectedItems.map((i) => ({ product_id: i.product_id, unit_id: i.unit_id, qty: i.qty })),
         delivery_method: deliveryMethod,
-        payment_method: resolvePaymentMethod(payMode, deliveryMethod),
+        pay_mode: payMode,
         contact: { full_name: contact.full_name, phone: contact.phone, email: contact.email || undefined },
         comment: fullComment || undefined,
       };
@@ -318,13 +283,35 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           city: [cityName, regionName].filter(Boolean).join(", "),
           address: [postaDelivery.street, postaDelivery.block].filter(Boolean).join(", "),
         };
+        payload.courier = {
+          provider: "POSTA_RAPIDA",
+          regionId: postaDelivery.regionId,
+          cityId: postaDelivery.cityId,
+          street: postaDelivery.street,
+          block: postaDelivery.block,
+          zipCode: postaDelivery.zipCode || undefined,
+        };
       } else {
         payload.delivery = { city: delivery.city, address: delivery.address };
+        payload.courier = {
+          provider: "FANCOURIER",
+          city: delivery.city,
+          street: delivery.address,
+          postalCode: delivery.postalCode || undefined,
+          number: delivery.addressNr || undefined,
+          building: delivery.addressBl || undefined,
+          apartment: delivery.addressAp || undefined,
+        };
+      }
+
+      if (!idempotencyKey.current) {
+        idempotencyKey.current = localStorage.getItem("adamo-checkout-operation") || crypto.randomUUID();
+        localStorage.setItem("adamo-checkout-operation", idempotencyKey.current);
       }
 
       const res = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey.current },
         body: JSON.stringify(payload),
       });
 
@@ -338,58 +325,19 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       const saveCheckout = () => {
         localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
+        localStorage.removeItem("adamo-checkout-operation");
         clearCart();
       };
 
-      // ponytail: creare AWB curier (non-blocking) — skip for RATE (payment not confirmed yet)
-      let awbNumber = "";
-      if (!isPickup && payMode !== "RATE") {
-        try {
-          if (courierProvider === "POSTA_RAPIDA") {
-            const prRes = await fetch("/api/posta-rapida/awb", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                toName: contact.full_name, toPhone: contact.phone, toEmail: contact.email || undefined,
-                regionId: postaDelivery.regionId, cityId: postaDelivery.cityId,
-                street: postaDelivery.street, block: postaDelivery.block,
-                zipCode: postaDelivery.zipCode || undefined, orderRef: String(orderId),
-                cod: isPrepaid ? 0 : total,
-              }),
-            });
-            if (prRes.ok) {
-              const prData = await prRes.json();
-              awbNumber = prData.shippingNumber ?? prData.awb ?? "";
-            }
-          } else {
-            const awbRes = await fetch("/api/fancourier/awb", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                toName: contact.full_name, toCity: delivery.city, toZipcode: delivery.postalCode || undefined,
-                toStreet: delivery.address, toNr: delivery.addressNr || undefined,
-                toBl: delivery.addressBl || undefined, toAp: delivery.addressAp || undefined,
-                toPhone: contact.phone, toEmail: contact.email || undefined,
-                orderRef: String(orderId), cod: isPrepaid ? 0 : total,
-              }),
-            });
-            if (awbRes.ok) {
-              const awbData = await awbRes.json();
-              awbNumber = awbData.awb ?? "";
-            }
-          }
-        } catch (err) {
-          console.error("[cart] AWB creation failed:", err);
-        }
-      }
-
       if (payMode === "BANK_TRANSFER") {
         saveCheckout();
-        const now = new Date();
-        const date = `${now.getDate().toString().padStart(2, "0")}.${(now.getMonth() + 1).toString().padStart(2, "0")}.${now.getFullYear()}`;
-        setInvoiceData({ orderId: String(orderId), date, orderItems: selectedItems, orderTotal: total });
-        setSubmitting(false);
+        sessionStorage.setItem("adamo-bank-invoice", JSON.stringify({
+          orderId: String(orderId),
+          invoiceUrl: order.invoice?.url,
+          invoiceHandle: order.invoiceHandle,
+        }));
         onDone?.();
+        router.push(`/${locale}/checkout/invoice`);
       } else if (payMode === "RATE") {
         // ponytail: IutePay iframe/modal mode via iute.checkout().
         // CRM /iute/prepare returns signed anti-fraud payload:
@@ -403,7 +351,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           throw new Error("IutePay SDK nu s-a încărcat. Reîncearcă sau alege altă plată.");
         }
         setSubmitting(false);
-        onDone?.();
 
         const nameParts = (contact.full_name || "").trim().split(/\s+/).filter(Boolean);
         const firstName = nameParts[0] || "Client";
@@ -454,7 +401,8 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             {
               onSuccess: () => {
                 saveCheckout();
-                router.push(`/account/orders?success=true&orderId=${orderId}`);
+                onDone?.();
+                router.push(`/account/orders?success=true&orderId=${orderId}${order.shipment ? "&shipment=pending_payment" : ""}`);
               },
               onFailure: (result: { message?: string }) => {
                 setError(result?.message || "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.");
@@ -468,7 +416,9 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       } else {
         saveCheckout();
         onDone?.();
-        router.push(`/account/orders?success=true&orderId=${orderId}${awbNumber ? `&awb=${awbNumber}` : ""}`);
+        const shipmentNumber = order.shipment?.number || order.shipment?.awb;
+        const shipmentStatus = order.shipment?.status;
+        router.push(`/account/orders?success=true&orderId=${orderId}${shipmentNumber ? `&awb=${encodeURIComponent(shipmentNumber)}` : ""}${shipmentStatus ? `&shipment=${encodeURIComponent(shipmentStatus)}` : ""}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : tr.checkout.genericError);
@@ -599,8 +549,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               >
                 {tr.cart.courierRapid}
               </button>
-              {/* ponytail: FanCourier ascuns, păstrat ca funcționalitate */}
-              {false && (
               <button
                 type="button"
                 onClick={() => setCourierProvider("FANCOURIER")}
@@ -610,7 +558,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               >
                 {tr.checkout.fanCourier}
               </button>
-              )}
             </div>
 
             {courierProvider === "POSTA_RAPIDA" ? (
@@ -687,6 +634,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             onClick={() => setPayChoice("RATE")}
           />
         </div>
+        {postaCashUnsupported && (
+          <p className="mt-3 rounded-[8px] border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+            Pentru plata ramburs alege FAN Courier. Poșta Rapidă poate fi folosită cu transfer bancar sau rate.
+          </p>
+        )}
 
         {payChoice === "BANK" && (
           <div className="mt-3 space-y-3">
@@ -721,16 +673,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               <p className="mt-3 rounded-[8px] border border-[#f0d060] bg-[#fff9e6] px-3 py-2 text-[11px] text-[#7a6000]">
                 ⚠ {tr.checkout.bankTransferInstruction}
               </p>
-              {/* ponytail: descarcă cont spre plată (pre-order) ca pe checkout */}
-              <a
-                href={buildInvoiceUrl("—")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border border-[#63ad36] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
-              >
-                <FileText className="h-4 w-4" />
-                {tr.checkout.downloadInvoice}
-              </a>
             </div>
           </div>
         )}
@@ -779,7 +721,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
         <button
           type="submit"
-          disabled={submitting || !hasSelected}
+          disabled={submitting || !hasSelected || postaCashUnsupported}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3.5 text-[15px] font-bold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (<><Loader2 className="h-5 w-5 animate-spin" /> {tr.checkout.processing}</>) : (tr.cart.finalizeOrder)}

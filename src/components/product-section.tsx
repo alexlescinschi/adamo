@@ -7,14 +7,15 @@ import { Loader2 } from "lucide-react";
 interface ProductSectionProps {
   title: string;
   type: "popular" | "promotions" | "new";
+  locale?: string;
 }
 
-export function ProductSection({ title, type }: ProductSectionProps) {
+export function ProductSection({ title, type, locale = "ro" }: ProductSectionProps) {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/products?type=${type}&locale=ro&limit=8`)
+    fetch(`/api/products?type=${type}&locale=${encodeURIComponent(locale)}&limit=8`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) setProducts(data);
@@ -24,7 +25,7 @@ export function ProductSection({ title, type }: ProductSectionProps) {
       })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
-  }, [type]);
+  }, [type, locale]);
 
   if (loading) {
     return (

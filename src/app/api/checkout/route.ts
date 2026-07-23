@@ -1,65 +1,312 @@
+import { createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, crmFetch, type CheckoutPayload } from "@/lib/crm-api";
+import { createOrder, crmFetch, getOrderInvoice, type CheckoutPayload } from "@/lib/crm-api";
+import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { ADAMO_COMPANY } from "@/lib/company";
+import { createFanCourierAwb } from "@/lib/fancourier";
+import { createPostaAwb } from "@/lib/posta-rapida";
+import { rateLimit, redis } from "@/lib/redis";
+
+type PayMode = "CASH" | "BANK_TRANSFER" | "RATE";
+
+type CourierInput =
+  | { provider: "POSTA_RAPIDA"; regionId: number; cityId: number; street: string; block: string; zipCode?: string }
+  | { provider: "FANCOURIER"; city: string; street: string; postalCode?: string; number?: string; building?: string; apartment?: string };
+
+interface ValidCheckout {
+  items: { product_id: number; unit_id: number; qty: number }[];
+  deliveryMethod: "PICKUP" | "COURIER";
+  payMode: PayMode;
+  warehouseId?: number;
+  contact: { full_name: string; phone: string; email?: string };
+  delivery?: { city: string; address: string };
+  courier?: CourierInput;
+  comment?: string;
+}
+
+type OperationRecord =
+  | { state: "processing" | "unknown"; requestHash: string }
+  | { state: "completed"; requestHash: string; response: Record<string, unknown> };
+
+const MAX_BODY_BYTES = 50_000;
+const OPERATION_TTL = 30 * 24 * 60 * 60;
+const ALLOWED_KEYS = new Set(["items", "delivery_method", "pay_mode", "warehouse_id", "contact", "delivery", "courier", "comment"]);
+
+function shortHash(value: string) {
+  return createHash("sha256").update(value).digest("hex").slice(0, 32);
+}
+
+function text(value: unknown, max: number, required = false) {
+  if (typeof value !== "string") return required ? null : undefined;
+  const clean = value.trim();
+  if ((required && !clean) || clean.length > max) return null;
+  return clean || undefined;
+}
+
+function positiveInt(value: unknown) {
+  return Number.isSafeInteger(value) && Number(value) > 0 ? Number(value) : null;
+}
+
+function validateCheckout(body: any): ValidCheckout | string {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return "Invalid request";
+  if (Object.keys(body).some((key) => !ALLOWED_KEYS.has(key))) return "Unexpected checkout field";
+  if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) return "Invalid items";
+
+  const seen = new Set<string>();
+  const items: ValidCheckout["items"] = [];
+  for (const item of body.items) {
+    const productId = positiveInt(item?.product_id);
+    const unitId = positiveInt(item?.unit_id);
+    const qty = positiveInt(item?.qty);
+    if (!productId || !unitId || !qty || qty > 99) return "Invalid item";
+    const key = `${productId}:${unitId}`;
+    if (seen.has(key)) return "Duplicate item";
+    seen.add(key);
+    items.push({ product_id: productId, unit_id: unitId, qty });
+  }
+
+  const deliveryMethod = body.delivery_method;
+  if (deliveryMethod !== "PICKUP" && deliveryMethod !== "COURIER") return "Invalid delivery method";
+  const payMode = body.pay_mode;
+  if (payMode !== "CASH" && payMode !== "BANK_TRANSFER" && payMode !== "RATE") return "Invalid payment method";
+
+  const fullName = text(body.contact?.full_name, 100, true);
+  const phone = typeof body.contact?.phone === "string" ? body.contact.phone.replace(/\D/g, "") : "";
+  const email = text(body.contact?.email, 255);
+  if (!fullName || phone.length < 8 || phone.length > 15 || email === null) return "Invalid contact details";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Invalid email";
+
+  const comment = text(body.comment, 1000);
+  if (comment === null) return "Comment is too long";
+
+  if (deliveryMethod === "PICKUP") {
+    const warehouseId = positiveInt(body.warehouse_id);
+    if (!warehouseId) return "Pickup point is required";
+    return { items, deliveryMethod, payMode, warehouseId, contact: { full_name: fullName, phone, email }, comment };
+  }
+
+  const city = text(body.delivery?.city, 150, true);
+  const address = text(body.delivery?.address, 250, true);
+  if (!city || !address) return "Delivery address is required";
+
+  const provider = body.courier?.provider as CourierProvider | undefined;
+  let courier: CourierInput;
+  if (provider === "POSTA_RAPIDA") {
+    const regionId = positiveInt(body.courier?.regionId);
+    const cityId = positiveInt(body.courier?.cityId);
+    const street = text(body.courier?.street, 150, true);
+    const block = text(body.courier?.block, 50, true);
+    const zipCode = text(body.courier?.zipCode, 20);
+    if (!regionId || !cityId || !street || !block || zipCode === null) return "Invalid Poșta Rapidă address";
+    courier = { provider, regionId, cityId, street, block, zipCode };
+  } else if (provider === "FANCOURIER") {
+    const courierCity = text(body.courier?.city, 150, true);
+    const street = text(body.courier?.street, 150, true);
+    const postalCode = text(body.courier?.postalCode, 20);
+    const number = text(body.courier?.number, 20);
+    const building = text(body.courier?.building, 20);
+    const apartment = text(body.courier?.apartment, 20);
+    if (!courierCity || !street || postalCode === null || number === null || building === null || apartment === null) return "Invalid FAN Courier address";
+    courier = { provider, city: courierCity, street, postalCode, number, building, apartment };
+  } else {
+    return "Courier provider is required";
+  }
+  if (courier.provider === "POSTA_RAPIDA" && payMode === "CASH") {
+    return "Poșta Rapidă ramburs is not supported by CRM. Choose FAN Courier or another payment method.";
+  }
+
+  return {
+    items,
+    deliveryMethod,
+    payMode,
+    contact: { full_name: fullName, phone, email },
+    delivery: { city, address },
+    courier,
+    comment,
+  };
+}
+
+async function createShipment(order: any, checkout: ValidCheckout) {
+  if (!checkout.courier) return null;
+
+  if (order?.fan_courier_awb_no) {
+    return { provider: "FANCOURIER", status: "existing", number: String(order.fan_courier_awb_no) };
+  }
+
+  const orderId = positiveInt(order?.id);
+  const amount = Number(order?.amount);
+  if (!orderId || (checkout.payMode === "CASH" && (!Number.isFinite(amount) || amount <= 0))) {
+    return { provider: checkout.courier.provider, status: "failed" };
+  }
+  if (!redis) return { provider: checkout.courier.provider, status: "pending" };
+
+  const key = `shipment:v1:${checkout.courier.provider}:${orderId}`;
+  const existing = await redis.get<Record<string, unknown>>(key);
+  if (existing) return existing;
+  const claimed = await redis.set(key, { provider: checkout.courier.provider, status: "processing" }, { nx: true, ex: OPERATION_TTL });
+  if (!claimed) return (await redis.get<Record<string, unknown>>(key)) || { provider: checkout.courier.provider, status: "pending" };
+
+  const cod = checkout.payMode === "CASH" ? amount : 0;
+  const orderRef = process.env.DEPLOY_ENV === "staging" ? `STAGING-${orderId}` : String(orderId);
+
+  try {
+    const result = checkout.courier.provider === "POSTA_RAPIDA"
+      ? await createPostaAwb({
+          toName: checkout.contact.full_name,
+          toPhone: checkout.contact.phone,
+          toEmail: checkout.contact.email,
+          regionId: checkout.courier.regionId,
+          cityId: checkout.courier.cityId,
+          street: checkout.courier.street,
+          block: checkout.courier.block,
+          zipCode: checkout.courier.zipCode,
+          orderRef,
+          cod,
+        })
+      : await createFanCourierAwb({
+          toName: checkout.contact.full_name,
+          toCity: checkout.courier.city,
+          toZipcode: checkout.courier.postalCode,
+          toStreet: checkout.courier.street,
+          toNr: checkout.courier.number,
+          toBl: checkout.courier.building,
+          toAp: checkout.courier.apartment,
+          toPhone: checkout.contact.phone,
+          toEmail: checkout.contact.email,
+          orderRef,
+          cod,
+        });
+
+    const shipment = checkout.courier.provider === "POSTA_RAPIDA"
+      ? { provider: checkout.courier.provider, status: "created", number: (result as any).shippingNumber, awb: (result as any).awb }
+      : { provider: checkout.courier.provider, status: "created", number: (result as any).awb, trackingUrl: (result as any).trackingUrl };
+    await redis.set(key, shipment, { ex: 30 * 24 * 60 * 60 });
+    return shipment;
+  } catch {
+    const failed = { provider: checkout.courier.provider, status: "failed" };
+    await redis.set(key, failed, { ex: OPERATION_TTL });
+    return failed;
+  }
+}
 
 export async function POST(request: NextRequest) {
+  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (contentLength > MAX_BODY_BYTES) return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  if (!redis && process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Checkout is temporarily unavailable" }, { status: 503 });
+  }
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  const limited = await rateLimit(`rate:checkout:${shortHash(ip)}`, 5, 600);
+  if (!limited.allowed) return NextResponse.json({ error: "Too many checkout attempts" }, { status: 429, headers: { "Retry-After": "600" } });
+
+  const idempotencyKey = request.headers.get("idempotency-key") || "";
+  if (!/^[a-zA-Z0-9_-]{16,128}$/.test(idempotencyKey)) {
+    return NextResponse.json({ error: "Idempotency-Key is required" }, { status: 400 });
+  }
+
+  let rawBody: unknown;
   try {
-    const body = await request.json();
+    rawBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const checkout = validateCheckout(rawBody);
+  if (typeof checkout === "string") return NextResponse.json({ error: checkout }, { status: 400 });
 
-    // ponytail: CRM expects digits-only phone, strip formatting
-    if (body.contact?.phone) {
-      body.contact.phone = body.contact.phone.replace(/[^\d]/g, "");
+  const phoneLimit = await rateLimit(`rate:checkout-phone:${shortHash(checkout.contact.phone)}`, 10, 3600);
+  if (!phoneLimit.allowed) return NextResponse.json({ error: "Too many checkout attempts" }, { status: 429 });
+
+  const requestHash = shortHash(JSON.stringify(checkout));
+  const operationKey = `checkout:v1:${shortHash(idempotencyKey)}`;
+  if (redis) {
+    const existing = await redis.get<OperationRecord>(operationKey);
+    if (existing?.requestHash !== undefined) {
+      if (existing.requestHash !== requestHash) return NextResponse.json({ error: "Idempotency key conflict" }, { status: 409 });
+      if (existing.state === "completed") return NextResponse.json(existing.response);
+      return NextResponse.json({ error: "Checkout is already processing" }, { status: 409 });
     }
+    const claimed = await redis.set(operationKey, { state: "processing", requestHash }, { nx: true, ex: OPERATION_TTL });
+    if (!claimed) return NextResponse.json({ error: "Checkout is already processing" }, { status: 409 });
+  }
 
-    const payload: CheckoutPayload = {
-      items: body.items,
-      delivery_method: body.delivery_method,
-      payment_method: body.payment_method,
-      warehouse_id: body.warehouse_id,
-      contact: body.contact,
-      delivery: body.delivery,
-      comment: body.comment,
+  const paymentMethod = resolvePaymentMethod(checkout.payMode, checkout.deliveryMethod, checkout.courier?.provider);
+  const staging = process.env.DEPLOY_ENV === "staging" ? "[STAGING new.adamo.md]" : "";
+  const courierNote = checkout.courier
+    ? `[CURIER ${checkout.courier.provider}${checkout.payMode === "CASH" ? " RAMBURS" : ""}]`
+    : "";
+  const payload: CheckoutPayload = {
+    items: checkout.items,
+    delivery_method: checkout.deliveryMethod,
+    payment_method: paymentMethod,
+    warehouse_id: checkout.warehouseId,
+    contact: checkout.contact,
+    delivery: checkout.delivery,
+    comment: [staging, courierNote, checkout.comment].filter(Boolean).join(" | ") || undefined,
+  };
+
+  if (checkout.payMode === "BANK_TRANSFER") {
+    payload.bank_transfer = {
+      company_name: ADAMO_COMPANY.name,
+      legal_address: ADAMO_COMPANY.legalAddress,
+      fiscal_code: ADAMO_COMPANY.regNumber,
+      vat_code: ADAMO_COMPANY.vatCode,
+      iban: ADAMO_COMPANY.iban,
+      bank_code: ADAMO_COMPANY.bic,
     };
+  }
 
-    // ponytail: IUTE → CRM /ecommerce/checkout/iute/prepare.
-    // CRM returns signed widget payload (NOT redirect URL):
-    // { merchant_order_id, signature, signature_timestamp, items, total, ... }
-    // iutepay.js widget processes this payload inline — user stays on site.
-    if (body.payment_method === "IUTE") {
+  try {
+    let responseBody: Record<string, unknown>;
+
+    if (checkout.payMode === "RATE") {
       const data = await crmFetch("/ecommerce/checkout/iute/prepare", {
         method: "POST",
         body: JSON.stringify(payload),
       });
       const orderId = data?.merchant_order_id ?? data?.order?.id ?? data?.id;
-      return NextResponse.json({
-        iutePayload: data,
+      responseBody = {
         id: orderId,
         orderId,
-      }, { status: 201 });
-    }
+        iutePayload: data,
+        shipment: checkout.courier ? { provider: checkout.courier.provider, status: "pending_payment" } : null,
+      };
+    } else {
+      const ecommerceToken = request.cookies.get("ecommerceAccessToken")?.value;
+      const data = await createOrder(payload, ecommerceToken);
+      const orderId = positiveInt(data?.order?.id ?? data?.id ?? data?.orderId);
+      if (!orderId) throw new Error("CRM did not return an order ID");
 
-    if (body.payment_method === "BANK_TRANSFER") {
-      payload.bank_transfer = {
-        company_name:  ADAMO_COMPANY.name,
-        legal_address: ADAMO_COMPANY.legalAddress,
-        fiscal_code:   ADAMO_COMPANY.regNumber,
-        vat_code:      ADAMO_COMPANY.vatCode,
-        iban:          ADAMO_COMPANY.iban,
-        bank_code:     ADAMO_COMPANY.bic,
+      const shipment = checkout.deliveryMethod === "COURIER"
+        ? await createShipment({ ...data?.order, id: orderId }, checkout)
+        : null;
+
+      let invoice = null;
+      let invoiceHandle: string | undefined;
+      if (checkout.payMode === "BANK_TRANSFER" && data?.invoice_access_token) {
+        invoiceHandle = randomBytes(32).toString("base64url");
+        if (redis) {
+          await redis.set(
+            `invoice:v1:${shortHash(invoiceHandle)}`,
+            { orderId, accessToken: data.invoice_access_token },
+            { ex: OPERATION_TTL },
+          );
+        }
+        invoice = await getOrderInvoice(orderId, data.invoice_access_token).catch(() => null);
+      }
+      responseBody = {
+        id: orderId,
+        orderId,
+        shipment,
+        invoice,
+        invoiceHandle,
       };
     }
 
-    console.log("[checkout] payload to CRM:", JSON.stringify(payload));
-
-    const ecommerceToken = request.cookies.get("ecommerceAccessToken")?.value;
-    const data = await createOrder(payload, ecommerceToken);
-    // ponytail: CRM întoarce { order: { id }, invoice_access_token }. Frontend-ul citește
-    // order.id || order.orderId (top-level) → adăugăm id+orderId top-level pentru compat.
-    const orderId = data?.order?.id ?? data?.id ?? data?.orderId;
-    return NextResponse.json({ ...data, id: orderId, orderId }, { status: 201 });
-  } catch (error) {
-    console.error("[checkout] error:", error);
-    const message = error instanceof Error ? error.message : "Checkout failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    if (redis) await redis.set(operationKey, { state: "completed", requestHash, response: responseBody }, { ex: OPERATION_TTL });
+    return NextResponse.json(responseBody, { status: 201 });
+  } catch {
+    if (redis) await redis.set(operationKey, { state: "unknown", requestHash }, { ex: OPERATION_TTL });
+    return NextResponse.json({ error: "Order could not be confirmed. Contact support before retrying." }, { status: 502 });
   }
 }

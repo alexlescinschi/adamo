@@ -17,13 +17,13 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
   const next = () => setSelected((s) => (s + 1) % images.length);
 
   if (images.length === 0) {
-    return <div className="flex h-80 items-center justify-center rounded-[14px] md:rounded-[28px] bg-[#f3f6f6] text-[#6b6c6c]">Fără imagine</div>;
+    return <div className="flex aspect-[4/3] w-full items-center justify-center rounded-[14px] md:rounded-[28px] bg-[#f3f6f6] text-[#6b6c6c]">Fără imagine</div>;
   }
 
   return (
     <div>
       <div
-        className="relative w-full aspect-square overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
+        className="relative w-full aspect-[4/3] overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
         onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
         onTouchEnd={(e) => {
           const diff = touchStart.current - e.changedTouches[0].clientX;

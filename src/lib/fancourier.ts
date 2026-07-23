@@ -4,7 +4,7 @@ const WEIGHT = process.env.FANCOURIER_WEIGHT_DEFAULT ?? "1";
 export interface AwbParams {
   toName: string;
   toCity: string;
-  toZipcode: string;
+  toZipcode?: string;
   toStreet: string;
   toNr?: string;
   toBl?: string;
@@ -57,6 +57,7 @@ export async function createFanCourierAwb(p: AwbParams): Promise<AwbResult> {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
+    signal: AbortSignal.timeout(8000),
   });
 
   if (!res.ok) throw new Error(`FanCourier HTTP ${res.status}`);
@@ -90,7 +91,7 @@ export async function getFanCourierPrice(
       service_type: "standard",
     });
 
-    const res = await fetch(`${BASE}/get_price?${params.toString()}`);
+    const res = await fetch(`${BASE}/get_price?${params.toString()}`, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const json = await res.json();
     if (json.status !== "done") return null;

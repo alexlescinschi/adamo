@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "@/hooks/use-translations";
+import { CONTENT_PAGES } from "@/lib/content-pages";
+import type { ContactSettings } from "@/lib/sanity";
+import type { Locale } from "@/lib/translations";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "0 799 66 909";
@@ -26,15 +29,21 @@ const socialLinks = [
   },
 ];
 
-export function Footer() {
+export function Footer({ contact, publishedPageSlugs = [] }: { contact?: ContactSettings; publishedPageSlugs?: string[] }) {
   const params = useParams();
-  const locale = (params?.locale as string) || "ro";
+  const locale: Locale = params?.locale === "ru" || params?.locale === "en" ? params.locale : "ro";
   const l = (path: string) => `/${locale}${path}`;
   const tr = useTranslations();
+  const phone = contact?.phone || PHONE;
+  const phoneDisplay = contact?.phone || PHONE_DISPLAY;
+  const email = contact?.email || EMAIL;
+  const visible = (slug: string) => slug === "contact" || publishedPageSlugs.includes(slug);
+  const helpPages = CONTENT_PAGES.filter((page) => page.group === "help" && visible(page.slug));
+  const companyPages = CONTENT_PAGES.filter((page) => page.group === "company" && visible(page.slug));
 
   return (
     <footer
-      className="grid grid-cols-1 gap-[34px] mx-auto border-t border-[#e1e7ef] px-[18px] py-[26px] md:grid-cols-2 md:px-[28px] md:py-[28px] lg:grid-cols-[1.3fr_0.7fr_0.9fr_1.2fr_1fr] lg:px-[28px] lg:py-[28px] pb-[82px] md:pb-4"
+      className="grid grid-cols-1 gap-[34px] mx-auto border-t border-[#e1e7ef] px-[18px] py-[26px] md:grid-cols-2 md:px-[28px] md:py-[28px] lg:grid-cols-[1.2fr_1fr_1fr_1.1fr_1fr] lg:px-[28px] lg:py-[28px] pb-[82px] md:pb-4"
       style={{ maxWidth: "1240px" }}
     >
       {/* Brand */}
@@ -66,29 +75,36 @@ export function Footer() {
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.shop}</h3>
         <Link href={l("/laptopuri")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.laptops}</Link>
-        <Link href={l("/laptopuri")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Gaming</Link>
-        <Link href={l("/warranty")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.warranty}</Link>
-        <Link href={l("/contact")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.contact}</Link>
+        {helpPages.map((page) => (
+          <Link key={page.slug} href={l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
+            {page.title[locale]}
+          </Link>
+        ))}
       </div>
 
       {/* Info */}
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.info}</h3>
-        <Link href={l("/warranty")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Modalități de plată</Link>
-        <Link href={l("/contact")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.returns}</Link>
-        <Link href={l("/contact")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.terms}</Link>
-        <Link href={l("/politica-confidentzialinosti")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.privacy}</Link>
+        {companyPages.map((page) => (
+          <Link key={page.slug} href={l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
+            {page.title[locale]}
+          </Link>
+        ))}
+        <Link href={l("/blog")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Blog</Link>
+        <Link href={l("/harta-site-ului")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
+          {locale === "ro" ? "Harta site-ului" : locale === "ru" ? "Карта сайта" : "Sitemap"}
+        </Link>
       </div>
 
       {/* Contacts */}
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.contacts}</h3>
         <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">
-          mun. Chișinău, Rîșcani<br />str. Dumitru Rîșcanu 11<br />intrarea lângă scara 5
+          <span className="whitespace-pre-line">{contact?.address || "mun. Chișinău, Rîșcani\nstr. Dumitru Rîșcanu 11\nintrarea lângă scara 5"}</span>
         </p>
-        <a href={`tel:${PHONE}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{PHONE_DISPLAY}</a>
-        <a href={`mailto:${EMAIL}`} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors break-all">{EMAIL}</a>
-        <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">Luni - Vineri: 09:00 - 18:00<br />Sâmbătă: 10:00 - 16:00</p>
+        <a href={`tel:${phone}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{phoneDisplay}</a>
+        <a href={`mailto:${email}`} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors break-all">{email}</a>
+        <p className="mb-[10px] whitespace-pre-line text-[14px] leading-[1.45] text-[#536070]">{contact?.hours || "Luni - Vineri: 09:00 - 18:00\nSâmbătă: 10:00 - 16:00"}</p>
       </div>
 
       {/* Subscribe */}

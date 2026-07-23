@@ -1,0 +1,25 @@
+[Unit]
+Description=ADAMO.MD Next.js storefront
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=adamo
+Group=adamo
+WorkingDirectory=/srv/adamo/current
+Environment=NODE_ENV=production
+Environment=HOME=/home/adamo
+EnvironmentFile=/srv/adamo/shared/.env.production
+ExecStart=/usr/bin/npm start -- -H 127.0.0.1 -p 3000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/adamo/current/.next
+
+[Install]
+WantedBy=multi-user.target

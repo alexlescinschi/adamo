@@ -8,9 +8,9 @@ import { getCategories, getNewProducts, crmFetch } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
 import { extractProducts } from "@/lib/product-mapper";
 import { getCached } from "@/lib/redis";
+import { getContactSettings, getPublishedContentSlugs } from "@/lib/sanity";
+import { IS_STAGING, SITE_URL } from "@/lib/site";
 
-export const SITE_URL = "https://adamo3.vercel.app";
-// ponytail: schimbă în https://adamo.md după config domeniu Vercel
 const LOCALES = ["ro", "ru", "en"];
 
 export function generateStaticParams() {
@@ -34,7 +34,9 @@ export const metadata: Metadata = {
   },
   description: "Magazinul oficial Adamo. Produse de calitate la prețuri bune.",
   applicationName: "Adamo",
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  robots: IS_STAGING
+    ? { index: false, follow: false, noarchive: true, googleBot: { index: false, follow: false } }
+    : { index: true, follow: true, googleBot: { index: true, follow: true } },
   alternates: { languages: hreflang("") },
   openGraph: {
     type: "website",
@@ -102,13 +104,24 @@ export default async function LocaleLayout({
     // CRM unreachable — IutePay disabled
   }
 
+  let contactSettings = null;
+  let publishedContent: Awaited<ReturnType<typeof getPublishedContentSlugs>> = { pages: [], posts: [] };
+  try {
+    [contactSettings, publishedContent] = await Promise.all([
+      getContactSettings(locale),
+      getPublishedContentSlugs(),
+    ]);
+  } catch {
+    // Sanity must not take down catalog, checkout or account routes.
+  }
+
   return (
     <html lang={locale} className="h-full scroll-smooth">
       <body className="min-h-full flex flex-col font-sans text-[15px] text-[#111827] overflow-x-hidden overflow-x-clip" style={{ backgroundImage: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
         <CartProvider>
-          <Header categories={categories} products={products} />
+          <Header categories={categories} products={products} publishedPageSlugs={publishedContent.pages.map((page) => page.slug)} />
           <main className="mx-auto w-full max-w-[1000px] flex-1 px-4 pb-[20px] lg:px-0">{children}</main>
-          <Footer />
+          <Footer contact={contactSettings || undefined} publishedPageSlugs={publishedContent.pages.map((page) => page.slug)} />
           <ContactWidget />
         </CartProvider>
 

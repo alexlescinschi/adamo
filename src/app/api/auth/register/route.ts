@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createContact, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
+import { isRateLimited, publicAuthResponse } from "@/lib/request-security";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
@@ -7,14 +8,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // ponytail: CRM expects digits-only phone, strip formatting before forwarding
-    const cleanPhone = (body.phone || "").replace(/[^\d]/g, "");
-    const cleanBody = { ...body, phone: cleanPhone };
+    const firstName = typeof body?.first_name === "string" ? body.first_name.trim() : "";
+    const lastName = typeof body?.last_name === "string" ? body.last_name.trim() : "";
+    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body?.password === "string" ? body.password : "";
+    const cleanPhone = typeof body?.phone === "string" ? body.phone.replace(/[^\d]/g, "") : "";
+    if (!firstName || firstName.length > 100 || !lastName || lastName.length > 100 || !email || email.length > 255 || cleanPhone.length < 8 || cleanPhone.length > 15 || password.length < 8 || password.length > 128) {
+      return NextResponse.json({ error: "Invalid registration details" }, { status: 400 });
+    }
+    if (await isRateLimited(request, "register", 3, 3600, `${email}:${cleanPhone}`)) {
+      return NextResponse.json({ error: "Too many registration attempts" }, { status: 429 });
+    }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cleanBody),
+      body: JSON.stringify({ email, password, phone: cleanPhone }),
+      signal: AbortSignal.timeout(8000),
     });
 
     const data = await res.json();
@@ -24,17 +34,17 @@ export async function POST(request: NextRequest) {
 
     let contactWarning: string | undefined;
     try {
-      await createContact({
-        first_name: body.first_name,
-        last_name: body.last_name,
+      if (!data.user?.contact_id) await createContact({
+        first_name: firstName,
+        last_name: lastName,
         phone: cleanPhone,
-        email: body.email,
+        email,
       });
     } catch {
       contactWarning = "Contact creation failed — user registered but not in CRM contacts";
     }
 
-    const response = NextResponse.json({ ...data, contactWarning });
+    const response = NextResponse.json({ ...publicAuthResponse(data), contactWarning });
     if (data.accessToken) {
       response.cookies.set("ecommerceAccessToken", data.accessToken, {
         httpOnly: true,

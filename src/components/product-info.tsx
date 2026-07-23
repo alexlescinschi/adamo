@@ -111,19 +111,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {stock > 0 && (
         <div className="mt-3 flex flex-col gap-2">
-          <div className="flex items-stretch gap-3 min-h-[67px]">
-            <div className="flex items-center rounded-[8px] border border-[#cccfcf]">
-              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="px-4 py-3 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
+          <div className="flex items-stretch gap-3 h-[50px]">
+            <div className="flex h-[50px] items-stretch rounded-[8px] border border-[#cccfcf]">
+              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="flex items-center px-4 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="min-w-[40px] text-center text-[14px] font-semibold">{qty}</span>
+              <span className="flex items-center justify-center min-w-[40px] text-[14px] font-semibold">{qty}</span>
               <button
                 type="button"
                 onClick={() => {
                   if (qty >= stock) showToast(tr.product.outOfStock);
                   else setQty(q => Math.min(stock, q + 1));
                 }}
-                className="px-4 py-3 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
+                className="flex items-center px-4 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -154,9 +154,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <button
             onClick={() => handleBuy("CASH")}
             disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-            className="w-full flex items-start gap-3 rounded-[12px] border-2 border-[#63ad36] bg-[#edf7e8] px-5 py-3 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
+            className="w-full flex h-[50px] items-center gap-3 rounded-[12px] border-2 border-[#63ad36] bg-[#edf7e8] px-5 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
           >
-            <Truck className="h-5 w-5 flex-shrink-0 mt-0.5 text-[#34781f]" />
+            <Truck className="h-5 w-5 flex-shrink-0 text-[#34781f]" />
             <div>
               <span className="text-[15px] font-bold text-[#34781f]">{tr.product.orderNow}</span>
               <span className="block text-[11px] text-[#4e8f28]">{tr.product.orderNowSub}</span>
@@ -169,7 +169,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <button
             onClick={() => setRateOpen(!rateOpen)}
             disabled={!hasPrice || product.availability === "OutOfStock"}
-            className="w-full px-5 py-3 hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
+            className="w-full h-[50px] px-5 hover:from-[#2e7d22] hover:to-[#236b1a] transition-all disabled:opacity-40"
           >
             <div className="flex items-center gap-3">
               <img src="/coins.svg" alt="" className="h-5 w-5 flex-shrink-0 brightness-0 invert" />

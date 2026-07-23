@@ -231,17 +231,12 @@ export async function createOrder(payload: CheckoutPayload, ecommerceToken?: str
 }
 
 export async function getOrderInvoice(orderId: number, token: string) {
-  return crmFetch(`/ecommerce/checkout/orders/${orderId}/invoice?token=${token}`);
-}
-
-export async function updateOrderPaymentStatus(orderId: number, status: string) {
-  return crmFetch(`/ecommerce/checkout/orders/${orderId}/payment`, {
-    method: "PATCH",
-    body: JSON.stringify({ status }),
+  return crmFetch(`/ecommerce/checkout/orders/${orderId}/invoice?token=${encodeURIComponent(token)}`, {
+    cache: "no-store",
   });
 }
 
-export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string; notes?: string }) {
+export async function createContact(data: { first_name: string; last_name: string; phone: string; email?: string; comment?: string }) {
   // ponytail: CRM expects digits-only phone (E.164 without +), strip formatting
   const cleanPhone = data.phone.replace(/[^\d]/g, "");
   return crmFetch(`/contacts`, {

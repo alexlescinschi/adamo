@@ -6,7 +6,7 @@ import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
 import { mapProductCard, extractBadge } from "@/lib/product-mapper";
-import { SITE_URL } from "@/app/[locale]/layout";
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";

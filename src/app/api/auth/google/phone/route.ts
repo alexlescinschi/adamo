@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createContact } from "@/lib/crm-api";
+import { isRateLimited } from "@/lib/request-security";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone: rawPhone, firstName, lastName, email } = await request.json();
-    console.error("[google/phone] received:", { phone: rawPhone, firstName, lastName, email });
-    if (!rawPhone) {
-      return NextResponse.json({ error: "Missing phone" }, { status: 400 });
+    const body = await request.json();
+    const phone = typeof body?.phone === "string" ? body.phone.replace(/[^\d]/g, "") : "";
+    if (phone.length < 8 || phone.length > 15) return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
+    if (await isRateLimited(request, "google-phone-ip", 10, 600)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
-
-    // ponytail: CRM expects digits-only phone, strip formatting
-    const phone = rawPhone.replace(/[^\d]/g, "");
 
     const token = request.cookies.get("ecommerceAccessToken")?.value;
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (await isRateLimited(request, "google-phone-user", 10, 600, `${token.slice(-64)}:${phone}`)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/phone`, {
@@ -26,13 +28,13 @@ export async function POST(request: NextRequest) {
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({ phone }),
+      signal: AbortSignal.timeout(8000),
     });
 
+    const updated = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error("[google/phone] CRM error:", res.status, err);
       return NextResponse.json(
-        { error: err.message || err.error || "Failed to set phone" },
+        { error: updated.message || updated.error || "Failed to set phone" },
         { status: res.status },
       );
     }
@@ -40,21 +42,20 @@ export async function POST(request: NextRequest) {
     // ponytail: create CRM contact immediately so user appears in contacts list (same pattern as register)
     let contactWarning: string | undefined;
     try {
-      const contactResult = await createContact({
-        first_name: firstName || "",
-        last_name: lastName || "",
-        phone,
-        email: email || undefined,
-      });
-      console.error("[google/phone] createContact OK:", JSON.stringify(contactResult).slice(0, 200));
-    } catch (err) {
-      console.error("[google/phone] createContact failed:", err);
+      const user = updated.user || updated;
+      const displayName = String(user.username || user.name || "").trim();
+      const firstName = String(user.first_name || displayName.split(/\s+/)[0] || "").slice(0, 100);
+      const lastName = String(user.last_name || displayName.split(/\s+/).slice(1).join(" ") || "").slice(0, 100);
+      const email = typeof user.email === "string" ? user.email.slice(0, 255) : undefined;
+      if (!user.contact_id && (firstName || lastName || email)) {
+        await createContact({ first_name: firstName, last_name: lastName, phone, email });
+      }
+    } catch {
       contactWarning = "Contact creation failed — user authenticated but not in CRM contacts";
     }
 
     return NextResponse.json({ success: true, contactWarning });
-  } catch (error: any) {
-    console.error("[google/phone]", error?.message || error);
+  } catch {
     return NextResponse.json({ error: "Failed to set phone" }, { status: 500 });
   }
 }

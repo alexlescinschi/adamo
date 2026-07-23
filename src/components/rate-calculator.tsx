@@ -43,7 +43,7 @@ export function RateCalculator({ price, productName }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await fetch("/api/contacts", {
+      const response = await fetch("/api/contacts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,8 +53,11 @@ export function RateCalculator({ price, productName }: Props) {
           comment: `Rate ADAMO: ${productName} — ${best.months} luni, ${formatPrice(amount)} lei/lună${withAdvance ? ", cu avans" : ""}`,
         }),
       });
-    } catch {}
-    setSent(true);
+      if (!response.ok) throw new Error("Contact request failed");
+      setSent(true);
+    } catch {
+      setSent(false);
+    }
   }
 
   return (

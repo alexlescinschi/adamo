@@ -32,6 +32,7 @@ async function postaFetch<T = Record<string, unknown>>(
       "Content-Type": "application/json",
       ...init?.headers,
     },
+    signal: init?.signal ?? AbortSignal.timeout(8000),
   });
 
   const json = await res.json();

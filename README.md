@@ -10,13 +10,15 @@ Next.js 16 + Tailwind CSS + shadcn/ui storefront connected to Adamo CRM.
 - **Checkout** — form creates orders in CRM directly
 - **Customer Auth** — register/login via CRM e-commerce auth
 - **Account** — order history from CRM
-- **maib merchants** — payment integration structure ready
+- **Content** — informational pages and blog from Sanity Studio
+- **Payments** — IutePay configuration from CRM
 
 ## Architecture
 
 - `src/app/api/*` — proxy API routes that authenticate with CRM using JWT
 - `src/lib/crm-api.ts` — server-only CRM client with auto-login & token caching
 - `src/hooks/use-cart.tsx` — React context for cart state in localStorage
+- `studio/*` — standalone Sanity Studio for pages, blog and contact details
 
 ## Environment Variables
 
@@ -27,15 +29,15 @@ CRM_API_URL=https://api.crm.adamo.md/v1
 CRM_API_LOGIN=your_crm_login
 CRM_API_PASSWORD=your_crm_password
 
+SITE_URL=https://new.adamo.md
+DEPLOY_ENV=staging
+NEXT_PUBLIC_SANITY_PROJECT_ID=
+NEXT_PUBLIC_SANITY_DATASET=production
+
 # Optional Redis caching
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-# maib merchants (required for online payments)
-MAIB_API_URL=https://api.maibmerchants.md/v1
-MAIB_MERCHANT_ID=
-MAIB_API_KEY=
-MAIB_WEBHOOK_SECRET=
 ```
 
 ## Development
@@ -54,11 +56,10 @@ npm start
 
 ## Deploy
 
-See `DEPLOY.md` for Vercel/Netlify instructions.
+See `DEPLOY.md` for the Contabo, systemd and Caddy setup.
 
 ## Notes
 
 - CRM products must be published to storefront to appear on the site
 - Customer auth uses CRM `/ecommerce/e-commerce-auth/*` endpoints
 - Internal CRM auth (for API routes) auto-refreshes JWT every 12 minutes
-

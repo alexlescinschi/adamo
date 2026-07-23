@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
 import { Suspense } from "react";
 import { mapProductCard } from "@/lib/product-mapper";
-import { SITE_URL } from "@/app/[locale]/layout";
+import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";

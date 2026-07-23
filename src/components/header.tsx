@@ -16,11 +16,11 @@ const PHONE_DISPLAY = "0 799 66 909";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
-  { href: "/warranty", key: "warranty" },
+  { href: "/returnare-si-garantie", key: "warranty" },
   { href: "/contact", key: "contact" },
 ];
 
-export function Header({ categories = [], products = [] }: { categories?: CatalogCategory[]; products?: any[] }) {
+export function Header({ categories = [], products = [], publishedPageSlugs = [] }: { categories?: CatalogCategory[]; products?: any[]; publishedPageSlugs?: string[] }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -81,10 +81,11 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   }, [searchOpen]);
 
   const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
+  const navLinks = NAV_LINK_KEYS.filter(({ href }) => href !== "/returnare-si-garantie" || publishedPageSlugs.includes("returnare-si-garantie"));
 
   const desktopNavLinks = (
     <>
-      {NAV_LINK_KEYS.map(({ href, key }) => {
+      {navLinks.map(({ href, key }) => {
         const isHome = href === "/";
         const isContact = href === "/contact";
         const localHref = isHome ? `/${locale}` : `/${locale}${href}`;
@@ -234,7 +235,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
           </button>
         </div>
         <nav className="flex flex-col gap-1 px-4 py-4">
-          {NAV_LINK_KEYS.map(({ href, key }) => {
+          {navLinks.map(({ href, key }) => {
             const isHome = href === "/";
             const isContact = href === "/contact";
             const localHref = isHome ? `/${locale}` : `/${locale}${href}`;

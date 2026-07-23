@@ -1,0 +1,38 @@
+{
+  "name": "adamo-content-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "seed": "sanity exec seed.ts --with-user-token"
+  },
+  "dependencies": {
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "sanity": "^6.6.0",
+    "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22.13 <23 || >=24"
+  },
+  "overrides": {
+    "@module-federation/dts-plugin": {
+      "adm-zip": "0.6.0"
+    },
+    "@vercel/frameworks": {
+      "js-yaml": "5.2.1",
+      "smol-toml": "1.7.0"
+    },
+    "typeid-js": {
+      "uuid": "11.1.1"
+    }
+  }
+}

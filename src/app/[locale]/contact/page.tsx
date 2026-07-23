@@ -2,19 +2,47 @@ import { MapPin, Phone, Mail, Clock, Building2, Shield } from "lucide-react";
 import Link from "next/link";
 import { getDict } from "@/lib/translations";
 import { ADAMO_COMPANY } from "@/lib/company";
+import { PortableContent } from "@/components/portable-content";
+import { getContactSettings, getContentPage, getPublishedContentSlugs } from "@/lib/sanity";
+import { localizedAlternates } from "@/lib/site";
+import type { Metadata } from "next";
 
 const PHONE = "+37379966909";
 const PHONE_DISPLAY = "0 799 66 909";
 const EMAIL = "adamocomputers@gmail.com";
 
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const page = await getContentPage("contact", locale);
+  const fallback = locale === "ru" ? "Контакты" : locale === "en" ? "Contact" : "Contacte";
+  return {
+    title: page?.seoTitle || page?.title || fallback,
+    description: page?.seoDescription,
+    openGraph: { title: page?.seoTitle || page?.title || fallback, description: page?.seoDescription, url: localizedAlternates(locale, "/contact").canonical },
+    twitter: { title: page?.seoTitle || page?.title || fallback, description: page?.seoDescription },
+    alternates: localizedAlternates(locale, "/contact"),
+  };
+}
+
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const tr = getDict(locale);
   const c = tr.contact;
+  const [page, settings, published] = await Promise.all([
+    getContentPage("contact", locale),
+    getContactSettings(locale),
+    getPublishedContentSlugs(),
+  ]);
+  const phone = settings?.phone || PHONE;
+  const phoneDisplay = settings?.phone || PHONE_DISPLAY;
+  const email = settings?.email || EMAIL;
 
   return (
     <div className="py-[70px]">
-      <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] mb-10">{c.title}</h1>
+      <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] mb-8">{page?.title || c.title}</h1>
+      {page?.body && <div className="mb-10 max-w-3xl"><PortableContent value={page.body} /></div>}
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="space-y-6">
@@ -27,7 +55,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.officeAddress}</h2>
-                <p className="mt-1 text-sm text-[#6b6c6c]">{c.officeAddressValue}</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-[#6b6c6c]">{settings?.address || c.officeAddressValue}</p>
               </div>
             </div>
 
@@ -37,8 +65,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.phone}</h2>
-                <a href={`tel:${PHONE}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
-                  {PHONE_DISPLAY}
+                <a href={`tel:${phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
+                  {phoneDisplay}
                 </a>
               </div>
             </div>
@@ -49,8 +77,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">Email</h2>
-                <a href={`mailto:${EMAIL}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline break-all">
-                  {EMAIL}
+                <a href={`mailto:${email}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline break-all">
+                  {email}
                 </a>
               </div>
             </div>
@@ -61,8 +89,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.workHours}</h2>
-                <p className="mt-1 text-sm text-[#6b6c6c]">{c.workHoursValue}</p>
-                <p className="text-sm text-[#6b6c6c]">{c.weekendValue}</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-[#6b6c6c]">{settings?.hours || `${c.workHoursValue}\n${c.weekendValue}`}</p>
               </div>
             </div>
 
@@ -72,8 +99,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.serviceCenter}</h2>
-                <a href={`tel:${PHONE}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
-                  {PHONE_DISPLAY}
+                <a href={`tel:${phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
+                  {phoneDisplay}
                 </a>
                 <p className="mt-1 text-sm text-[#6b6c6c]">{c.serviceSub}</p>
               </div>
@@ -115,16 +142,18 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
           </div>
 
           {/* Privacy link */}
-          <Link
-            href={`/${locale}/politica-confidentzialinosti`}
-            className="flex items-center gap-3 rounded-[28px] border border-[#cccfcf]/50 p-6 hover:border-[#63ad36] transition-colors"
-          >
-            <Shield className="h-5 w-5 text-[#63ad36] flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-[#1d1d1f]">{tr.footer.privacyPolicy}</p>
-              <p className="text-xs text-[#6b6c6c]">{c.privacyPolicySub}</p>
-            </div>
-          </Link>
+          {published.pages.some((item) => item.slug === "politica-de-confidentialitate") && (
+            <Link
+              href={`/${locale}/politica-de-confidentialitate`}
+              className="flex items-center gap-3 rounded-[28px] border border-[#cccfcf]/50 p-6 hover:border-[#63ad36] transition-colors"
+            >
+              <Shield className="h-5 w-5 text-[#63ad36] flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-[#1d1d1f]">{tr.footer.privacyPolicy}</p>
+                <p className="text-xs text-[#6b6c6c]">{c.privacyPolicySub}</p>
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* Map */}

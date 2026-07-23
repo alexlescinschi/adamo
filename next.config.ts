@@ -23,6 +23,21 @@ const nextConfig: NextConfig = {
         destination: "/:locale/category/minipc",
         permanent: true,
       },
+      {
+        source: "/:locale/warranty",
+        destination: "/:locale/returnare-si-garantie",
+        permanent: true,
+      },
+      {
+        source: "/:locale/privacy",
+        destination: "/:locale/politica-de-confidentialitate",
+        permanent: true,
+      },
+      {
+        source: "/:locale/politica-confidentzialinosti",
+        destination: "/:locale/politica-de-confidentialitate",
+        permanent: true,
+      },
     ];
   },
 };
