@@ -90,17 +90,10 @@ journalctl -u adamo -f
 
 ## 6. Caddy și HTTPS
 
-Generează hashul parolei de staging:
-
-```bash
-caddy hash-password
-```
-
-Instalează configurația, apoi înlocuiește `REPLACE_WITH_CADDY_HASH` numai în `/etc/caddy/Caddyfile`:
+Instalează configurația:
 
 ```bash
 cp /srv/adamo/current/deploy/Caddyfile /etc/caddy/Caddyfile
-editor /etc/caddy/Caddyfile
 caddy validate --config /etc/caddy/Caddyfile
 systemctl reload caddy
 ```

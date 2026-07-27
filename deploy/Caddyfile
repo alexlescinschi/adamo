@@ -13,10 +13,5 @@ new.adamo.md {
 		max_size 1MB
 	}
 
-	@protected not path /api/integrations/sync-999
-	basic_auth @protected {
-		tester REPLACE_WITH_CADDY_HASH
-	}
-
 	reverse_proxy 127.0.0.1:3000
 }
