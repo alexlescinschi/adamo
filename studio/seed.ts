@@ -66,4 +66,7 @@ transaction.createIfNotExists({
 });
 
 await transaction.commit();
-console.log(`Seeded ${PAGE_DEFINITIONS.length} pages and contact settings.`);
+const draftCount = await client.withConfig({ perspective: "raw" }).fetch<number>(
+  "count(*[_id in path('drafts.**')])",
+);
+console.log(`Seeded ${PAGE_DEFINITIONS.length} pages and contact settings (${draftCount} drafts total).`);

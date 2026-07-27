@@ -11,5 +11,6 @@ export default defineCliConfig({
     projectId,
     dataset: process.env.SANITY_STUDIO_DATASET || "production",
   },
+  deployment: { appId: "jq5elage5bvw0c21emv7j50r" },
   studioHost: "adamo-content",
 });
