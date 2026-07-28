@@ -133,13 +133,14 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   // ponytail: fetch posta regions
   const [postaListsLoading, setPostaListsLoading] = useState({ regions: false, cities: false, streets: false, blocks: false });
   useEffect(() => {
+    if (courierProvider !== "POSTA_RAPIDA" || deliveryChoice === "PICKUP" || postaRegions.length > 0) return;
     setPostaListsLoading(l => ({ ...l, regions: true }));
     fetch("/api/posta-rapida/nomenclatures?type=regions")
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setPostaRegions(data); })
       .catch(() => {})
       .finally(() => setPostaListsLoading(l => ({ ...l, regions: false })));
-  }, []);
+  }, [courierProvider, deliveryChoice, postaRegions.length]);
 
   useEffect(() => {
     if (!postaDelivery.regionId) return;
