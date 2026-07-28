@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useMemo, useCallback, useEffect, type MouseEvent } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
 import { X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
@@ -53,6 +53,7 @@ export function CategoryFilter({
   const tr = useTranslations();
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [priceInput, setPriceInput] = useState({
@@ -60,16 +61,19 @@ export function CategoryFilter({
     max: activePrice?.max?.toString() || "",
   });
 
-  // ponytail: "vezi mai multe" — acumulează pagini fără refresh
-  const [loadedProducts, setLoadedProducts] = useState<any[]>([]);
-  const [loadedPages, setLoadedPages] = useState(serverPaginated ? 1 : 0);
+  // Paginile următoare se adaugă după produsele primite de la server.
+  const [additionalProducts, setAdditionalProducts] = useState<any[]>([]);
+  const [loadedPage, setLoadedPage] = useState(serverPaginated ? page : 0);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  const catalogStateKey = `${categorySlug}?${searchParams.toString()}`;
 
-  // Reset acumulare când se schimbă filtrele sau pagina inițială
+  // Reset acumulare când se schimbă categoria, filtrele sau pagina inițială.
   useEffect(() => {
-    setLoadedProducts([]);
-    setLoadedPages(1);
-  }, [searchParams.toString()]);
+    setAdditionalProducts([]);
+    setLoadedPage(serverPaginated ? page : 0);
+    setLoadMoreError(false);
+  }, [catalogStateKey, page, serverPaginated]);
 
   // Reconstruiește query-ul: suprascrie/scoate un filtru, păstrează restul, resetează page.
   const buildUrl = useCallback(
@@ -121,16 +125,16 @@ export function CategoryFilter({
     router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
   }, [router, searchParams]);
 
-  // Paginare: păstrează filtrele, schimbă doar page.
-  const goToPage = useCallback(
+  // Fiecare pagină are URL propriu și păstrează filtrele active.
+  const buildPageHref = useCallback(
     (n: number) => {
       const p = new URLSearchParams(searchParams.toString());
       if (n <= 1) p.delete("page");
       else p.set("page", String(n));
       const qs = p.toString();
-      router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
+      return `${pathname}${qs ? `?${qs}` : ""}`;
     },
-    [router, searchParams]
+    [pathname, searchParams]
   );
 
   const totalPages = serverPaginated
@@ -142,31 +146,52 @@ export function CategoryFilter({
   );
   const visible = serverPaginated ? products : products.slice(0, perPage);
 
-  const canLoadMore = serverPaginated && loadedPages < totalPages;
-  const displayProducts = loadedProducts.length > 0 ? loadedProducts : visible;
+  const displayProducts = [...visible, ...additionalProducts];
+  const canLoadMore = serverPaginated && loadedPage < totalPages;
+  const nextPageItemCount = totalItems == null
+    ? perPage
+    : Math.min(perPage, Math.max(0, totalItems - loadedPage * perPage));
+  const nextPageHref = buildPageHref(loadedPage + 1);
 
   const totalActive =
     Object.values(activeFilters).reduce((n, v) => n + v.length, 0) +
     (activePrice?.min != null ? 1 : 0) +
     (activePrice?.max != null ? 1 : 0);
-  const loadMore = useCallback(async () => {
+  const loadMore = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (loadingMore || !canLoadMore) return;
+
     setLoadingMore(true);
+    setLoadMoreError(false);
     try {
-      const nextPage = loadedPages + 1;
+      const nextPage = loadedPage + 1;
       const p = new URLSearchParams(searchParams.toString());
       p.set("page", String(nextPage));
       p.set("limit", String(perPage));
-      p.set("locale", document.documentElement.lang || "ro");
+      p.set("locale", locale);
       const res = await fetch(`/api/category/${categorySlug}?${p.toString()}`);
       const data = await res.json();
-      if (data.items?.length) {
-        setLoadedProducts((prev) => [...prev, ...data.items]);
-        setLoadedPages(nextPage);
+      if (!res.ok || !Array.isArray(data.items) || data.items.length === 0) {
+        throw new Error("Could not load the next catalog page");
       }
-    } catch {} finally {
+
+      setAdditionalProducts((previous) => {
+        const seen = new Set([...visible, ...previous].map((product) => product.id));
+        const unique = data.items.filter((product: any) => {
+          if (seen.has(product.id)) return false;
+          seen.add(product.id);
+          return true;
+        });
+        return [...previous, ...unique];
+      });
+      setLoadedPage(nextPage);
+    } catch {
+      setLoadMoreError(true);
+    } finally {
       setLoadingMore(false);
     }
-  }, [loadedPages, searchParams, perPage, categorySlug]);
+  }, [canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, visible]);
 
   const pageNumbers = useMemo(() => {
     const pages: (number | "...")[] = [];
@@ -366,21 +391,29 @@ export function CategoryFilter({
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
+              <div data-testid="product-grid" className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
                 {displayProducts.map((p: any) => (
                   <ProductCard key={p.id} product={p} />
                 ))}
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-10 flex items-center justify-center gap-1.5">
-                  <button
-                    onClick={() => goToPage(safePage - 1)}
-                    disabled={safePage <= 1}
-                    className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6] disabled:pointer-events-none disabled:opacity-30"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
+                <nav aria-label={tr.category.pagination} className="mt-10 flex items-center justify-center gap-1.5">
+                  {safePage <= 1 ? (
+                    <span aria-disabled="true" className="rounded-full p-2 text-[#6b6c6c] opacity-30">
+                      <ChevronLeft className="h-5 w-5" />
+                    </span>
+                  ) : (
+                    <Link
+                      href={buildPageHref(safePage - 1)}
+                      scroll={false}
+                      prefetch={false}
+                      aria-label={tr.category.previousPage}
+                      className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6]"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Link>
+                  )}
                   {pageNumbers.map((p, i) =>
                     p === "..." ? (
                       <span
@@ -390,9 +423,12 @@ export function CategoryFilter({
                         ...
                       </span>
                     ) : (
-                      <button
+                      <Link
                         key={p}
-                        onClick={() => goToPage(p)}
+                        href={buildPageHref(p)}
+                        scroll={false}
+                        prefetch={false}
+                        aria-current={p === safePage ? "page" : undefined}
                         className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
                           p === safePage
                             ? "bg-[#1d1d1f] text-white"
@@ -400,29 +436,43 @@ export function CategoryFilter({
                         }`}
                       >
                         {p}
-                      </button>
+                      </Link>
                     )
                   )}
-                  <button
-                    onClick={() => goToPage(safePage + 1)}
-                    disabled={safePage >= totalPages}
-                    className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6] disabled:pointer-events-none disabled:opacity-30"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </div>
+                  {safePage >= totalPages ? (
+                    <span aria-disabled="true" className="rounded-full p-2 text-[#6b6c6c] opacity-30">
+                      <ChevronRight className="h-5 w-5" />
+                    </span>
+                  ) : (
+                    <Link
+                      href={buildPageHref(safePage + 1)}
+                      scroll={false}
+                      prefetch={false}
+                      aria-label={tr.category.nextPage}
+                      className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6]"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Link>
+                  )}
+                </nav>
               )}
 
-              {/* Vezi mai multe — sub paginare */}
               {canLoadMore && (
-                <div className="mt-4 flex justify-center">
-                  <button
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  <Link
+                    href={nextPageHref}
+                    prefetch={false}
                     onClick={loadMore}
-                    disabled={loadingMore}
-                    className="rounded-[28px] border-2 border-[#63ad36] bg-white px-6 py-2.5 text-[14px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-50"
+                    aria-disabled={loadingMore || undefined}
+                    className={`rounded-[28px] border-2 border-[#63ad36] bg-white px-6 py-2.5 text-[14px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] ${loadingMore ? "pointer-events-none opacity-50" : ""}`}
                   >
-                    {loadingMore ? tr.common.loading : tr.category.loadMore.replace("{count}", String(perPage))}
-                  </button>
+                    {loadingMore ? tr.common.loading : tr.category.loadMore.replace("{count}", String(nextPageItemCount))}
+                  </Link>
+                  {loadMoreError && (
+                    <p role="alert" className="text-sm text-red-600">
+                      {tr.category.loadMoreError}
+                    </p>
+                  )}
                 </div>
               )}
 
