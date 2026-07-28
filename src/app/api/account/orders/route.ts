@@ -10,6 +10,7 @@ function normalizeDeal(d: any) {
     id: d.id,
     created_at: d.created_at,
     status: d.stage?.name || d.stage_name || d.status,
+    status_slug: d.stage?.slug || d.stage_slug || d.status_slug || d.status?.slug || null,
     items: d.positions || d.items || d.lines || [],
     total: Number(d.amount ?? d.final_total ?? d.total ?? 0),
   };

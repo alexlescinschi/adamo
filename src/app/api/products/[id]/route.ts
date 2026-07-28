@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProductById } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
+import { normalizeLocale } from "@/lib/locale";
+import type { Locale } from "@/lib/translations";
 
 function normalizeSpecs(specs: any): Record<string, string> {
   if (!Array.isArray(specs)) return {};
@@ -13,7 +15,7 @@ function normalizeSpecs(specs: any): Record<string, string> {
   return result;
 }
 
-function transformProduct(data: any) {
+function transformProduct(data: any, locale: Locale) {
   const specs = normalizeSpecs(data.specs);
 
   if (data?.offerSummary) {
@@ -39,7 +41,7 @@ function transformProduct(data: any) {
     id: data.id,
     name: data.storefrontName || data.name,
     slug: data.slug,
-    description: data.translations?.find((t: any) => t.locale === "ro")?.description || "",
+    description: data.translations?.find((t: any) => t.locale === locale)?.description || "",
     price,
     old_price: oldPrice > price ? oldPrice : undefined,
     image_url: data.previewImageUrl || null,
@@ -54,12 +56,12 @@ function transformProduct(data: any) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const searchParams = request.nextUrl.searchParams;
-  const locale = searchParams.get("locale") || "ro";
+  const locale = normalizeLocale(searchParams.get("locale") || undefined);
 
   try {
     const cacheKey = `product:${id}:${locale}`;
     const data = await getCached(cacheKey, () => getProductById(id, locale), 120);
-    const product = transformProduct(data);
+    const product = transformProduct(data, locale);
     return NextResponse.json(product);
   } catch (error) {
     console.error("API product error:", error);

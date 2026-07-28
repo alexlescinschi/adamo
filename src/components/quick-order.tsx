@@ -6,10 +6,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { CartCheckbox } from "@/components/cart-checkbox";
+import { useTranslations } from "@/hooks/use-translations";
 import { formatPrice } from "@/lib/utils";
 
-export function QuickOrder({ tr }: { tr: any }) {
+export function QuickOrder() {
   const cart = useCart();
+  const tr = useTranslations();
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
 
@@ -62,7 +64,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               <CartCheckbox
                 checked={checked}
                 onChange={() => cart.toggleSelected(item.product_id, item.unit_id)}
-                label={`Selecteaz\u0103 ${item.name}`}
+                label={tr.common.selectProduct.replace("{name}", item.name)}
               />
 
               <span className="w-[62px] h-[44px] flex-shrink-0 flex items-center justify-center bg-[#f3f6f6] rounded overflow-hidden">
@@ -87,7 +89,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               </span>
 
               <strong className="text-[24px] leading-none text-[#34781f] font-extrabold whitespace-nowrap">
-                {formatPrice(item.price * item.qty)} <small className="text-[12px]">MDL</small>
+                {formatPrice(item.price * item.qty)} <small className="text-[12px]">{tr.rates.currency}</small>
               </strong>
             </div>
           );
@@ -99,7 +101,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               {tr.home.quickOrderTotal}
             </span>
             <strong className="text-[24px] leading-none text-[#34781f] font-extrabold">
-              {formatPrice(total)} <small className="text-[12px]">MDL</small>
+              {formatPrice(total)} <small className="text-[12px]">{tr.rates.currency}</small>
             </strong>
           </div>
           <div className="flex items-center justify-between gap-[14px] min-h-[68px] px-[18px] py-[14px]">
@@ -107,7 +109,7 @@ export function QuickOrder({ tr }: { tr: any }) {
               {tr.home.quickOrderDelivery}
             </span>
             <strong className="text-[24px] leading-none text-[#34781f] font-extrabold">
-              0 <small className="text-[12px]">MDL</small>
+              0 <small className="text-[12px]">{tr.rates.currency}</small>
             </strong>
           </div>
         </div>

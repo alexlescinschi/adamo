@@ -5,6 +5,7 @@ import { CategoryFilter } from "@/components/category-filter";
 import { Suspense } from "react";
 import { mapProductCard } from "@/lib/product-mapper";
 import { SITE_URL } from "@/lib/site";
+import { getDict } from "@/lib/translations";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -42,12 +43,13 @@ export async function generateMetadata({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  const tr = getDict(locale);
   const sp = await searchParams;
   const current = Math.max(1, Number(sp.page) || 1);
   const name = await getCategoryBySlug(slug, locale)
     .then((c: any) => c?.name || c?.translation?.name || slug)
     .catch(() => slug);
-  const title = `${name}${current > 1 ? ` — pagina ${current}` : ""}`;
+  const title = `${name}${current > 1 ? tr.metadata.categoryPageSuffix.replace("{page}", String(current)) : ""}`;
   // canonical cu query complet (filtru + pagină) ca să nu canibalizeze SEO între pagini/filtere.
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(sp)) {
@@ -72,6 +74,7 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug, locale } = await params;
+  const tr = getDict(locale);
   const sp = await searchParams;
   const currentPage = Math.max(1, Number(sp.page) || 1);
   const attributes = parseFilters(sp);
@@ -143,7 +146,7 @@ export default async function CategoryPage({
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Acasă", item: `${SITE_URL}/${locale}` },
+          { "@type": "ListItem", position: 1, name: tr.category.home, item: `${SITE_URL}/${locale}` },
           {
             "@type": "ListItem",
             position: 2,
@@ -161,11 +164,11 @@ export default async function CategoryPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="flex items-center gap-2 text-sm text-[#6b6c6c] mb-4">
-        <Link href="/" className="hover:text-[#1d1d1f] transition-colors">Acasă</Link>
+      <nav aria-label={tr.common.breadcrumb} className="flex items-center gap-2 text-sm text-[#6b6c6c] mb-4">
+        <Link href={`/${locale}`} className="hover:text-[#1d1d1f] transition-colors">{tr.category.home}</Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-[#1d1d1f]">{categoryName}</span>
-      </div>
+      </nav>
       <Suspense fallback={null}>
         <CategoryFilter
           products={products}

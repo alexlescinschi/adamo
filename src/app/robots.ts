@@ -11,7 +11,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/account/", "/checkout", "/cart"],
+        disallow: [
+          "/api/",
+          ...["ro", "ru", "en"].flatMap((locale) => [
+            `/${locale}/account`,
+            `/${locale}/checkout`,
+            `/${locale}/cart`,
+          ]),
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

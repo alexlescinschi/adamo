@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { ShoppingCart, Loader2, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
-import { useTranslations } from "@/hooks/use-translations";
+import { useLocale, useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
 import { IuteCalculator } from "@/components/iute-calculator";
 import { formatPrice } from "@/lib/utils";
@@ -18,11 +18,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const { buyNow, addItem } = useCart();
   const resolveUnit = useResolveUnit();
   const tr = useTranslations();
+  const locale = useLocale();
   const [adding, setAdding] = useState(false);
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [iuteRates, setIuteRates] = useState<{ smart: number; smartDesc: string; flexi: number | null; flexiDesc: string } | null>(null);
+  const [iuteRates, setIuteRates] = useState<{ smart: number; flexi: number | null } | null>(null);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
@@ -73,7 +74,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
   return (
     <div>
       {product.category_slug && (
-        <Link href={`/category/${product.category_slug}`} className="text-sm text-[#4e8f28] hover:underline mb-2 block">
+        <Link href={`/${locale}/category/${product.category_slug}`} className="text-sm text-[#4e8f28] hover:underline mb-2 block">
           {product.category_name || product.category_slug}
         </Link>
       )}
@@ -187,25 +188,25 @@ export function ProductInfo({ product }: ProductInfoProps) {
                   <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40">
                     <div className="text-left">
                       <span className="text-[13px] font-semibold">Smart 0%</span>
-                      <span className="block text-[10px] opacity-70">{iuteRates.smartDesc}</span>
+                      <span className="block text-[10px] opacity-70">{tr.rates.smartDescription}</span>
                     </div>
-                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">MDL/lună</small></span>
+                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
                   </button>
                   {iuteRates.flexi ? (
                     <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="w-full flex items-center justify-between rounded-[8px] bg-white/15 hover:bg-white/25 px-3 py-2 transition-colors disabled:opacity-40">
                       <div className="text-left">
                         <span className="text-[13px] font-semibold">Flexi Shop</span>
-                        <span className="block text-[10px] opacity-70">{iuteRates.flexiDesc}</span>
+                        <span className="block text-[10px] opacity-70">{tr.rates.flexiDescription}</span>
                       </div>
-                      <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">MDL/lună</small></span>
+                      <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2"><Loader2 className="h-3 w-3 animate-spin opacity-50" /><span className="text-[11px] opacity-50">Flexi Shop — se încarcă...</span></div>
+                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2"><Loader2 className="h-3 w-3 animate-spin opacity-50" /><span className="text-[11px] opacity-50">{tr.product.flexiLoading}</span></div>
                   )}
                   <p className="text-[10px] font-normal opacity-60 pt-1">{tr.product.partialSub}</p>
                 </>
               ) : (
-                <div className="flex items-center gap-2 px-3 py-2"><Loader2 className="h-4 w-4 animate-spin opacity-50" /><span className="text-[12px] opacity-50">Se încarcă ratele...</span></div>
+                <div className="flex items-center gap-2 px-3 py-2"><Loader2 className="h-4 w-4 animate-spin opacity-50" /><span className="text-[12px] opacity-50">{tr.product.ratesLoading}</span></div>
               )}
             </div>
           </div>

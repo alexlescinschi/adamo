@@ -1,15 +1,19 @@
 "use client";
 
 import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, XCircle, Loader2, Headphones } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 // ponytail: pagină return după redirect IutePay (browser).
 // Query: ?status=success|cancelled&orderId=123
 // CRM gestionează IutePay intern — ADAMO doar arată rezultatul.
 function IuteReturnContent() {
   const params = useSearchParams();
+  const routeParams = useParams();
+  const locale = (routeParams?.locale as string) || "ro";
+  const tr = useTranslations();
   const status = params.get("status") || "success";
   const orderId = params.get("orderId") || "";
 
@@ -23,24 +27,23 @@ function IuteReturnContent() {
             <XCircle className="h-8 w-8 text-[#b64400]" />
           </div>
           <h1 className="text-2xl font-bold text-[#1d1d1f]">
-            Aplicația a fost anulată
+            {tr.iuteReturn.cancelledTitle}
           </h1>
           <p className="mt-2 text-[#6b6c6c]">
-            Ai închis fereastra IutePay înainte de semnare. Comanda #{orderId}{" "}
-            rămâne în așteptare — poți încerca o altă metodă de plată.
+            {tr.iuteReturn.cancelledBody.replace("{id}", orderId)}
           </p>
           <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
-              href="/cart"
+              href={`/${locale}/cart`}
               className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
             >
-              Încearcă altă plată
+              {tr.iuteReturn.tryAnotherPayment}
             </Link>
             <Link
-              href="/account/orders"
+              href={`/${locale}/account/orders`}
               className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-[#e4e8e4] bg-white px-6 py-3 font-semibold text-[#34781f] hover:bg-[#edf7e8] transition-colors"
             >
-              Vezi comenzile mele
+              {tr.orders.viewMine}
             </Link>
           </div>
         </>
@@ -50,31 +53,28 @@ function IuteReturnContent() {
             <CheckCircle className="h-8 w-8 text-[#34781f]" />
           </div>
           <h1 className="text-2xl font-bold text-[#1d1d1f]">
-            Aplicația a fost trimisă către IuteCredit!
+            {tr.iuteReturn.successTitle}
           </h1>
           <p className="mt-2 text-[#6b6c6c]">
-            Comanda #{orderId} e înregistrată. IuteCredit procesează aplicația
-            ta de credit (verificare IDN, scor). Vei primi confirmarea pe telefon
-            și email de la IuteCredit.
+            {tr.iuteReturn.successBody.replace("{id}", orderId)}
           </p>
 
           <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
-              href={`/account/orders?success=true&orderId=${orderId}`}
+              href={`/${locale}/account/orders?success=true&orderId=${orderId}`}
               className="inline-flex items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
             >
-              Vezi comanda mea
+              {tr.orders.viewOrder}
             </Link>
           </div>
 
           <div className="mt-8 rounded-[12px] border border-[#e4e8e4] bg-[#f7f9f7] p-4 text-left">
             <div className="flex items-center gap-2 text-[13px] font-semibold text-[#1d1d1f]">
               <Headphones className="h-4 w-4 text-[#63ad36]" />
-              Întrebări despre credit?
+              {tr.iuteReturn.supportTitle}
             </div>
             <p className="mt-1 text-[12px] text-[#6b6c6c]">
-              Sună IuteCredit la <strong>022 800 800</strong> sau Adamo la{" "}
-              <strong>+373 799 66 909</strong>.
+              {tr.iuteReturn.supportBody}
             </p>
           </div>
         </>

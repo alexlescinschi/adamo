@@ -9,6 +9,31 @@ import { rateLimit, redis } from "@/lib/redis";
 
 type PayMode = "CASH" | "BANK_TRANSFER" | "RATE";
 
+type CheckoutErrorCode =
+  | "invalidRequest"
+  | "unexpectedField"
+  | "invalidItems"
+  | "invalidItem"
+  | "duplicateItem"
+  | "invalidDeliveryMethod"
+  | "invalidPaymentMethod"
+  | "invalidContact"
+  | "invalidEmail"
+  | "commentTooLong"
+  | "pickupRequired"
+  | "deliveryAddressRequired"
+  | "invalidPostaAddress"
+  | "invalidFanAddress"
+  | "courierRequired"
+  | "postaCashUnsupported"
+  | "requestTooLarge"
+  | "checkoutUnavailable"
+  | "rateLimited"
+  | "invalidSession"
+  | "operationConflict"
+  | "alreadyProcessing"
+  | "orderUnknown";
+
 type CourierInput =
   | { provider: "POSTA_RAPIDA"; regionId: number; cityId: number; street: string; block: string; zipCode?: string }
   | { provider: "FANCOURIER"; city: string; street: string; postalCode?: string; number?: string; building?: string; apartment?: string };
@@ -32,6 +57,10 @@ const MAX_BODY_BYTES = 50_000;
 const OPERATION_TTL = 30 * 24 * 60 * 60;
 const ALLOWED_KEYS = new Set(["items", "delivery_method", "pay_mode", "warehouse_id", "contact", "delivery", "courier", "comment"]);
 
+function errorResponse(code: CheckoutErrorCode, status: number, headers?: HeadersInit) {
+  return NextResponse.json({ error: "Checkout failed", code }, { status, headers });
+}
+
 function shortHash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 32);
 }
@@ -47,10 +76,10 @@ function positiveInt(value: unknown) {
   return Number.isSafeInteger(value) && Number(value) > 0 ? Number(value) : null;
 }
 
-function validateCheckout(body: any): ValidCheckout | string {
-  if (!body || typeof body !== "object" || Array.isArray(body)) return "Invalid request";
-  if (Object.keys(body).some((key) => !ALLOWED_KEYS.has(key))) return "Unexpected checkout field";
-  if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) return "Invalid items";
+function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return "invalidRequest";
+  if (Object.keys(body).some((key) => !ALLOWED_KEYS.has(key))) return "unexpectedField";
+  if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 50) return "invalidItems";
 
   const seen = new Set<string>();
   const items: ValidCheckout["items"] = [];
@@ -58,36 +87,36 @@ function validateCheckout(body: any): ValidCheckout | string {
     const productId = positiveInt(item?.product_id);
     const unitId = positiveInt(item?.unit_id);
     const qty = positiveInt(item?.qty);
-    if (!productId || !unitId || !qty || qty > 99) return "Invalid item";
+    if (!productId || !unitId || !qty || qty > 99) return "invalidItem";
     const key = `${productId}:${unitId}`;
-    if (seen.has(key)) return "Duplicate item";
+    if (seen.has(key)) return "duplicateItem";
     seen.add(key);
     items.push({ product_id: productId, unit_id: unitId, qty });
   }
 
   const deliveryMethod = body.delivery_method;
-  if (deliveryMethod !== "PICKUP" && deliveryMethod !== "COURIER") return "Invalid delivery method";
+  if (deliveryMethod !== "PICKUP" && deliveryMethod !== "COURIER") return "invalidDeliveryMethod";
   const payMode = body.pay_mode;
-  if (payMode !== "CASH" && payMode !== "BANK_TRANSFER" && payMode !== "RATE") return "Invalid payment method";
+  if (payMode !== "CASH" && payMode !== "BANK_TRANSFER" && payMode !== "RATE") return "invalidPaymentMethod";
 
   const fullName = text(body.contact?.full_name, 100, true);
   const phone = typeof body.contact?.phone === "string" ? body.contact.phone.replace(/\D/g, "") : "";
   const email = text(body.contact?.email, 255);
-  if (!fullName || phone.length < 8 || phone.length > 15 || email === null) return "Invalid contact details";
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Invalid email";
+  if (!fullName || phone.length < 8 || phone.length > 15 || email === null) return "invalidContact";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "invalidEmail";
 
   const comment = text(body.comment, 1000);
-  if (comment === null) return "Comment is too long";
+  if (comment === null) return "commentTooLong";
 
   if (deliveryMethod === "PICKUP") {
     const warehouseId = positiveInt(body.warehouse_id);
-    if (!warehouseId) return "Pickup point is required";
+    if (!warehouseId) return "pickupRequired";
     return { items, deliveryMethod, payMode, warehouseId, contact: { full_name: fullName, phone, email }, comment };
   }
 
   const city = text(body.delivery?.city, 150, true);
   const address = text(body.delivery?.address, 250, true);
-  if (!city || !address) return "Delivery address is required";
+  if (!city || !address) return "deliveryAddressRequired";
 
   const provider = body.courier?.provider as CourierProvider | undefined;
   let courier: CourierInput;
@@ -97,7 +126,7 @@ function validateCheckout(body: any): ValidCheckout | string {
     const street = text(body.courier?.street, 150, true);
     const block = text(body.courier?.block, 50, true);
     const zipCode = text(body.courier?.zipCode, 20);
-    if (!regionId || !cityId || !street || !block || zipCode === null) return "Invalid Poșta Rapidă address";
+    if (!regionId || !cityId || !street || !block || zipCode === null) return "invalidPostaAddress";
     courier = { provider, regionId, cityId, street, block, zipCode };
   } else if (provider === "FANCOURIER") {
     const courierCity = text(body.courier?.city, 150, true);
@@ -106,13 +135,13 @@ function validateCheckout(body: any): ValidCheckout | string {
     const number = text(body.courier?.number, 20);
     const building = text(body.courier?.building, 20);
     const apartment = text(body.courier?.apartment, 20);
-    if (!courierCity || !street || postalCode === null || number === null || building === null || apartment === null) return "Invalid FAN Courier address";
+    if (!courierCity || !street || postalCode === null || number === null || building === null || apartment === null) return "invalidFanAddress";
     courier = { provider, city: courierCity, street, postalCode, number, building, apartment };
   } else {
-    return "Courier provider is required";
+    return "courierRequired";
   }
   if (courier.provider === "POSTA_RAPIDA" && payMode === "CASH") {
-    return "Poșta Rapidă ramburs is not supported by CRM. Choose FAN Courier or another payment method.";
+    return "postaCashUnsupported";
   }
 
   return {
@@ -191,43 +220,43 @@ async function createShipment(order: any, checkout: ValidCheckout) {
 
 export async function POST(request: NextRequest) {
   const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > MAX_BODY_BYTES) return NextResponse.json({ error: "Request too large" }, { status: 413 });
+  if (contentLength > MAX_BODY_BYTES) return errorResponse("requestTooLarge", 413);
   if (!redis && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Checkout is temporarily unavailable" }, { status: 503 });
+    return errorResponse("checkoutUnavailable", 503);
   }
 
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   const limited = await rateLimit(`rate:checkout:${shortHash(ip)}`, 5, 600);
-  if (!limited.allowed) return NextResponse.json({ error: "Too many checkout attempts" }, { status: 429, headers: { "Retry-After": "600" } });
+  if (!limited.allowed) return errorResponse("rateLimited", 429, { "Retry-After": "600" });
 
   const idempotencyKey = request.headers.get("idempotency-key") || "";
   if (!/^[a-zA-Z0-9_-]{16,128}$/.test(idempotencyKey)) {
-    return NextResponse.json({ error: "Idempotency-Key is required" }, { status: 400 });
+    return errorResponse("invalidSession", 400);
   }
 
   let rawBody: unknown;
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return errorResponse("invalidRequest", 400);
   }
   const checkout = validateCheckout(rawBody);
-  if (typeof checkout === "string") return NextResponse.json({ error: checkout }, { status: 400 });
+  if (typeof checkout === "string") return errorResponse(checkout, 400);
 
   const phoneLimit = await rateLimit(`rate:checkout-phone:${shortHash(checkout.contact.phone)}`, 10, 3600);
-  if (!phoneLimit.allowed) return NextResponse.json({ error: "Too many checkout attempts" }, { status: 429 });
+  if (!phoneLimit.allowed) return errorResponse("rateLimited", 429);
 
   const requestHash = shortHash(JSON.stringify(checkout));
   const operationKey = `checkout:v1:${shortHash(idempotencyKey)}`;
   if (redis) {
     const existing = await redis.get<OperationRecord>(operationKey);
     if (existing?.requestHash !== undefined) {
-      if (existing.requestHash !== requestHash) return NextResponse.json({ error: "Idempotency key conflict" }, { status: 409 });
+      if (existing.requestHash !== requestHash) return errorResponse("operationConflict", 409);
       if (existing.state === "completed") return NextResponse.json(existing.response);
-      return NextResponse.json({ error: "Checkout is already processing" }, { status: 409 });
+      return errorResponse("alreadyProcessing", 409);
     }
     const claimed = await redis.set(operationKey, { state: "processing", requestHash }, { nx: true, ex: OPERATION_TTL });
-    if (!claimed) return NextResponse.json({ error: "Checkout is already processing" }, { status: 409 });
+    if (!claimed) return errorResponse("alreadyProcessing", 409);
   }
 
   const paymentMethod = resolvePaymentMethod(checkout.payMode, checkout.deliveryMethod, checkout.courier?.provider);
@@ -307,6 +336,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(responseBody, { status: 201 });
   } catch {
     if (redis) await redis.set(operationKey, { state: "unknown", requestHash }, { ex: OPERATION_TTL });
-    return NextResponse.json({ error: "Order could not be confirmed. Contact support before retrying." }, { status: 502 });
+    return errorResponse("orderUnknown", 502);
   }
 }

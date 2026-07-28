@@ -88,6 +88,7 @@ export async function generateMetadata({
   params: Promise<{ id: string; locale: string }>;
 }): Promise<Metadata> {
   const { id: rawId, locale } = await params;
+  const tr = getDict(locale);
   const id = rawId.split("-")[0];
   let product: any = null;
   try {
@@ -101,7 +102,7 @@ export async function generateMetadata({
   const url = `${SITE_URL}${productPath(locale, id, product.slug)}`;
   const desc =
     (product.description && product.description.slice(0, 160)) ||
-    `${product.name} la preț bun în magazinul Adamo. Livrare rapidă în toată Moldova.`;
+    tr.metadata.productFallback.replace("{name}", product.name);
   const ogImages = (product.images?.length ? product.images : [])
     .map((im: any) => im.url)
     .filter(Boolean)
@@ -124,7 +125,7 @@ export async function generateMetadata({
       description: desc,
       images: ogImages,
       siteName: "Adamo",
-      locale: locale === "ro" ? "ro_MD" : locale === "ru" ? "ru_MD" : "en_US",
+      locale: locale === "ro" ? "ro_MD" : locale === "ru" ? "ru_RU" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -167,7 +168,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <div className="py-16 text-center">
         <h1 className="text-2xl font-bold text-[#1d1d1f]">{tr.product.notFound}</h1>
         <p className="mt-2 text-[#6b6c6c]">{tr.product.notFoundSub}</p>
-        <Link href="/" className="mt-6 inline-block rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
+        <Link href={`/${locale}`} className="mt-6 inline-block rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
           {tr.product.back}
         </Link>
       </div>
@@ -211,7 +212,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Acasă", item: `${SITE_URL}/${locale}` },
+          { "@type": "ListItem", position: 1, name: tr.category.home, item: `${SITE_URL}/${locale}` },
           ...(product.category_slug && product.category_name
             ? [{
                 "@type": "ListItem",
@@ -234,10 +235,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       />
 
       {/* Breadcrumb vizual (ca openbox): semantic <nav>/<ol>/<li> */}
-      <nav aria-label="Breadcrumb" className="mb-6">
+      <nav aria-label={tr.common.breadcrumb} className="mb-6">
         <ol className="flex flex-wrap items-center gap-2 text-sm text-[#6b6c6c]">
           <li>
-            <Link href={`/${locale}`} className="hover:text-[#1d1d1f] transition-colors">Acasă</Link>
+            <Link href={`/${locale}`} className="hover:text-[#1d1d1f] transition-colors">{tr.category.home}</Link>
           </li>
           <li role="presentation" className="text-[#cccfcf]"><ChevronRight className="h-4 w-4" /></li>
           {product.category_slug && product.category_name && (
@@ -286,7 +287,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      <Link href="/" className="mt-[70px] inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline">
+      <Link href={`/${locale}`} className="mt-[70px] inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline">
         <ChevronLeft className="h-4 w-4" />
         {tr.product.back}
       </Link>

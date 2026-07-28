@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ShoppingCart, Loader2, Check } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { useTranslations } from "@/hooks/use-translations";
+import { useLocale, useTranslations } from "@/hooks/use-translations";
 import { formatPrice } from "@/lib/utils";
 
 interface Product {
@@ -28,12 +28,13 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const tr = useTranslations();
+  const locale = useLocale();
   const resolveUnit = useResolveUnit();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
   const hasPrice = product.price > 0;
   const isOutOfStock = product.stock !== undefined && product.stock === 0;
-  const href = `/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
+  const href = `/${locale}/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
   // ponytail: mobile swipe only, no desktop auto-play
   const imgs = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
@@ -98,7 +99,7 @@ export function ProductCard({ product }: { product: Product }) {
             )}
           </>
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">Fără imagine</div>
+          <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">{tr.product.noImage}</div>
         )}
       </Link>
 
@@ -128,10 +129,10 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <strong className="block text-[18px] font-extrabold leading-none text-[#34781f] whitespace-nowrap sm:text-[25px]">
-                {formatPrice(product.price)} <small className="text-[10px] sm:text-[13px]">MDL</small>
+                {formatPrice(product.price)} <small className="text-[10px] sm:text-[13px]">{tr.rates.currency}</small>
               </strong>
               {product.old_price && product.old_price > product.price && (
-                <span className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} MDL</span>
+                <span className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} {tr.rates.currency}</span>
               )}
               <p className="m-0 mt-[3px] text-[8.5px] font-medium text-[#1d1d1f] sm:text-[12.5px]">
                 {tr.product.installments}

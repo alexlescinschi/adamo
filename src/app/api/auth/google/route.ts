@@ -9,10 +9,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const credential = typeof body?.credential === "string" ? body.credential : "";
     if (credential.length < 100 || credential.length > 10_000) {
-      return NextResponse.json({ error: "Missing credential" }, { status: 400 });
+      return NextResponse.json({ error: "Missing credential", code: "googleLoginFailed" }, { status: 400 });
     }
     if (await isRateLimited(request, "google-auth", 10, 600, credential.slice(-64))) {
-      return NextResponse.json({ error: "Too many login attempts" }, { status: 429 });
+      return NextResponse.json({ error: "Too many login attempts", code: "loginRateLimited" }, { status: 429 });
     }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/oauth/google`, {
@@ -27,10 +27,13 @@ export async function POST(request: NextRequest) {
     try {
       data = JSON.parse(rawText);
     } catch {
-      return NextResponse.json({ error: "Authentication provider returned an invalid response" }, { status: 502 });
+      return NextResponse.json({ error: "Google authentication failed", code: "googleLoginFailed" }, { status: 502 });
     }
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+      if (res.status === 429) {
+        return NextResponse.json({ error: "Too many login attempts", code: "loginRateLimited" }, { status: res.status });
+      }
+      return NextResponse.json({ error: "Google authentication failed", code: "googleLoginFailed" }, { status: res.status });
     }
 
     const user = data.user || data;
@@ -70,6 +73,6 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch {
-    return NextResponse.json({ error: "Google authentication failed" }, { status: 500 });
+    return NextResponse.json({ error: "Google authentication failed", code: "googleLoginFailed" }, { status: 500 });
   }
 }

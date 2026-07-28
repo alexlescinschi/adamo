@@ -15,8 +15,9 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
+  const tr = getDict(locale);
   const page = await getContentPage("contact", locale);
-  const fallback = locale === "ru" ? "Контакты" : locale === "en" ? "Contact" : "Contacte";
+  const fallback = tr.contact.title;
   return {
     title: page?.seoTitle || page?.title || fallback,
     description: page?.seoDescription,
@@ -76,7 +77,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 <Mail className="h-5 w-5 text-[#63ad36]" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-[#1d1d1f]">Email</h2>
+                <h2 className="text-base font-semibold text-[#1d1d1f]">{tr.common.email}</h2>
                 <a href={`mailto:${email}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline break-all">
                   {email}
                 </a>
@@ -116,12 +117,12 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             <div className="divide-y divide-[#f0f0f0] text-sm">
               {[
                 [c.companyLabel, ADAMO_COMPANY.name],
-                [c.regNumber, `${ADAMO_COMPANY.regNumber} din ${ADAMO_COMPANY.regDate}`],
+                [c.regNumber, c.registrationWithDate.replace("{number}", ADAMO_COMPANY.regNumber).replace("{date}", ADAMO_COMPANY.regDate)],
                 [c.vatCode, ADAMO_COMPANY.vatCode],
                 [c.legalAddress, ADAMO_COMPANY.legalAddress],
                 [c.bank, ADAMO_COMPANY.bank],
                 [c.branch, ADAMO_COMPANY.branch],
-                ["BIC/SWIFT", ADAMO_COMPANY.bic],
+                [tr.checkout.bicSwift, ADAMO_COMPANY.bic],
                 [c.currency, ADAMO_COMPANY.currency],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-4 py-2">
@@ -159,7 +160,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
         {/* Map */}
         <div className="overflow-hidden rounded-[28px] border border-[#cccfcf]/50 h-[400px] md:h-full min-h-[400px]">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1sro!2s!4v1"
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1s${locale}!2s!4v1&hl=${locale}`}
             width="100%"
             height="100%"
             style={{ border: 0 }}

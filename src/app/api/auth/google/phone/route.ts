@@ -8,17 +8,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const phone = typeof body?.phone === "string" ? body.phone.replace(/[^\d]/g, "") : "";
-    if (phone.length < 8 || phone.length > 15) return NextResponse.json({ error: "Invalid phone" }, { status: 400 });
+    if (phone.length < 8 || phone.length > 15) return NextResponse.json({ error: "Invalid phone", code: "invalidRequest" }, { status: 400 });
     if (await isRateLimited(request, "google-phone-ip", 10, 600)) {
-      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      return NextResponse.json({ error: "Too many requests", code: "rateLimited" }, { status: 429 });
     }
 
     const token = request.cookies.get("ecommerceAccessToken")?.value;
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 });
     }
     if (await isRateLimited(request, "google-phone-user", 10, 600, `${token.slice(-64)}:${phone}`)) {
-      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      return NextResponse.json({ error: "Too many requests", code: "rateLimited" }, { status: 429 });
     }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/phone`, {
@@ -33,14 +33,14 @@ export async function POST(request: NextRequest) {
 
     const updated = await res.json().catch(() => ({}));
     if (!res.ok) {
+      const code = res.status === 401 ? "unauthorized" : res.status === 429 ? "rateLimited" : "phoneUpdateFailed";
       return NextResponse.json(
-        { error: updated.message || updated.error || "Failed to set phone" },
+        { error: code === "unauthorized" ? "Unauthorized" : code === "rateLimited" ? "Too many requests" : "Failed to set phone", code },
         { status: res.status },
       );
     }
 
     // ponytail: create CRM contact immediately so user appears in contacts list (same pattern as register)
-    let contactWarning: string | undefined;
     try {
       const user = updated.user || updated;
       const displayName = String(user.username || user.name || "").trim();
@@ -50,12 +50,12 @@ export async function POST(request: NextRequest) {
       if (!user.contact_id && (firstName || lastName || email)) {
         await createContact({ first_name: firstName, last_name: lastName, phone, email });
       }
-    } catch {
-      contactWarning = "Contact creation failed — user authenticated but not in CRM contacts";
+    } catch (error) {
+      console.error("Google phone contact creation error:", error);
     }
 
-    return NextResponse.json({ success: true, contactWarning });
+    return NextResponse.json({ success: true });
   } catch {
-    return NextResponse.json({ error: "Failed to set phone" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to set phone", code: "phoneUpdateFailed" }, { status: 500 });
   }
 }

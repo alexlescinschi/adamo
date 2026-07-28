@@ -51,9 +51,9 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
         <span className="text-[30px] font-bold text-[#1d1d1f]">
           ADAMO<span className="text-[#63ad36]">.</span>MD
         </span>
-        <small className="block text-[13px] text-[#6b6c6c] mt-0.5">Laptopuri premium</small>
+        <small className="block text-[13px] text-[#6b6c6c] mt-0.5">{tr.footer.tagline}</small>
         <p className="mt-[18px] text-[14px] leading-[1.45] text-[#536070]">{tr.footer.description}</p>
-        <div className="flex gap-[10px] mt-[18px]" aria-label="Rețele sociale ADAMO.MD">
+        <div className="flex gap-[10px] mt-[18px]" aria-label={tr.footer.socialNetworksAria}>
           {socialLinks.map((s) => (
             <a
               key={s.label}
@@ -90,7 +90,7 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
             {page.title[locale]}
           </Link>
         ))}
-        <Link href={l("/blog")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">Blog</Link>
+        <Link href={l("/blog")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.blog}</Link>
         <Link href={l("/harta-site-ului")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
           {locale === "ro" ? "Harta site-ului" : locale === "ru" ? "Карта сайта" : "Sitemap"}
         </Link>
@@ -100,11 +100,11 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.contacts}</h3>
         <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">
-          <span className="whitespace-pre-line">{contact?.address || "mun. Chișinău, Rîșcani\nstr. Dumitru Rîșcanu 11\nintrarea lângă scara 5"}</span>
+          <span className="whitespace-pre-line">{contact?.address || tr.footer.fallbackAddress}</span>
         </p>
         <a href={`tel:${phone}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{phoneDisplay}</a>
         <a href={`mailto:${email}`} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors break-all">{email}</a>
-        <p className="mb-[10px] whitespace-pre-line text-[14px] leading-[1.45] text-[#536070]">{contact?.hours || "Luni - Vineri: 09:00 - 18:00\nSâmbătă: 10:00 - 16:00"}</p>
+        <p className="mb-[10px] whitespace-pre-line text-[14px] leading-[1.45] text-[#536070]">{contact?.hours || tr.footer.fallbackHours}</p>
       </div>
 
       {/* Subscribe */}
@@ -133,12 +133,11 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
 
       {/* Bottom bar */}
       <div className="flex flex-col gap-4 pt-[18px] border-t border-[#e1e7ef] items-center text-center lg:grid lg:gap-5 lg:items-center lg:text-left lg:justify-items-start" style={{ gridColumn: "1 / -1", gridTemplateColumns: "minmax(220px, 1fr) auto minmax(156px, 1fr)" }}>
-        <small className="text-[12px] leading-[1.35] text-[#697586]">&copy; {new Date().getFullYear()} ADAMO.MD - Toate drepturile rezervate.</small>
+        <small className="text-[12px] leading-[1.35] text-[#697586]">&copy; {new Date().getFullYear()} ADAMO.MD - {tr.footer.allRightsReserved}</small>
         <div className="flex items-center justify-center gap-3 text-[12px] font-semibold leading-[1.35] text-[#536070] whitespace-nowrap">
-          <span>Creat cu <span className="text-red-500 text-[15px]">♥</span> în Moldova</span>
-          <span>Design by GPT</span>
+          <span>{tr.footer.rights}</span>
         </div>
-        <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-self-end" aria-label="Metode de plată">
+        <div className="flex shrink-0 items-center justify-center gap-3 lg:justify-self-end" aria-label={tr.footer.paymentMethodsAria}>
           <img src="/payment-visa.svg" alt="Visa" className="h-7 w-auto" />
           <img src="/payment-mastercard.svg" alt="Mastercard" className="h-7 w-auto" />
         </div>

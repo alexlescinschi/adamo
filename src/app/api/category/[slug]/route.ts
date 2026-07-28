@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategoryProducts } from "@/lib/crm-api";
 import { mapProductCard } from "@/lib/product-mapper";
+import { normalizeLocale } from "@/lib/locale";
 
 export async function GET(request: NextRequest) {
   const { searchParams, pathname } = request.nextUrl;
@@ -8,7 +9,7 @@ export async function GET(request: NextRequest) {
   const slug = pathname.split("/").pop() || "";
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
   const limit = Math.max(1, Number(searchParams.get("limit")) || 24);
-  const locale = searchParams.get("locale") || "ro";
+  const locale = normalizeLocale(searchParams.get("locale") || undefined);
 
   // Parse attribute filters: f_display=15.6,14 → { display: ["15.6", "14"] }
   const attributes: Record<string, string[]> = {};

@@ -8,8 +8,15 @@ import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
 import Image from "next/image";
 import heroContent from "../../../content/hero.json";
+import { localizedAlternates } from "@/lib/site";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  return { alternates: localizedAlternates(locale, "") };
+}
 
 async function fetchCarousel(locale = "ro") {
   try {
@@ -181,7 +188,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <div>
-      <Hero content={hero} images={heroImages} />
+      <Hero content={hero} images={heroImages} customerImageAlt={tr.a11y.heroCustomers} locale={locale} />
 
       <BenefitsStrip tr={tr} />
 
@@ -191,8 +198,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={<span className="inline-flex items-center gap-2"><svg viewBox="0 0 20 20" className="h-5 w-5" fill="#0b55d8"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{tr.home.popular}</span>} products={popular} viewAllHref="/laptopuri?type=popular" tr={tr} />
-      <Section title={tr.home.promotions} products={promotions} viewAllHref="/laptopuri?type=promotions" tr={tr} />
+      <Section title={<span className="inline-flex items-center gap-2"><svg viewBox="0 0 20 20" className="h-5 w-5" fill="#0b55d8"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>{tr.home.popular}</span>} products={popular} viewAllHref={`/${locale}/laptopuri?type=popular`} tr={tr} />
+      <Section title={tr.home.promotions} products={promotions} viewAllHref={`/${locale}/laptopuri?type=promotions`} tr={tr} />
 
       {(tile1 || tile2) && (
         <section className="pb-[70px]">
@@ -203,9 +210,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       )}
 
-      <Section title={tr.home.newProducts} products={newProducts} viewAllHref="/laptopuri?type=new" tr={tr} />
+      <Section title={tr.home.newProducts} products={newProducts} viewAllHref={`/${locale}/laptopuri?type=new`} tr={tr} />
 
-      <QuickOrder tr={tr} />
+      <QuickOrder />
 
       <section className="mt-[30px] mb-[28px]">
         <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
@@ -253,7 +260,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <div className="grid gap-6 md:grid-cols-2">
           <div className="overflow-hidden rounded-[9px] border border-[#e1e7ef] h-[300px]">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1sro!2s!4v1"
+              src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1s${locale}!2s!4v1&hl=${locale}`}
               width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
               referrerPolicy="no-referrer-when-downgrade" title="Adamo"
             />

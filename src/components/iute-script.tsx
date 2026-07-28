@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect } from "react";
 
 // ponytail: încarcă iutepay.js + rulează iute.configure(publicKey, lang).
 // Toate config-urile vin din CRM (/ecommerce/checkout/iute/config).
@@ -18,6 +19,12 @@ export function IuteScript({
   styleUrl?: string;
   enabled?: boolean;
 }) {
+  useEffect(() => {
+    if (enabled && publicKey && window.iute) {
+      window.iute.configure(publicKey, lang || "ro");
+    }
+  }, [enabled, publicKey, lang]);
+
   if (!enabled || !publicKey || !scriptUrl) return null;
 
   return (

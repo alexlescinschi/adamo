@@ -223,6 +223,13 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     setTimeout(() => setIbanCopied(false), 2000);
   }
 
+  function localizedCheckoutError(code: unknown) {
+    if (typeof code !== "string" || !Object.prototype.hasOwnProperty.call(tr.errors, code)) {
+      return tr.checkout.genericError;
+    }
+    return (tr.errors as Record<string, string>)[code];
+  }
+
   const inputCls = "w-full rounded-[10px] border border-[#e4e8e4] bg-white px-4 py-2.5 text-sm focus:border-[#63ad36] focus:outline-none";
 
   if (items.length === 0) {
@@ -236,7 +243,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             {tr.cart.continueShopping}
           </button>
         ) : (
-          <Link href="/" className="mt-6 inline-block rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white font-medium hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
+          <Link href={`/${locale}`} className="mt-6 inline-block rounded-[14px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 py-3 text-white font-medium hover:from-[#63ad36] hover:to-[#4e8f28] transition-all">
             {tr.cart.continueShopping}
           </Link>
         )}
@@ -317,7 +324,9 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || tr.checkout.genericError);
+        setError(localizedCheckoutError(err.code));
+        setSubmitting(false);
+        return;
       }
 
       const order = await res.json();
@@ -345,10 +354,14 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         // iutepay.js SDK opens modal inline — customer completes app on site.
         const p = order.iutePayload;
         if (!p?.signature) {
-          throw new Error("IutePay nu a returnat datele necesare. Încearcă altă plată.");
+          setError(tr.checkout.iuteMissingPayload);
+          setSubmitting(false);
+          return;
         }
         if (typeof window === "undefined" || !window.iute || typeof window.iute.checkout !== "function") {
-          throw new Error("IutePay SDK nu s-a încărcat. Reîncearcă sau alege altă plată.");
+          setError(tr.checkout.iuteSdkUnavailable);
+          setSubmitting(false);
+          return;
         }
         setSubmitting(false);
 
@@ -364,7 +377,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               signatureTimestamp: String(p.signature_timestamp),
               items: (p.items || []).map((item: any) => ({
                 ...item,
-                itemUrl: item.itemUrl || `${window.location.origin}/product/${item.id}`,
+                  itemUrl: item.itemUrl || `${window.location.origin}/${locale}/product/${item.id}`,
               })),
               currency: p.currency || "mdl",
               shippingAmount: Number(p.shipping_amount ?? 0),
@@ -402,26 +415,26 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               onSuccess: () => {
                 saveCheckout();
                 onDone?.();
-                router.push(`/account/orders?success=true&orderId=${orderId}${order.shipment ? "&shipment=pending_payment" : ""}`);
+                router.push(`/${locale}/account/orders?success=true&orderId=${orderId}${order.shipment ? "&shipment=pending_payment" : ""}`);
               },
-              onFailure: (result: { message?: string }) => {
-                setError(result?.message || "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.");
+              onFailure: () => {
+                setError(tr.checkout.iuteApplicationFailed);
               },
             }
           );
         } catch (e) {
           console.error("[iute] checkout call failed:", e);
-          setError("IutePay nu a putut fi inițializată. Încearcă altă metodă de plată.");
+          setError(tr.checkout.iuteInitializationFailed);
         }
       } else {
         saveCheckout();
         onDone?.();
         const shipmentNumber = order.shipment?.number || order.shipment?.awb;
         const shipmentStatus = order.shipment?.status;
-        router.push(`/account/orders?success=true&orderId=${orderId}${shipmentNumber ? `&awb=${encodeURIComponent(shipmentNumber)}` : ""}${shipmentStatus ? `&shipment=${encodeURIComponent(shipmentStatus)}` : ""}`);
+        router.push(`/${locale}/account/orders?success=true&orderId=${orderId}${shipmentNumber ? `&awb=${encodeURIComponent(shipmentNumber)}` : ""}${shipmentStatus ? `&shipment=${encodeURIComponent(shipmentStatus)}` : ""}`);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tr.checkout.genericError);
+    } catch {
+      setError(tr.checkout.genericError);
       setSubmitting(false);
     }
   };
@@ -467,7 +480,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                   )}
                 </div>
                 <div className="flex flex-1 flex-col justify-between min-w-0">
-                  <Link href={`/product/${item.product_id}`} onClick={onDone} className="text-[13px] font-semibold leading-tight text-[#1d1d1f] hover:text-[#4e8f28] transition-colors line-clamp-2">
+                  <Link href={`/${locale}/product/${item.product_id}`} onClick={onDone} className="text-[13px] font-semibold leading-tight text-[#1d1d1f] hover:text-[#4e8f28] transition-colors line-clamp-2">
                     {item.name}
                   </Link>
                   <div className="flex items-center justify-between gap-2">
@@ -501,7 +514,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             selected={deliveryChoice === "MD"}
             icon={MapPin}
             label={tr.cart.deliveryMD}
-            badge="Gratis"
+            badge={tr.checkout.free}
             onClick={() => setDeliveryChoice("MD")}
           />
           <OptionRow
@@ -514,7 +527,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             selected={deliveryChoice === "CHISINAU"}
             icon={Truck}
             label={tr.cart.deliveryChisinau}
-            badge="Gratis"
+            badge={tr.checkout.free}
             onClick={() => setDeliveryChoice("CHISINAU")}
           />
         </div>
@@ -531,7 +544,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
               <option key={w.id} value={w.id}>{w.title || w.name || w.address || String(w.id)}</option>
             ))}
             {warehouses.length === 0 && (
-              <option value="-1">mun. Chișinău, Rîșcani, str. Dumitru Rîșcanu 11</option>
+              <option value="-1">{tr.checkout.pickupFallback}</option>
             )}
           </select>
         )}
@@ -630,13 +643,13 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             comingSoon={!iuteEnabled}
             icon={Percent}
             label={tr.cart.payInstallments}
-            badge={iuteEnabled ? "0% dobândă" : tr.checkout.comingSoon}
+            badge={iuteEnabled ? tr.checkout.zeroInterest : tr.checkout.comingSoon}
             onClick={() => setPayChoice("RATE")}
           />
         </div>
         {postaCashUnsupported && (
           <p className="mt-3 rounded-[8px] border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
-            Pentru plata ramburs alege FAN Courier. Poșta Rapidă poate fi folosită cu transfer bancar sau rate.
+            {tr.checkout.postaCashWarning}
           </p>
         )}
 

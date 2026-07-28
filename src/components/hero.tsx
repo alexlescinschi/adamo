@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
+import { localizedPath } from "@/lib/locale";
 
 export interface HeroContent {
   titleLines: string[];
@@ -13,16 +14,18 @@ export interface HeroContent {
 interface HeroProps {
   content: HeroContent;
   images: string[];
+  customerImageAlt: string;
+  locale: string;
 }
 
 const isExternal = (href: string) => href.startsWith("http");
 
-function CtaLink({ cta, variant }: { cta: { label: string; href: string }; variant: "primary" | "ghost" }) {
+function CtaLink({ cta, variant, locale }: { cta: { label: string; href: string }; variant: "primary" | "ghost"; locale: string }) {
   if (!cta.label || !cta.href) return null;
   const external = isExternal(cta.href);
   return (
     <a
-      href={cta.href}
+      href={external ? cta.href : localizedPath(locale, cta.href)}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
       className={
         variant === "primary"
@@ -37,7 +40,7 @@ function CtaLink({ cta, variant }: { cta: { label: string; href: string }; varia
   );
 }
 
-export function Hero({ content, images }: HeroProps) {
+export function Hero({ content, images, customerImageAlt, locale }: HeroProps) {
   const { titleLines, emphasizeWord, subtitle, primaryCta, ghostCta, socialProof } = content;
 
   if (!titleLines || titleLines.length === 0) return null;
@@ -96,15 +99,15 @@ export function Hero({ content, images }: HeroProps) {
 
           {(primaryCta?.label || ghostCta?.label) && (
             <div className="mt-0 flex flex-wrap gap-[10px] sm:mt-[14px] lg:mt-6 lg:gap-[18px]">
-              {primaryCta && <CtaLink cta={primaryCta} variant="primary" />}
-              {ghostCta && <CtaLink cta={ghostCta} variant="ghost" />}
+              {primaryCta && <CtaLink cta={primaryCta} variant="primary" locale={locale} />}
+              {ghostCta && <CtaLink cta={ghostCta} variant="ghost" locale={locale} />}
             </div>
           )}
 
           {socialProof?.text && (
             <div className="mt-[14px] flex items-center gap-[10px] text-[12px] sm:mt-[16px] sm:text-[12.5px] lg:mt-[22px] lg:gap-[14px] lg:text-[14px]">
               <div className="w-[96px] h-[36px] flex-shrink-0 sm:w-[112px] sm:h-[42px]">
-                <Image src="/social-faces.png" alt="Clienți ADAMO.MD" width={112} height={42} className="object-contain w-full h-full" />
+                <Image src="/social-faces.png" alt={customerImageAlt} width={112} height={42} className="object-contain w-full h-full" />
               </div>
               <div>
                 <span className="text-inherit text-[#697586] lg:[text-shadow:none]">{socialProof.text}</span>

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategoryBySlug } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
+import { normalizeLocale } from "@/lib/locale";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const searchParams = request.nextUrl.searchParams;
-  const locale = searchParams.get("locale") || "ro";
+  const locale = normalizeLocale(searchParams.get("locale") || undefined);
 
   try {
     const cacheKey = `category:${slug}:${locale}`;

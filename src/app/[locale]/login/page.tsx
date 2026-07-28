@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useEffectEvent, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
 
@@ -10,6 +10,8 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) || "ro";
   const tr = useTranslations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,6 +21,10 @@ export default function LoginPage() {
   const [googleName, setGoogleName] = useState("");
   const [googleEmail, setGoogleEmail] = useState("");
   const googleBtnRef = useRef<HTMLDivElement>(null);
+  const translateError = (code: unknown, fallback: keyof typeof tr.errors) =>
+    typeof code === "string" && Object.prototype.hasOwnProperty.call(tr.errors, code)
+      ? tr.errors[code as keyof typeof tr.errors]
+      : tr.errors[fallback];
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID || !googleBtnRef.current) return;
@@ -34,6 +40,7 @@ export default function LoginPage() {
         theme: "outline",
         size: "large",
         text: "signin_with",
+        locale,
         width: 320,
       });
     };
@@ -50,9 +57,9 @@ export default function LoginPage() {
     script.defer = true;
     script.onload = initGoogle;
     document.body.appendChild(script);
-  }, []);
+  }, [locale]);
 
-  const handleGoogleCredential = async (response: any) => {
+  const handleGoogleCredential = useEffectEvent(async (response: any) => {
     setLoading(true);
     setError("");
     try {
@@ -62,20 +69,23 @@ export default function LoginPage() {
         body: JSON.stringify({ credential: response.credential }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Autentificare Google eșuată");
+      if (!res.ok) {
+        setError(translateError(data.code, "googleLoginFailed"));
+        return;
+      }
       if (data.needsPhone) {
         setGoogleName(data.name || "");
         setGoogleEmail(data.email || "");
         setPhoneStep(true);
         return;
       }
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.googleLoginFailed);
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,10 +104,13 @@ export default function LoginPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la setarea telefonului");
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      if (!res.ok) {
+        setError(translateError(data.code, "phoneUpdateFailed"));
+        return;
+      }
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.phoneUpdateFailed);
     } finally {
       setLoading(false);
     }
@@ -114,10 +127,13 @@ export default function LoginPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || data.detail || "Autentificare eșuată");
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      if (!res.ok) {
+        setError(translateError(data.code, "loginFailed"));
+        return;
+      }
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.loginFailed);
     } finally {
       setLoading(false);
     }
@@ -126,7 +142,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md py-[70px]">
       <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] text-center mb-8">
-        {phoneStep ? tr.login.phoneRequired : "Autentificare"}
+        {phoneStep ? tr.login.phoneRequired : tr.login.title}
       </h1>
 
       {error && <div className="mb-4 rounded-[28px] bg-red-50 p-4 text-sm text-red-700">{error}</div>}
@@ -135,7 +151,7 @@ export default function LoginPage() {
         <form onSubmit={handlePhoneSubmit} className="space-y-4">
           {googleName && (
             <p className="text-center text-sm text-[#6b6c6c]">
-              Bun venit, <span className="font-semibold text-[#1d1d1f]">{googleName}</span>
+              {tr.login.welcome.replace("{name}", googleName)}
             </p>
           )}
           <p className="text-center text-sm text-[#6b6c6c]">{tr.login.phoneDescription}</p>
@@ -163,7 +179,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.common.email}</label>
               <input
                 type="email"
                 required
@@ -173,7 +189,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Parolă</label>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.login.password}</label>
               <input
                 type="password"
                 required
@@ -187,14 +203,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
             >
-              {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Autentificare"}
+              {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : tr.login.title}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-[#6b6c6c]">
-            Nu ai cont?{" "}
-            <Link href="/register" className="text-[#4e8f28] hover:underline">
-              Înregistrează-te
+            {tr.login.noAccount}{" "}
+            <Link href={`/${locale}/register`} className="text-[#4e8f28] hover:underline">
+              {tr.login.registerCta}
             </Link>
           </p>
         </>

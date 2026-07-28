@@ -10,51 +10,47 @@ import { extractProducts } from "@/lib/product-mapper";
 import { getCached } from "@/lib/redis";
 import { getContactSettings, getPublishedContentSlugs } from "@/lib/sanity";
 import { IS_STAGING, SITE_URL } from "@/lib/site";
-
-const LOCALES = ["ro", "ru", "en"];
+import { getDict } from "@/lib/translations";
 
 export function generateStaticParams() {
   return [{ locale: "ro" }, { locale: "ru" }, { locale: "en" }];
 }
 
-// ponytail: hreflang default pentru toate paginile. Per-pagină îl poate suprascrie
-// cu canonical self-referențial (ex: product/category își setează propriul alternates).
-function hreflang(path: string) {
-  const languages: Record<string, string> = {};
-  for (const l of LOCALES) languages[l] = `${SITE_URL}/${l}${path}`;
-  languages["x-default"] = `${SITE_URL}/ro${path}`; // piața principală: Moldova
-  return languages;
-}
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const tr = getDict(locale);
+  const openGraphLocale = locale === "ru" ? "ru_RU" : locale === "en" ? "en_US" : "ro_MD";
+  const alternateOpenGraphLocales = ["ro_MD", "ru_RU", "en_US"].filter((item) => item !== openGraphLocale);
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "Adamo — Magazin Online",
-    template: "%s — Adamo",
-  },
-  description: "Magazinul oficial Adamo. Produse de calitate la prețuri bune.",
-  applicationName: "Adamo",
-  robots: IS_STAGING
-    ? { index: false, follow: false, noarchive: true, googleBot: { index: false, follow: false } }
-    : { index: true, follow: true, googleBot: { index: true, follow: true } },
-  alternates: { languages: hreflang("") },
-  openGraph: {
-    type: "website",
-    siteName: "Adamo",
-    url: SITE_URL,
-    locale: "ro_MD",
-    alternateLocale: ["ru_MD", "en_US"],
-    title: "Adamo — Laptopuri premium în Moldova",
-    description: "Laptopuri premium, business și gaming în Moldova. Garanție 12 luni, livrare gratuită și rate 0%.",
-    images: [{ url: "/og-image.png", width: 626, height: 352, alt: "Adamo — Laptopuri premium" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Adamo — Laptopuri premium",
-    description: "Laptopuri premium, business și gaming în Moldova.",
-    images: ["/og-image.png"],
-  },
-};
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: tr.metadata.defaultTitle,
+      template: "%s — Adamo",
+    },
+    description: tr.metadata.defaultDescription,
+    applicationName: "Adamo",
+    robots: IS_STAGING
+      ? { index: false, follow: false, noarchive: true, googleBot: { index: false, follow: false } }
+      : { index: true, follow: true, googleBot: { index: true, follow: true } },
+    openGraph: {
+      type: "website",
+      siteName: "Adamo",
+      url: `${SITE_URL}/${locale}`,
+      locale: openGraphLocale,
+      alternateLocale: alternateOpenGraphLocales,
+      title: tr.metadata.openGraphTitle,
+      description: tr.metadata.openGraphDescription,
+      images: [{ url: "/og-image.png", width: 626, height: 352, alt: tr.metadata.imageAlt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: tr.metadata.twitterTitle,
+      description: tr.metadata.twitterDescription,
+      images: ["/og-image.png"],
+    },
+  };
+}
 
 export default async function LocaleLayout({
   children,

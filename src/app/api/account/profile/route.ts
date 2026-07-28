@@ -5,7 +5,7 @@ const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 // ponytail: PATCH profile — name, phone, address. Email is read-only (Google OAuth users).
 export async function PATCH(request: NextRequest) {
   const token = request.cookies.get("ecommerceAccessToken")?.value;
-  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!token) return NextResponse.json({ error: "Unauthorized", code: "unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
@@ -25,9 +25,10 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
+      await res.text().catch(() => "");
+      const code = res.status === 401 ? "unauthorized" : res.status === 429 ? "rateLimited" : "profileUpdateFailed";
       return NextResponse.json(
-        { error: err.message || "Failed to update profile" },
+        { error: code === "unauthorized" ? "Unauthorized" : code === "rateLimited" ? "Too many requests" : "Failed to update profile", code },
         { status: res.status }
       );
     }
@@ -36,6 +37,6 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ user: data.user || data });
   } catch (err) {
     console.error("[profile] error:", err);
-    return NextResponse.json({ error: "Profile update failed" }, { status: 500 });
+    return NextResponse.json({ error: "Profile update failed", code: "profileUpdateFailed" }, { status: 500 });
   }
 }

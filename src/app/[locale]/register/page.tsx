@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useEffectEvent, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) || "ro";
+  const tr = useTranslations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
@@ -23,6 +27,10 @@ export default function RegisterPage() {
   const [phoneInput, setPhoneInput] = useState("");
   const [googleName, setGoogleName] = useState("");
   const [googleEmail, setGoogleEmail] = useState("");
+  const translateError = (code: unknown, fallback: keyof typeof tr.errors) =>
+    typeof code === "string" && Object.prototype.hasOwnProperty.call(tr.errors, code)
+      ? tr.errors[code as keyof typeof tr.errors]
+      : tr.errors[fallback];
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID || !googleBtnRef.current) return;
@@ -38,6 +46,7 @@ export default function RegisterPage() {
         theme: "outline",
         size: "large",
         text: "signup_with",
+        locale,
         width: 320,
       });
     };
@@ -54,9 +63,9 @@ export default function RegisterPage() {
     script.defer = true;
     script.onload = initGoogle;
     document.body.appendChild(script);
-  }, []);
+  }, [locale]);
 
-  const handleGoogleCredential = async (response: any) => {
+  const handleGoogleCredential = useEffectEvent(async (response: any) => {
     setLoading(true);
     setError("");
     try {
@@ -66,20 +75,23 @@ export default function RegisterPage() {
         body: JSON.stringify({ credential: response.credential }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || "Înregistrare Google eșuată");
+      if (!res.ok) {
+        setError(translateError(data.code, "googleLoginFailed"));
+        return;
+      }
       if (data.needsPhone) {
         setGoogleName(data.name || "");
         setGoogleEmail(data.email || "");
         setPhoneStep(true);
         return;
       }
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.googleLoginFailed);
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,10 +110,13 @@ export default function RegisterPage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Eroare la setarea telefonului");
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      if (!res.ok) {
+        setError(translateError(data.code, "phoneUpdateFailed"));
+        return;
+      }
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.phoneUpdateFailed);
     } finally {
       setLoading(false);
     }
@@ -120,11 +135,14 @@ export default function RegisterPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || data.detail || "Înregistrare eșuată");
+      if (!res.ok) {
+        setError(translateError(data.code, "registrationFailed"));
+        return;
+      }
 
-      router.push("/account");
-    } catch (err: any) {
-      setError(err.message);
+      router.push(`/${locale}/account`);
+    } catch {
+      setError(tr.errors.registrationFailed);
     } finally {
       setLoading(false);
     }
@@ -133,7 +151,7 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-md py-[70px]">
       <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f] text-center mb-8">
-        {phoneStep ? "Completează profilul" : "Înregistrare"}
+        {phoneStep ? tr.login.completeProfile : tr.login.registerTitle}
       </h1>
 
       {error && <div className="mb-4 rounded-[28px] bg-red-50 p-4 text-sm text-red-700">{error}</div>}
@@ -142,16 +160,16 @@ export default function RegisterPage() {
         <form onSubmit={handlePhoneSubmit} className="space-y-4">
           {googleName && (
             <p className="text-center text-sm text-[#6b6c6c]">
-              Bun venit, <span className="font-semibold text-[#1d1d1f]">{googleName}</span>
+              {tr.login.welcome.replace("{name}", googleName)}
             </p>
           )}
-          <p className="text-center text-sm text-[#6b6c6c]">Completează numărul de telefon pentru a continua.</p>
+          <p className="text-center text-sm text-[#6b6c6c]">{tr.login.phoneDescription}</p>
           <input
             type="tel"
             required
             value={phoneInput}
             onChange={(e) => setPhoneInput(e.target.value)}
-            placeholder="De ex. 069 123 456"
+            placeholder={tr.login.phoneExample}
             className="w-full rounded-[28px] border border-[#cccfcf] bg-white px-5 py-2.5 text-sm text-[#1d1d1f] placeholder:text-[#6b6c6c] focus:border-[#63ad36] focus:outline-none"
           />
           <button
@@ -159,7 +177,7 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
           >
-            {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Continuă"}
+            {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : tr.login.continue}
           </button>
         </form>
       ) : (
@@ -171,7 +189,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Prenume</label>
+                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.login.firstName}</label>
                 <input
                   required
                   value={form.first_name}
@@ -180,7 +198,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Nume</label>
+                <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.login.lastName}</label>
                 <input
                   required
                   value={form.last_name}
@@ -190,7 +208,7 @@ export default function RegisterPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.common.email}</label>
               <input
                 type="email"
                 required
@@ -200,7 +218,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Telefon</label>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.login.phone}</label>
               <input
                 type="tel"
                 required
@@ -210,7 +228,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">Parolă</label>
+              <label className="block text-sm font-medium text-[#1d1d1f] mb-1.5">{tr.login.password}</label>
               <input
                 type="password"
                 required
@@ -225,14 +243,14 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full rounded-[28px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3 text-sm font-medium text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50"
             >
-              {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : "Înregistrare"}
+              {loading ? <Loader2 className="mx-auto h-5 w-5 animate-spin" /> : tr.login.registerTitle}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-[#6b6c6c]">
-            Ai deja cont?{" "}
-            <Link href="/login" className="text-[#4e8f28] hover:underline">
-              Autentifică-te
+            {tr.login.alreadyAccount}{" "}
+            <Link href={`/${locale}/login`} className="text-[#4e8f28] hover:underline">
+              {tr.login.loginCta}
             </Link>
           </p>
         </>

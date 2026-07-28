@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { searchProductsAll } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
 import { mapProductCard } from "@/lib/product-mapper";
+import { normalizeLocale } from "@/lib/locale";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const q = searchParams.get("q") || "";
-  const locale = searchParams.get("locale") || "ro";
+  const locale = normalizeLocale(searchParams.get("locale") || undefined);
 
   if (!q.trim()) {
     return NextResponse.json({ error: "Query required" }, { status: 400 });

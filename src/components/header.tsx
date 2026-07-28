@@ -142,7 +142,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
                                   {p.name}
                                 </span>
                                 {p.price > 0 && (
-                                  <span className="text-[16px] font-extrabold text-[#34781f]">{formatPrice(p.price)} lei</span>
+                                  <span className="text-[16px] font-extrabold text-[#34781f]">{formatPrice(p.price)} {tr.rates.currency}</span>
                                 )}
                               </div>
                             </Link>
@@ -171,9 +171,9 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
         }}
       >
         {/* Logo */}
-        <Link href="/" className="grid gap-0 font-extrabold tracking-[0] leading-none text-[29px] text-[#1d1d1f]">
+        <Link href={`/${locale}`} className="grid gap-0 font-extrabold tracking-[0] leading-none text-[29px] text-[#1d1d1f]">
           <span>ADAMO<span className="text-[#63ad36]">.</span>MD</span>
-          <small className="mt-[5px] text-[10px] text-[#8a94a3] uppercase tracking-[1.8px] font-normal">Laptopuri premium</small>
+          <small className="mt-[5px] text-[10px] text-[#8a94a3] uppercase tracking-[1.8px] font-normal">{tr.header.tagline}</small>
         </Link>
 
         {/* Desktop nav — centered */}
@@ -191,10 +191,10 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
             <b className="text-[14px] font-bold text-[#1d1d1f]">{PHONE_DISPLAY}</b>
           </a>
 
-          <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Căutare">
+          <button onClick={() => setSearchOpen(!searchOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label={tr.header.searchAria}>
             <Search className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
           </button>
-          <button onClick={() => setCartOpen(true)} className="relative grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label="Coș">
+          <button onClick={() => setCartOpen(true)} className="relative grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label={tr.header.cartAria}>
             <ShoppingBag className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
             {cartCount > 0 && (
               <span className="absolute top-0 right-0 min-w-[16px] h-[16px] grid place-items-center rounded-[20px] bg-[#63ad36] text-[10px] font-extrabold text-white sm:min-w-[18px] sm:h-[18px] sm:text-[11px] sm:top-[1px] sm:right-[3px]">
@@ -202,10 +202,10 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
               </span>
             )}
           </button>
-          <Link href={`/${locale}/account`} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]">
+          <Link href={`/${locale}/account`} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label={tr.account.title}>
             <User className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label="Meniu">
+          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label={tr.header.menuAria}>
             {menuOpen ? <X className="h-[18px] w-[18px] sm:h-6 sm:w-6" /> : <Menu className="h-[18px] w-[18px] sm:h-6 sm:w-6" />}
           </button>
         </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
 import { X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { useLocale, useTranslations } from "@/hooks/use-translations";
 
 export interface FilterOption {
   value: string;
@@ -49,6 +50,8 @@ export function CategoryFilter({
   activePrice,
   serverPaginated,
 }: CategoryFilterProps) {
+  const tr = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -189,7 +192,7 @@ export function CategoryFilter({
           onClick={clearAll}
           className="text-sm text-[#4e8f28] hover:underline"
         >
-          Resetează filtrele ({totalActive})
+          {tr.category.resetFilters.replace("{count}", String(totalActive))}
         </button>
       )}
 
@@ -197,7 +200,7 @@ export function CategoryFilter({
       {categories.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-[#1d1d1f] uppercase tracking-wide mb-2">
-            Categorii
+            {tr.category.categories}
           </p>
           <ul className="space-y-1.5">
             {categories.map((c) => {
@@ -205,7 +208,7 @@ export function CategoryFilter({
               return (
                 <li key={c.slug}>
                   <Link
-                    href={`/category/${c.slug}`}
+                    href={`/${locale}/category/${c.slug}`}
                     className={`block text-sm transition-colors ${
                       isActive
                         ? "font-semibold text-[#1d1d1f]"
@@ -224,13 +227,13 @@ export function CategoryFilter({
       {/* Preț */}
       <div>
         <p className="text-xs font-semibold text-[#1d1d1f] uppercase tracking-wide mb-2">
-          Preț (MDL)
+          {tr.category.price}
         </p>
         <div className="flex items-center gap-2">
           <input
             type="number"
             inputMode="numeric"
-            placeholder="min"
+            placeholder={tr.category.min}
             value={priceInput.min}
             onChange={(e) => setPriceInput((s) => ({ ...s, min: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && applyPrice()}
@@ -240,7 +243,7 @@ export function CategoryFilter({
           <input
             type="number"
             inputMode="numeric"
-            placeholder="max"
+            placeholder={tr.category.max}
             value={priceInput.max}
             onChange={(e) => setPriceInput((s) => ({ ...s, max: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && applyPrice()}
@@ -251,7 +254,7 @@ export function CategoryFilter({
           onClick={applyPrice}
           className="mt-2 rounded-full bg-[#f3f6f6] px-3 py-1.5 text-xs text-[#444545] hover:bg-[#e8e8ed] transition-colors"
         >
-          Aplică preț
+          {tr.category.applyPrice}
         </button>
       </div>
 
@@ -296,7 +299,7 @@ export function CategoryFilter({
         </h1>
         <div className="flex items-center gap-3">
           {totalItems != null && (
-            <span className="text-sm text-[#6b6c6c]">{totalItems} produse</span>
+            <span className="text-sm text-[#6b6c6c]">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
           )}
           {(filterDefinitions.length > 0 || categories.length > 0) && (
             <button
@@ -304,7 +307,7 @@ export function CategoryFilter({
               className="flex items-center gap-1.5 rounded-[28px] border border-[#cccfcf] px-4 py-2 text-sm text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6] md:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" />
-              Filtre
+              {tr.category.filters}
               {totalActive > 0 && (
                 <span className="ml-1 rounded-full bg-[#63ad36] px-1.5 text-[10px] font-bold text-white">
                   {totalActive}
@@ -338,7 +341,7 @@ export function CategoryFilter({
           }`}
         >
           <div className="mb-6 flex items-center justify-between">
-            <span className="text-base font-semibold text-[#1d1d1f]">Filtre</span>
+            <span className="text-base font-semibold text-[#1d1d1f]">{tr.category.filters}</span>
             <button
               onClick={() => setSidebarOpen(false)}
               className="rounded-full p-1.5 text-[#1d1d1f] hover:bg-[#f3f6f6]"
@@ -351,7 +354,7 @@ export function CategoryFilter({
             onClick={() => setSidebarOpen(false)}
             className="mt-6 w-full rounded-full bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-4 py-2.5 text-sm font-medium text-white"
           >
-            Vezi {totalItems ?? ""} produse
+            {tr.category.viewProducts.replace("{count}", String(totalItems ?? ""))}
           </button>
         </div>
 
@@ -359,7 +362,7 @@ export function CategoryFilter({
         <div className="flex-1">
           {visible.length === 0 ? (
             <p className="text-[#6b6c6c] py-12 text-center">
-              Niciun produs nu corespunde filtrelor selectate.
+              {tr.category.noMatches}
             </p>
           ) : (
             <>
@@ -418,19 +421,17 @@ export function CategoryFilter({
                     disabled={loadingMore}
                     className="rounded-[28px] border-2 border-[#63ad36] bg-white px-6 py-2.5 text-[14px] font-semibold text-[#34781f] transition-colors hover:bg-[#edf7e8] disabled:opacity-50"
                   >
-                    {loadingMore ? "Se încarcă..." : `Vezi mai multe (+${perPage})`}
+                    {loadingMore ? tr.common.loading : tr.category.loadMore.replace("{count}", String(perPage))}
                   </button>
                 </div>
               )}
 
               <div className="mt-8 border-t border-[#cccfcf]/50 py-10">
                 <h2 className="mb-3 text-xl font-semibold text-[#1d1d1f]">
-                  Despre {categoryName}
+                  {tr.category.about.replace("{name}", categoryName)}
                 </h2>
                 <p className="max-w-3xl leading-relaxed text-[#6b6c6c]">
-                  {categoryName} de calitate la prețuri accesibile în magazinul Adamo.
-                  Oferim o gamă variată de produse de la branduri renumite, cu livrare
-                  rapidă în toată Moldova.
+                  {tr.category.aboutDescription.replace("{name}", categoryName)}
                 </p>
               </div>
             </>

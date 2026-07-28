@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategoryProducts, getPublishedProducts, getCategoryBySlug } from "@/lib/crm-api";
 import { getCached } from "@/lib/redis";
+import { normalizeLocale } from "@/lib/locale";
 
 function transformProduct(item: any) {
   const price = item.offerSummary?.minPrice || item.minPrice || item.price || 0;
@@ -22,7 +23,7 @@ function transformProduct(item: any) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const searchParams = request.nextUrl.searchParams;
-  const locale = searchParams.get("locale") || "ro";
+  const locale = normalizeLocale(searchParams.get("locale") || undefined);
   const limit = parseInt(searchParams.get("limit") || "24", 10);
 
   try {

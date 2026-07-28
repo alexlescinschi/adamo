@@ -16,7 +16,6 @@ export function LocaleSwitcher() {
   const params = useParams();
   const router = useRouter();
   const currentLocale = (params?.locale as string) || "ro";
-  const current = LOCALES.find((l) => l.code === currentLocale) || LOCALES[0];
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -31,7 +30,9 @@ export function LocaleSwitcher() {
   function hrefFor(locale: string) {
     const segments = pathname.split("/");
     segments[1] = locale;
-    return segments.join("/") || "/";
+    const query = typeof window === "undefined" ? "" : window.location.search;
+    const hash = typeof window === "undefined" ? "" : window.location.hash;
+    return `${segments.join("/") || "/"}${query}${hash}`;
   }
 
   return (
@@ -49,7 +50,11 @@ export function LocaleSwitcher() {
           {LOCALES.map(({ code, label }) => (
             <button
               key={code}
-              onClick={() => { setOpen(false); router.push(hrefFor(code)); }}
+              onClick={() => {
+                setOpen(false);
+                document.cookie = `NEXT_LOCALE=${code}; Path=/; Max-Age=31536000; SameSite=Lax`;
+                router.push(hrefFor(code));
+              }}
               className={`flex w-full items-center gap-2 px-4 py-2 text-[13px] font-semibold transition-colors hover:bg-[#f3f6f6] ${
                 code === currentLocale ? "text-[#1e4b17] bg-[#edf7e8]" : "text-[#444545]"
               }`}

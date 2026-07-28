@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     const password = typeof body?.password === "string" ? body.password : "";
     const cleanPhone = typeof body?.phone === "string" ? body.phone.replace(/[^\d]/g, "") : "";
     if (!firstName || firstName.length > 100 || !lastName || lastName.length > 100 || !email || email.length > 255 || cleanPhone.length < 8 || cleanPhone.length > 15 || password.length < 8 || password.length > 128) {
-      return NextResponse.json({ error: "Invalid registration details" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid registration details", code: "invalidRegistration" }, { status: 400 });
     }
     if (await isRateLimited(request, "register", 3, 3600, `${email}:${cleanPhone}`)) {
-      return NextResponse.json({ error: "Too many registration attempts" }, { status: 429 });
+      return NextResponse.json({ error: "Too many registration attempts", code: "registrationRateLimited" }, { status: 429 });
     }
 
     const res = await fetch(`${CRM_BASE_URL}/ecommerce/e-commerce-auth/register`, {
@@ -27,12 +27,18 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(8000),
     });
 
-    const data = await res.json();
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status });
+      await res.text().catch(() => "");
+      if (res.status === 429) {
+        return NextResponse.json({ error: "Too many registration attempts", code: "registrationRateLimited" }, { status: res.status });
+      }
+      if (res.status >= 400 && res.status < 500) {
+        return NextResponse.json({ error: "Invalid registration details", code: "invalidRegistration" }, { status: res.status });
+      }
+      return NextResponse.json({ error: "Registration failed", code: "registrationFailed" }, { status: res.status });
     }
 
-    let contactWarning: string | undefined;
+    const data = await res.json();
     try {
       if (!data.user?.contact_id) await createContact({
         first_name: firstName,
@@ -40,11 +46,11 @@ export async function POST(request: NextRequest) {
         phone: cleanPhone,
         email,
       });
-    } catch {
-      contactWarning = "Contact creation failed — user registered but not in CRM contacts";
+    } catch (error) {
+      console.error("Auth register contact creation error:", error);
     }
 
-    const response = NextResponse.json({ ...publicAuthResponse(data), contactWarning });
+    const response = NextResponse.json(publicAuthResponse(data));
     if (data.accessToken) {
       response.cookies.set("ecommerceAccessToken", data.accessToken, {
         httpOnly: true,
@@ -65,6 +71,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Auth register error:", error);
-    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
+    return NextResponse.json({ error: "Registration failed", code: "registrationFailed" }, { status: 500 });
   }
 }

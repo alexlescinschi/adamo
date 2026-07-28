@@ -4,10 +4,12 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Loader2, PackageX } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export function SearchContent({ query: initialQuery }: { query: string }) {
   const params = useParams();
   const locale = (params?.locale as string) || "ro";
+  const tr = useTranslations();
   const query = initialQuery;
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export function SearchContent({ query: initialQuery }: { query: string }) {
   return (
     <div className="py-8">
       <h1 className="text-2xl font-bold mb-2">
-        {query ? `Rezultate pentru "${query}"` : "Căutare"}
+        {query ? `${tr.search.resultsFor} "${query}"` : tr.header.search.replace("...", "")}
       </h1>
 
       {loading && (
@@ -44,7 +46,7 @@ export function SearchContent({ query: initialQuery }: { query: string }) {
         <div className="text-center py-12">
           <PackageX className="mx-auto h-12 w-12 text-slate-300" />
           <p className="mt-4 text-slate-500">
-            {query ? "Nu am găsit produse pentru căutarea ta." : "Introdu un termen de căutare."}
+            {query ? `${tr.search.noResults} "${query}".` : tr.search.noResultsSub}
           </p>
         </div>
       )}

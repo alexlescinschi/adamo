@@ -46,11 +46,9 @@ export async function GET(request: NextRequest) {
     if (!res.ok) {
       return NextResponse.json({
         smart,
-        smartLabel: "Smart 0%",
-        smartDesc: "4 luni · 0% dobândă",
+        smartPlan: "smart",
         flexi: null,
-        flexiLabel: "Flexi Shop",
-        flexiDesc: "6-36 luni · dobândă standard",
+        flexiPlan: "flexi",
       });
     }
 
@@ -59,22 +57,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       smart,
-      smartLabel: "Smart 0%",
-      smartDesc: "4 luni · 0% dobândă",
+      smartPlan: "smart",
       flexi,
-      flexiLabel: "Flexi Shop",
-      flexiDesc: "6-36 luni · dobândă standard",
+      flexiPlan: "flexi",
     });
   } catch {
     // Fallback: smart only, flexi not available
     const smart = Math.round(price / 4);
     return NextResponse.json({
       smart,
-      smartLabel: "Smart 0%",
-      smartDesc: "4 luni · 0% dobândă",
+      smartPlan: "smart",
       flexi: null,
-      flexiLabel: "Flexi Shop",
-      flexiDesc: "6-36 luni · dobândă standard",
+      flexiPlan: "flexi",
     });
   }
 }

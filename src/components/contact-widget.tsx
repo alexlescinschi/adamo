@@ -46,7 +46,7 @@ const channels = [
     ),
   },
   {
-    label: "Telefon",
+    label: null,
     href: `tel:+${PHONE}`,
     className: "phone",
     bg: "#5c6b7a",
@@ -123,7 +123,7 @@ export function ContactWidget() {
       ref={ref}
       className={`fixed z-60 grid justify-items-end font-sans ${promptVisible && !open ? "is-prompt-visible" : ""} ${open ? "is-open" : ""}`}
       style={{ right: "max(22px, env(safe-area-inset-right))", bottom: "max(22px, env(safe-area-inset-bottom))" }}
-      aria-label="Contact rapid ADAMO.MD"
+      aria-label={tr.a11y.contactWidget}
     >
       {/* Prompt bubble */}
       <button
@@ -166,19 +166,19 @@ export function ContactWidget() {
           WebkitBackdropFilter: "blur(24px) saturate(140%)",
           backdropFilter: "blur(24px) saturate(140%)",
         }}
-        aria-label="Alege aplicația de contact"
+        aria-label={tr.a11y.chooseContact}
         aria-hidden={!open}
       >
         {channels.map((ch) => (
           <a
-            key={ch.label}
+            key={ch.className}
             href={ch.href}
-            target={ch.label !== "Telefon" ? "_blank" : undefined}
-            rel={ch.label !== "Telefon" ? "noopener noreferrer" : undefined}
+            target={ch.className !== "phone" ? "_blank" : undefined}
+            rel={ch.className !== "phone" ? "noopener noreferrer" : undefined}
             onClick={handleChannelClick}
             className="grid grid-cols-[minmax(0,1fr)_36px] items-center gap-3 min-h-[48px] py-[6px] pl-3 pr-[6px] rounded-[6px] text-[13.5px] font-bold leading-[1.2] text-[#202938] transition-[background,box-shadow] duration-[.18s] hover:bg-white/70 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,.68)] focus-visible:outline-none focus-visible:shadow-[inset_0_0_0_2px_rgba(84,160,47,.42)]"
           >
-            <span className="min-w-0 text-left">{ch.label}</span>
+            <span className="min-w-0 text-left">{ch.label || tr.contact.phone}</span>
             <span
               className="grid place-items-center w-9 h-9 flex-shrink-0 rounded-[7px] text-white"
               style={{
@@ -201,7 +201,7 @@ export function ContactWidget() {
           background: "linear-gradient(180deg, #73b944, #55a02d)",
           boxShadow: "0 12px 30px rgba(69, 139, 40, .3), inset 0 1px 0 rgba(255, 255, 255, .24)",
         }}
-        aria-label={open ? "Închide contactele" : "Deschide contactele"}
+        aria-label={open ? tr.a11y.closeContacts : tr.a11y.openContacts}
         aria-expanded={open}
       >
         {/* Typing dots */}
