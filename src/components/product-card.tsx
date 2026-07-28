@@ -135,7 +135,7 @@ export function ProductCard({ product }: { product: Product }) {
                 <span className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} {tr.rates.currency}</span>
               )}
               <p className="m-0 mt-[3px] text-[8.5px] font-medium text-[#1d1d1f] sm:text-[12.5px]">
-                {tr.product.installments}
+                {tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}
               </p>
             </div>
             <button

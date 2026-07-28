@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "playwright/test";
+import { formatPrice } from "../src/lib/utils";
 
 async function productHrefs(page: Page) {
   return page
@@ -42,6 +43,11 @@ for (const [device, viewport] of [
     const specs = page.getByTestId("product-grid").locator("article p").first();
     await expect(specs).toContainText("|");
     await expect(specs).not.toContainText(" / ");
+    const firstCard = page.getByTestId("product-grid").locator("article").first();
+    const price = Number((await firstCard.locator("strong").first().innerText()).replace(/\D/g, ""));
+    await expect(firstCard.locator("p").last()).toHaveText(
+      `${formatPrice(price / 6)} MDL | 6 luni | 0%.`
+    );
 
     await loadNextPage(page, 2);
     const productsAfterClick = await productHrefs(page);
