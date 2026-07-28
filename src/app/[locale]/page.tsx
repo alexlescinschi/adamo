@@ -1,6 +1,5 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
-import { QuickOrder } from "@/components/quick-order";
 import { BenefitsStrip } from "@/components/benefits-strip";
 import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
@@ -211,8 +210,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       )}
 
       <Section title={tr.home.newProducts} products={newProducts} viewAllHref={`/${locale}/laptopuri?type=new`} tr={tr} />
-
-      <QuickOrder />
 
       <section className="mt-[30px] mb-[28px]">
         <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
