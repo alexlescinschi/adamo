@@ -1,4 +1,4 @@
-import { getCategoryBySlug, getCategoryProducts, getCategories } from "@/lib/crm-api";
+import { getCategoryBySlug, getCategoryProducts, getCategories, getProductById, getPromotions } from "@/lib/crm-api";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
@@ -46,9 +46,12 @@ export async function generateMetadata({
   const tr = getDict(locale);
   const sp = await searchParams;
   const current = Math.max(1, Number(sp.page) || 1);
-  const name = await getCategoryBySlug(slug, locale)
-    .then((c: any) => c?.name || c?.translation?.name || slug)
-    .catch(() => slug);
+  const promotionsOnly = (Array.isArray(sp.type) ? sp.type[0] : sp.type) === "promotions";
+  const name = promotionsOnly
+    ? tr.home.promotions
+    : await getCategoryBySlug(slug, locale)
+        .then((c: any) => c?.name || c?.translation?.name || slug)
+        .catch(() => slug);
   const title = `${name}${current > 1 ? tr.metadata.categoryPageSuffix.replace("{page}", String(current)) : ""}`;
   // canonical cu query complet (filtru + pagină) ca să nu canibalizeze SEO între pagini/filtere.
   const qs = new URLSearchParams();
@@ -76,6 +79,7 @@ export default async function CategoryPage({
   const { slug, locale } = await params;
   const tr = getDict(locale);
   const sp = await searchParams;
+  const promotionsOnly = (Array.isArray(sp.type) ? sp.type[0] : sp.type) === "promotions";
   const currentPage = Math.max(1, Number(sp.page) || 1);
   const attributes = parseFilters(sp);
   const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
@@ -86,7 +90,7 @@ export default async function CategoryPage({
     getCategoryBySlug(slug, locale).catch(() => null),
     getCategories(locale).catch(() => null),
   ]);
-  const filterDefinitions: any[] = (cat as any)?.filterDefinitions || [];
+  const filterDefinitions: any[] = promotionsOnly ? [] : (cat as any)?.filterDefinitions || [];
   const rawCategories: any[] = Array.isArray(allCats)
     ? allCats
     : (allCats as any)?.items || [];
@@ -100,22 +104,36 @@ export default async function CategoryPage({
   let totalPages = 1;
   let total = 0;
   try {
-    const data: any = await getCategoryProducts(slug, locale, {
-      page: currentPage,
-      limit: PER_PAGE,
-      attributes,
-      priceMin: priceMin != null && !Number.isNaN(priceMin) ? priceMin : undefined,
-      priceMax: priceMax != null && !Number.isNaN(priceMax) ? priceMax : undefined,
-    });
-    products = (data?.items || []).map(mapProductCard);
-    total = Number(data?.total) || products.length;
-    totalPages = Math.max(1, Number(data?.totalPages) || Math.ceil(total / PER_PAGE));
+    if (promotionsOnly) {
+      const data: any = await getPromotions(locale, 200);
+      const items = Array.isArray(data) ? data : data?.items || [];
+      const details = await Promise.allSettled(items.map((item: any) => getProductById(item.id, locale)));
+      products = items
+        .map((item: any, index: number) => mapProductCard(details[index]?.status === "fulfilled" ? { ...details[index].value, ...item } : item))
+        .filter((product: any) => product.old_price > product.price)
+        .filter((product: any) => priceMin == null || Number.isNaN(priceMin) || product.price >= priceMin)
+        .filter((product: any) => priceMax == null || Number.isNaN(priceMax) || product.price <= priceMax);
+      total = products.length;
+      totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+    } else {
+      const data: any = await getCategoryProducts(slug, locale, {
+        page: currentPage,
+        limit: PER_PAGE,
+        attributes,
+        priceMin: priceMin != null && !Number.isNaN(priceMin) ? priceMin : undefined,
+        priceMax: priceMax != null && !Number.isNaN(priceMax) ? priceMax : undefined,
+      });
+      products = (data?.items || []).map(mapProductCard);
+      total = Number(data?.total) || products.length;
+      totalPages = Math.max(1, Number(data?.totalPages) || Math.ceil(total / PER_PAGE));
+    }
   } catch {
     products = [];
   }
 
-  const categoryName =
-    (cat as any)?.name || (cat as any)?.translation?.name || slug;
+  const categoryName = promotionsOnly
+    ? tr.home.promotions
+    : (cat as any)?.name || (cat as any)?.translation?.name || slug;
 
   // JSON-LD ca openbox: CollectionPage + ItemList + Product/Offer + BreadcrumbList.
   const itemList = products.map((p: any, i: number) => ({
@@ -184,9 +202,10 @@ export default async function CategoryPage({
           categorySlug={slug}
           filterDefinitions={filterDefinitions}
           categories={categories}
-          activeFilters={attributes}
+          activeFilters={promotionsOnly ? {} : attributes}
           activePrice={{ min: priceMin, max: priceMax }}
-          serverPaginated
+          serverPaginated={!promotionsOnly}
+          showAbout={!promotionsOnly}
         />
       </Suspense>
     </div>

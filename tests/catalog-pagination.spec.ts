@@ -95,3 +95,19 @@ test("search reuses catalog filters and load more", async ({ page }) => {
   expect(new URL(page.url()).searchParams.get("q")).toBe("hp");
   expect(new URL(page.url()).searchParams.has("page")).toBe(false);
 });
+
+test("footer promotions link opens the discounted catalog", async ({ page }) => {
+  await page.goto("/ro", { waitUntil: "networkidle" });
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("heading", { name: "Ajutor", exact: true })).toBeVisible();
+  await expect(footer.getByRole("heading", { name: "Despre ADAMO", exact: true })).toBeVisible();
+  const promotions = footer.getByRole("link", { name: "Promoții", exact: true });
+  await expect(promotions).toHaveAttribute("href", "/ro/category/laptops?type=promotions");
+
+  await promotions.click();
+  await page.waitForURL(/type=promotions/);
+  await expect(page.getByRole("heading", { name: "Promoții", exact: true })).toBeVisible();
+  const cards = page.getByTestId("product-grid").locator("article");
+  expect(await cards.count()).toBeGreaterThan(0);
+  await expect(cards.locator(".line-through")).toHaveCount(await cards.count());
+});

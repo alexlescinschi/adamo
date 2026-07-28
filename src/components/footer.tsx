@@ -37,9 +37,9 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
   const phone = contact?.phone || PHONE;
   const phoneDisplay = contact?.phone || PHONE_DISPLAY;
   const email = contact?.email || EMAIL;
-  const visible = (slug: string) => slug === "contact" || publishedPageSlugs.includes(slug);
+  const visible = (slug: string) => slug === "promotii" || publishedPageSlugs.includes(slug);
   const helpPages = CONTENT_PAGES.filter((page) => page.group === "help" && visible(page.slug));
-  const companyPages = CONTENT_PAGES.filter((page) => page.group === "company" && visible(page.slug));
+  const companySlugs = ["cum-aleg-un-laptop", "blog", "centru-service", "termeni-si-conditii", "politica-de-confidentialitate", "despre-noi"];
 
   return (
     <footer
@@ -74,9 +74,8 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
       {/* Menu */}
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.shop}</h3>
-        <Link href={l("/laptopuri")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.nav.laptops}</Link>
         {helpPages.map((page) => (
-          <Link key={page.slug} href={l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
+          <Link key={page.slug} href={page.slug === "promotii" ? l("/category/laptops?type=promotions") : l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
             {page.title[locale]}
           </Link>
         ))}
@@ -85,15 +84,12 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
       {/* Info */}
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.info}</h3>
-        {companyPages.map((page) => (
-          <Link key={page.slug} href={l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
-            {page.title[locale]}
-          </Link>
-        ))}
-        <Link href={l("/blog")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.blog}</Link>
-        <Link href={l("/harta-site-ului")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
-          {locale === "ro" ? "Harta site-ului" : locale === "ru" ? "Карта сайта" : "Sitemap"}
-        </Link>
+        {companySlugs.map((slug) => {
+          if (slug === "blog") return <Link key={slug} href={l("/blog")} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{tr.footer.blog}</Link>;
+          const page = CONTENT_PAGES.find((item) => item.slug === slug);
+          if (!page || !visible(slug)) return null;
+          return <Link key={slug} href={l(`/${slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">{page.title[locale]}</Link>;
+        })}
       </div>
 
       {/* Contacts */}

@@ -206,8 +206,8 @@ const dict = {
       writeReview: "Scrie o recenzie",
     },
     footer: {
-      shop: "Magazin",
-      info: "Informații",
+      shop: "Ajutor",
+      info: "Despre ADAMO",
       contacts: "Contacte",
       subscribe: "Abonează-te",
       subscribeSub: "Primește oferte și noutăți direct pe email",
@@ -630,8 +630,8 @@ const dict = {
       writeReview: "Написать отзыв",
     },
     footer: {
-      shop: "Магазин",
-      info: "Информация",
+      shop: "Помощь",
+      info: "Об ADAMO",
       contacts: "Контакты",
       subscribe: "Подписаться",
       subscribeSub: "Получайте предложения и новости на email",
@@ -1054,8 +1054,8 @@ const dict = {
       writeReview: "Write a review",
     },
     footer: {
-      shop: "Shop",
-      info: "Information",
+      shop: "Help",
+      info: "About ADAMO",
       contacts: "Contacts",
       subscribe: "Subscribe",
       subscribeSub: "Get offers and news directly to your email",

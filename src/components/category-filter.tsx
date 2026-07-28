@@ -124,7 +124,7 @@ export function CategoryFilter({
 
   const clearAll = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
-    for (const key of [...p.keys()]) if (key !== "q") p.delete(key);
+    for (const key of [...p.keys()]) if (key !== "q" && key !== "type") p.delete(key);
     const qs = p.toString();
     router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
   }, [router, searchParams]);
