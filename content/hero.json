@@ -2,23 +2,23 @@
   "ro": {
     "titleLines": ["Laptopuri premium,", "business și gaming", "în Moldova"],
     "emphasizeWord": "gaming",
-    "subtitle": "Noi, ca noi și verificate — cu garanție 12 luni, livrare gratuită în RM și rate 0%.",
+    "subtitle": "Importăm laptopuri noi și second-hand din Europa — complet verificate și gata de utilizare.",
     "primaryCta": { "label": "Vezi laptopuri", "href": "/laptopuri" },
     "ghostCta": { "label": "Contactează-ne", "href": "https://wa.me/37379966909" },
     "socialProof": { "text": "Peste 2000+ clienți mulțumiți", "stars": 5 }
   },
   "ru": {
-    "titleLines": ["Премиум ноутбуки,", "бизнес и игры", "в Молдове"],
-    "emphasizeWord": "игры",
-    "subtitle": "Как новые и проверенные — с гарантией 12 месяцев, бесплатной доставкой по РМ и рассрочкой 0%.",
-    "primaryCta": { "label": "Смотреть ноутбуки", "href": "/laptopuri" },
+    "titleLines": ["Премиальные ноутбуки", "для бизнеса, учёбы и игр", "в Молдове"],
+    "emphasizeWord": "игр",
+    "subtitle": "Импортируем новые и б/у ноутбуки из Европы — полностью проверенные и готовые к работе.",
+    "primaryCta": { "label": "Выбрать ноутбук", "href": "/laptopuri" },
     "ghostCta": { "label": "Связаться с нами", "href": "https://wa.me/37379966909" },
     "socialProof": { "text": "Более 2000+ довольных клиентов", "stars": 5 }
   },
   "en": {
     "titleLines": ["Premium laptops,", "business and gaming", "in Moldova"],
     "emphasizeWord": "Moldova",
-    "subtitle": "Like-new and verified — with 12-month warranty, free delivery across MD and 0% installments.",
+    "subtitle": "We import new and used laptops from Europe — fully tested and ready to use.",
     "primaryCta": { "label": "View laptops", "href": "/laptopuri" },
     "ghostCta": { "label": "Contact us", "href": "https://wa.me/37379966909" },
     "socialProof": { "text": "Over 2000+ happy customers", "stars": 5 }

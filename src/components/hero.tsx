@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { localizedPath } from "@/lib/locale";
 
 export interface HeroContent {
@@ -34,7 +34,13 @@ function CtaLink({ cta, variant, locale }: { cta: { label: string; href: string 
       }
     >
       {cta.label}
-      {variant === "ghost" && <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2.1} />}
+      {variant === "ghost" && (
+        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" aria-hidden="true">
+          <path d="M20.2 11.6a8.2 8.2 0 0 1-11.8 7.3L4 20.3l1.4-4.2A8.2 8.2 0 1 1 20.2 11.6Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M8.8 8.4c.4 3.4 2.4 5.4 5.8 6.1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="m9.3 8.4 1.3 1.7-.9 1.1M14.6 14.5l-1.1-1 1.2-1.2 1.8 1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
       {variant === "primary" && <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.1} />}
     </a>
   );
