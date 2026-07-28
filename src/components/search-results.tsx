@@ -42,7 +42,7 @@ export function SearchResults({ query, products }: { query: string; products: an
 
       {products.length > 0 && (
         <>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
             {shown.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

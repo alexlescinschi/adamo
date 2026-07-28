@@ -39,6 +39,9 @@ for (const [device, viewport] of [
     const loadMore = page.getByRole("link", { name: /Vezi mai multe/ });
     await expect(loadMore).toHaveAttribute("href", "/ro/category/laptops?page=2");
     await expect(page.locator('[aria-current="page"]')).toHaveCount(0);
+    const specs = page.getByTestId("product-grid").locator("article p").first();
+    await expect(specs).toContainText("|");
+    await expect(specs).not.toContainText(" / ");
 
     await loadNextPage(page, 2);
     const productsAfterClick = await productHrefs(page);

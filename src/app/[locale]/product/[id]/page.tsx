@@ -279,7 +279,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       {similar.length > 0 && (
         <div className="mt-[70px]">
           <h2 className="text-xl font-semibold mb-6 text-[#1d1d1f]">{tr.product.similar}</h2>
-          <div className="grid grid-cols-2 gap-[14px] md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-[14px] lg:grid-cols-4">
             {similar.map((p: any) => (
               <ProductCard key={p.id} product={p} />
             ))}

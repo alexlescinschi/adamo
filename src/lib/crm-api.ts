@@ -63,31 +63,6 @@ export async function crmFetch(path: string, options?: RequestInit) {
   return res.json();
 }
 
-// ponytail: limiter de concurență fără dependență (max `limit` request-uri simultan).
-// Ceiling: simplu, per-apel — dacă throughput-ul cere per-contorizare globală, treci pe p-limit.
-export async function mapWithConcurrency<T, R>(
-  items: T[],
-  limit: number,
-  fn: (x: T, i: number) => Promise<R>
-): Promise<PromiseSettledResult<R>[]> {
-  const results: PromiseSettledResult<R>[] = new Array(items.length);
-  let cursor = 0;
-  const worker = async () => {
-    while (cursor < items.length) {
-      const i = cursor++;
-      try {
-        results[i] = { status: "fulfilled", value: await fn(items[i], i) };
-      } catch (e) {
-        results[i] = { status: "rejected", reason: e };
-      }
-    }
-  };
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, worker)
-  );
-  return results;
-}
-
 export async function getPublishedProducts(locale = "ro", limit = 200) {
   return crmFetch(`/products?locale=${locale}&limit=${limit}`);
 }
@@ -167,8 +142,7 @@ export interface CategoryProductsQuery {
   q?: string;
 }
 
-// Endpoint PUBLIC de storefront: carduri complete (preț/imagine/stoc) + paginare nativă.
-// ponytail: cardul de listă vine complet din API → zero enrich, zero apel CRM per-produs.
+// Endpoint PUBLIC de storefront cu paginare nativă.
 export async function getCategoryProducts(
   slug: string,
   locale = "ro",
@@ -188,7 +162,13 @@ export async function getCategoryProducts(
     }
   }
   if (opts.q) p.set("q", opts.q);
-  return crmFetch(`/category/categories/${slug}/products?${p.toString()}`);
+  const data = await crmFetch(`/category/categories/${slug}/products?${p.toString()}`);
+  const items = Array.isArray(data) ? data : data?.items || [];
+  const details = await Promise.allSettled(items.map((item: any) => getProductById(item.id, locale)));
+  const enriched = details.map((result, index) =>
+    result.status === "fulfilled" ? { ...items[index], ...result.value } : items[index]
+  );
+  return Array.isArray(data) ? enriched : { ...data, items: enriched };
 }
 
 export async function getPickupWarehouses() {
