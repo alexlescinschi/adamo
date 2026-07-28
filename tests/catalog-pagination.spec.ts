@@ -71,3 +71,27 @@ test("a direct catalog page loads the following page and preserves filters", asy
   await loadNextPage(page, 3);
   expect(await productHrefs(page)).toEqual(expect.arrayContaining(initialProducts));
 });
+
+test("search reuses catalog filters and load more", async ({ page }) => {
+  await page.goto("/ro/search?q=hp", { waitUntil: "networkidle" });
+  const grid = page.getByTestId("product-grid");
+  test.skip((await grid.locator("article").count()) === 0, "CRM search credentials are required");
+  await expect(grid.locator("article")).toHaveCount(24);
+
+  const sidebar = page.locator("aside");
+  await expect(sidebar.getByText("Categorii", { exact: true })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: "Nou", exact: true })).toBeVisible();
+
+  const loadMore = page.getByRole("link", { name: /Vezi mai multe/ });
+  await loadMore.scrollIntoViewIfNeeded();
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  await loadMore.click();
+  await expect(grid.locator("article")).toHaveCount(48);
+  expect(new URL(page.url()).searchParams.get("page")).toBe("2");
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+
+  await sidebar.getByRole("button", { name: "Nou", exact: true }).click();
+  await page.waitForURL(/f_stare=new/);
+  expect(new URL(page.url()).searchParams.get("q")).toBe("hp");
+  expect(new URL(page.url()).searchParams.has("page")).toBe(false);
+});

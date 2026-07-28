@@ -34,6 +34,7 @@ interface CategoryFilterProps {
   activeFilters: Record<string, string[]>;
   activePrice?: { min?: number; max?: number };
   serverPaginated?: boolean;
+  showAbout?: boolean;
 }
 
 export function CategoryFilter({
@@ -49,6 +50,7 @@ export function CategoryFilter({
   activeFilters,
   activePrice,
   serverPaginated,
+  showAbout = true,
 }: CategoryFilterProps) {
   const tr = useTranslations();
   const locale = useLocale();
@@ -63,7 +65,7 @@ export function CategoryFilter({
 
   // Paginile următoare se adaugă după produsele primite de la server.
   const [additionalProducts, setAdditionalProducts] = useState<any[]>([]);
-  const [loadedPage, setLoadedPage] = useState(serverPaginated ? page : 0);
+  const [loadedPage, setLoadedPage] = useState(page);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
   const catalogParams = new URLSearchParams(searchParams.toString());
@@ -73,7 +75,7 @@ export function CategoryFilter({
   // Reset acumulare când se schimbă categoria, filtrele sau pagina inițială.
   useEffect(() => {
     setAdditionalProducts([]);
-    setLoadedPage(serverPaginated ? page : 0);
+    setLoadedPage(page);
     setLoadMoreError(false);
   }, [catalogStateKey, page, serverPaginated]);
 
@@ -122,7 +124,7 @@ export function CategoryFilter({
 
   const clearAll = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
-    for (const key of [...p.keys()]) p.delete(key);
+    for (const key of [...p.keys()]) if (key !== "q") p.delete(key);
     const qs = p.toString();
     router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
   }, [router, searchParams]);
@@ -142,10 +144,10 @@ export function CategoryFilter({
   const totalPages = serverPaginated
     ? Math.max(1, serverTotalPages || 1)
     : Math.max(1, Math.ceil(products.length / perPage));
-  const visible = serverPaginated ? products : products.slice(0, perPage);
+  const visible = serverPaginated ? products : products.slice(0, loadedPage * perPage);
 
-  const displayProducts = [...visible, ...additionalProducts];
-  const canLoadMore = serverPaginated && loadedPage < totalPages;
+  const displayProducts = serverPaginated ? [...visible, ...additionalProducts] : visible;
+  const canLoadMore = loadedPage < totalPages;
   const nextPageItemCount = totalItems == null
     ? perPage
     : Math.min(perPage, Math.max(0, totalItems - loadedPage * perPage));
@@ -160,10 +162,16 @@ export function CategoryFilter({
     event.preventDefault();
     if (loadingMore || !canLoadMore) return;
 
+    const nextPage = loadedPage + 1;
+    if (!serverPaginated) {
+      setLoadedPage(nextPage);
+      window.history.replaceState(window.history.state, "", buildPageHref(nextPage));
+      return;
+    }
+
     setLoadingMore(true);
     setLoadMoreError(false);
     try {
-      const nextPage = loadedPage + 1;
       const p = new URLSearchParams(searchParams.toString());
       p.set("page", String(nextPage));
       p.set("limit", String(perPage));
@@ -190,7 +198,7 @@ export function CategoryFilter({
     } finally {
       setLoadingMore(false);
     }
-  }, [buildPageHref, canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, visible]);
+  }, [buildPageHref, canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, serverPaginated, visible]);
 
   // Conținutul sidebar-ului (reutilizat desktop + drawer mobil).
   const SidebarContent = (
@@ -399,14 +407,16 @@ export function CategoryFilter({
                 </div>
               )}
 
-              <div className="mt-8 border-t border-[#cccfcf]/50 py-10">
-                <h2 className="mb-3 text-xl font-semibold text-[#1d1d1f]">
-                  {tr.category.about.replace("{name}", categoryName)}
-                </h2>
-                <p className="max-w-3xl leading-relaxed text-[#6b6c6c]">
-                  {tr.category.aboutDescription.replace("{name}", categoryName)}
-                </p>
-              </div>
+              {showAbout && (
+                <div className="mt-8 border-t border-[#cccfcf]/50 py-10">
+                  <h2 className="mb-3 text-xl font-semibold text-[#1d1d1f]">
+                    {tr.category.about.replace("{name}", categoryName)}
+                  </h2>
+                  <p className="max-w-3xl leading-relaxed text-[#6b6c6c]">
+                    {tr.category.aboutDescription.replace("{name}", categoryName)}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

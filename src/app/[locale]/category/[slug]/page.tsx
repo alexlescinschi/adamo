@@ -87,11 +87,15 @@ export default async function CategoryPage({
     getCategories(locale).catch(() => null),
   ]);
   const filterDefinitions: any[] = (cat as any)?.filterDefinitions || [];
-  const categories: any[] = Array.isArray(allCats)
+  const rawCategories: any[] = Array.isArray(allCats)
     ? allCats
     : (allCats as any)?.items || [];
+  const categories = rawCategories.map((c: any) => ({
+    slug: c.storefrontPathSlug || c.slug,
+    name: c.name || c.translation?.name || c.slug,
+  }));
 
-  // ponytail: produsele vin DEJA filtrate + paginate din CRM. Fără enrich.
+  // Produsele vin filtrate și paginate din CRM.
   let products: any[] = [];
   let totalPages = 1;
   let total = 0;
