@@ -11,7 +11,6 @@ async function loadNextPage(page: Page, expectedPage: number) {
   const loadMore = page.getByRole("link", { name: /Vezi mai multe/ });
   await loadMore.scrollIntoViewIfNeeded();
   const scrollBefore = await page.evaluate(() => window.scrollY);
-  const urlBefore = page.url();
 
   const responsePromise = page.waitForResponse((response) => {
     const url = new URL(response.url());
@@ -22,7 +21,7 @@ async function loadNextPage(page: Page, expectedPage: number) {
   expect(response.status()).toBe(200);
 
   await expect.poll(() => productHrefs(page)).toHaveLength(48);
-  expect(page.url()).toBe(urlBefore);
+  expect(new URL(page.url()).searchParams.get("page")).toBe(String(expectedPage));
   expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
 }
 
@@ -39,16 +38,12 @@ for (const [device, viewport] of [
 
     const loadMore = page.getByRole("link", { name: /Vezi mai multe/ });
     await expect(loadMore).toHaveAttribute("href", "/ro/category/laptops?page=2");
+    await expect(page.locator('[aria-current="page"]')).toHaveCount(0);
 
     await loadNextPage(page, 2);
     const productsAfterClick = await productHrefs(page);
     expect(productsAfterClick).toEqual(expect.arrayContaining(initialProducts));
     await expect(loadMore).toHaveAttribute("href", "/ro/category/laptops?page=3");
-
-    const pageTwo = page
-      .getByRole("navigation", { name: "Paginare catalog" })
-      .getByRole("link", { name: "2", exact: true });
-    await expect(pageTwo).toHaveAttribute("href", "/ro/category/laptops?page=2");
   });
 }
 

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect, type MouseEvent } from "react";
+import { useState, useCallback, useEffect, type MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
-import { X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { X, SlidersHorizontal } from "lucide-react";
 import { useLocale, useTranslations } from "@/hooks/use-translations";
 
 export interface FilterOption {
@@ -66,7 +66,9 @@ export function CategoryFilter({
   const [loadedPage, setLoadedPage] = useState(serverPaginated ? page : 0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadMoreError, setLoadMoreError] = useState(false);
-  const catalogStateKey = `${categorySlug}?${searchParams.toString()}`;
+  const catalogParams = new URLSearchParams(searchParams.toString());
+  catalogParams.delete("page");
+  const catalogStateKey = `${categorySlug}?${catalogParams.toString()}`;
 
   // Reset acumulare când se schimbă categoria, filtrele sau pagina inițială.
   useEffect(() => {
@@ -140,10 +142,6 @@ export function CategoryFilter({
   const totalPages = serverPaginated
     ? Math.max(1, serverTotalPages || 1)
     : Math.max(1, Math.ceil(products.length / perPage));
-  const safePage = Math.min(
-    Number(searchParams.get("page")) || page || 1,
-    totalPages
-  );
   const visible = serverPaginated ? products : products.slice(0, perPage);
 
   const displayProducts = [...visible, ...additionalProducts];
@@ -186,28 +184,13 @@ export function CategoryFilter({
         return [...previous, ...unique];
       });
       setLoadedPage(nextPage);
+      window.history.replaceState(window.history.state, "", buildPageHref(nextPage));
     } catch {
       setLoadMoreError(true);
     } finally {
       setLoadingMore(false);
     }
-  }, [canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, visible]);
-
-  const pageNumbers = useMemo(() => {
-    const pages: (number | "...")[] = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (safePage > 3) pages.push("...");
-      const start = Math.max(2, safePage - 1);
-      const end = Math.min(totalPages - 1, safePage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (safePage < totalPages - 2) pages.push("...");
-      pages.push(totalPages);
-    }
-    return pages;
-  }, [totalPages, safePage]);
+  }, [buildPageHref, canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, visible]);
 
   // Conținutul sidebar-ului (reutilizat desktop + drawer mobil).
   const SidebarContent = (
@@ -397,68 +380,8 @@ export function CategoryFilter({
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <nav aria-label={tr.category.pagination} className="mt-10 flex items-center justify-center gap-1.5">
-                  {safePage <= 1 ? (
-                    <span aria-disabled="true" className="rounded-full p-2 text-[#6b6c6c] opacity-30">
-                      <ChevronLeft className="h-5 w-5" />
-                    </span>
-                  ) : (
-                    <Link
-                      href={buildPageHref(safePage - 1)}
-                      scroll={false}
-                      prefetch={false}
-                      aria-label={tr.category.previousPage}
-                      className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6]"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </Link>
-                  )}
-                  {pageNumbers.map((p, i) =>
-                    p === "..." ? (
-                      <span
-                        key={`e-${i}`}
-                        className="flex h-9 w-9 items-center justify-center text-sm text-[#6b6c6c]"
-                      >
-                        ...
-                      </span>
-                    ) : (
-                      <Link
-                        key={p}
-                        href={buildPageHref(p)}
-                        scroll={false}
-                        prefetch={false}
-                        aria-current={p === safePage ? "page" : undefined}
-                        className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                          p === safePage
-                            ? "bg-[#1d1d1f] text-white"
-                            : "text-[#6b6c6c] hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"
-                        }`}
-                      >
-                        {p}
-                      </Link>
-                    )
-                  )}
-                  {safePage >= totalPages ? (
-                    <span aria-disabled="true" className="rounded-full p-2 text-[#6b6c6c] opacity-30">
-                      <ChevronRight className="h-5 w-5" />
-                    </span>
-                  ) : (
-                    <Link
-                      href={buildPageHref(safePage + 1)}
-                      scroll={false}
-                      prefetch={false}
-                      aria-label={tr.category.nextPage}
-                      className="rounded-full p-2 text-[#6b6c6c] transition-colors hover:bg-[#f3f6f6]"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </Link>
-                  )}
-                </nav>
-              )}
-
               {canLoadMore && (
-                <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="mt-10 flex flex-col items-center gap-2">
                   <Link
                     href={nextPageHref}
                     prefetch={false}
