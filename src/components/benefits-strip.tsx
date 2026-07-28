@@ -59,9 +59,9 @@ export function BenefitsStrip({ tr }: { tr: any }) {
       </div>
 
       {active && (
-        <div className="flex items-center gap-3 mt-[10px] py-3 px-4 border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_12px_30px_rgba(31,41,55,0.06)] text-[13px] leading-[1.45] text-[#536070]">
+        <div className="flex flex-col items-start gap-2 mt-[10px] py-3 px-4 border border-[#e1e7ef] rounded-[9px] bg-white/90 shadow-[0_12px_30px_rgba(31,41,55,0.06)] text-[13px] leading-[1.45] text-[#536070] sm:flex-row sm:gap-3">
           <b className="flex-shrink-0 text-[12px] uppercase text-[#1d1d1f]">{active.title}</b>
-          <span>{active.desc}</span>
+          <span className="whitespace-pre-line">{active.desc}</span>
         </div>
       )}
     </>
