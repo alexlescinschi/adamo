@@ -106,6 +106,11 @@ test("search reuses catalog filters and load more", async ({ page }) => {
   await expect(sidebar.getByText("Categorii", { exact: true })).toBeVisible();
   await expect(sidebar.getByRole("button", { name: "Nou", exact: true })).toBeVisible();
   await expect(sidebar.getByRole("button", { name: "Resetează tot", exact: true })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: /Aplică preț/ })).toHaveCount(0);
+  await sidebar.getByPlaceholder("min").fill("5000");
+  await expect.poll(() => new URL(page.url()).searchParams.get("price_min")).toBe("5000");
+  await sidebar.getByRole("button", { name: "Resetează tot", exact: true }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.has("price_min")).toBe(false);
   await page.getByLabel("Sortează produsele").selectOption("price_asc");
   await page.waitForURL(/sort=price_asc/);
   await sidebar.getByRole("button", { name: "Resetează tot", exact: true }).click();

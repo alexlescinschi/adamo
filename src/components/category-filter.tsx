@@ -114,14 +114,20 @@ export function CategoryFilter({
     [activeFilters, applyUrl]
   );
 
-  const applyPrice = useCallback(() => {
+  useEffect(() => {
+    setPriceInput({
+      min: activePrice?.min?.toString() || "",
+      max: activePrice?.max?.toString() || "",
+    });
+  }, [activePrice?.min, activePrice?.max]);
+
+  useEffect(() => {
     const min = priceInput.min.trim();
     const max = priceInput.max.trim();
-    applyUrl({
-      price_min: min || null,
-      price_max: max || null,
-    });
-  }, [priceInput, applyUrl]);
+    if (min === (activePrice?.min?.toString() || "") && max === (activePrice?.max?.toString() || "")) return;
+    const timeout = setTimeout(() => applyUrl({ price_min: min || null, price_max: max || null }), 400);
+    return () => clearTimeout(timeout);
+  }, [activePrice?.min, activePrice?.max, applyUrl, priceInput]);
 
   const clearAll = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
@@ -252,7 +258,6 @@ export function CategoryFilter({
             placeholder={tr.category.min}
             value={priceInput.min}
             onChange={(e) => setPriceInput((s) => ({ ...s, min: e.target.value }))}
-            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
             className="w-full rounded-[8px] border border-[#cccfcf] px-2 py-1.5 text-sm focus:border-[#63ad36] focus:outline-none"
           />
           <span className="text-[#cccfcf]">–</span>
@@ -262,16 +267,9 @@ export function CategoryFilter({
             placeholder={tr.category.max}
             value={priceInput.max}
             onChange={(e) => setPriceInput((s) => ({ ...s, max: e.target.value }))}
-            onKeyDown={(e) => e.key === "Enter" && applyPrice()}
             className="w-full rounded-[8px] border border-[#cccfcf] px-2 py-1.5 text-sm focus:border-[#63ad36] focus:outline-none"
           />
         </div>
-        <button
-          onClick={applyPrice}
-          className="mt-2 rounded-full bg-[#f3f6f6] px-3 py-1.5 text-xs text-[#444545] hover:bg-[#e8e8ed] transition-colors"
-        >
-          {tr.category.applyPrice}
-        </button>
       </div>
 
       {/* Facetări (din filterDefinitions) */}
