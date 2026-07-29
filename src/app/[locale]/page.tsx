@@ -2,7 +2,7 @@ import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { BenefitsStrip } from "@/components/benefits-strip";
 import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide-react";
-import { getPublishedProducts, getNewProducts, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
+import { getPublishedProducts, getNewProducts, getPromotions, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
 import Image from "next/image";
@@ -32,14 +32,16 @@ async function fetchStaticBanners(locale = "ro") {
 }
 
 async function fetchAndEnrich(locale: string) {
-  const [publishedData, newData] = await Promise.all([
+  const [publishedData, newData, promotionsData] = await Promise.all([
     getPublishedProducts(locale, 80).catch(() => ({ items: [] })),
     getNewProducts(locale, 12).catch(() => ({ items: [] })),
+    getPromotions(locale, 12).catch(() => ({ items: [] })),
   ]);
 
   const published = extractProducts(publishedData);
   const newList = extractProducts(newData);
-  const allProducts = [...published, ...newList];
+  const promotionList = extractProducts(promotionsData);
+  const allProducts = [...published, ...newList, ...promotionList];
 
   const ids = [...new Set(allProducts.map((p: any) => p.id))];
   const details = await Promise.allSettled(

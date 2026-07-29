@@ -165,3 +165,11 @@ test("footer promotions link opens the discounted catalog", async ({ page }) => 
   await page.goto(productHref!);
   await expect(page.getByRole("link", { name: "Înapoi la produse", exact: true })).toHaveCount(0);
 });
+
+test("home renders promotions in RU and EN", async ({ page }) => {
+  for (const [locale, title] of [["ru", "Акции"], ["en", "Promotions"]]) {
+    await page.goto(`/${locale}`, { waitUntil: "networkidle" });
+    const section = page.getByRole("heading", { name: title, exact: true }).locator("../..");
+    await expect(section.locator("article")).toHaveCount(2);
+  }
+});
