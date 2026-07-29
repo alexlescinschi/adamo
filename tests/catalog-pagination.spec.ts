@@ -59,7 +59,19 @@ for (const [device, viewport] of [
 test("mobile filters fill the screen and keep the action visible", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/ru/category/laptops", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /Фильтры/ }).click();
+  const filterButton = page.getByRole("button", { name: /Фильтры/ });
+  const sortButton = page.getByLabel("Сортировать товары");
+  const [titleBox, filterBox, sortBox] = await Promise.all([
+    page.getByRole("heading", { name: "Ноутбуки", exact: true }).boundingBox(),
+    filterButton.boundingBox(),
+    sortButton.boundingBox(),
+  ]);
+  expect(filterBox?.y).toBeGreaterThan((titleBox?.y || 0) + (titleBox?.height || 0));
+  expect(filterBox?.y).toBe(sortBox?.y);
+  expect(filterBox?.x).toBeLessThan(sortBox?.x || 0);
+  await expect(filterButton).toHaveCSS("border-radius", "28px");
+  await expect(sortButton).toHaveCSS("border-radius", "28px");
+  await filterButton.click();
   const dialog = page.getByRole("dialog", { name: "Фильтры" });
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveCSS("width", "390px");

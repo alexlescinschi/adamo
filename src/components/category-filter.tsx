@@ -309,30 +309,18 @@ export function CategoryFilter({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
           {categoryName}
         </h1>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex items-center justify-between md:flex-col md:items-end md:gap-2">
           {totalItems != null && (
-            <span className="text-sm text-[#6b6c6c]">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
+            <span className="hidden text-sm text-[#6b6c6c] md:block">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
           )}
-          <select
-            aria-label={tr.category.sortLabel}
-            value={sort}
-            onChange={(event) => applyUrl({ sort: event.target.value })}
-            className="rounded-[8px] border border-[#cccfcf] bg-white px-3 py-2 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-          >
-            <option value="newest">{tr.category.sortNewest}</option>
-            <option value="price_asc">{tr.category.sortPriceAsc}</option>
-            <option value="price_desc">{tr.category.sortPriceDesc}</option>
-            <option value="popular">{tr.category.sortPopular}</option>
-            <option value="discount">{tr.category.sortDiscount}</option>
-          </select>
           {(filterDefinitions.length > 0 || categories.length > 0) && (
             <button
               onClick={() => setSidebarOpen(true)}
-              className="flex items-center gap-1.5 rounded-[28px] border border-[#cccfcf] px-4 py-2 text-sm text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6] md:hidden"
+              className="flex h-[38px] items-center gap-1.5 rounded-[28px] border border-[#cccfcf] bg-white px-4 py-2 text-sm text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6] md:hidden"
             >
               <SlidersHorizontal className="h-4 w-4" />
               {tr.category.filters}
@@ -343,6 +331,18 @@ export function CategoryFilter({
               )}
             </button>
           )}
+          <select
+            aria-label={tr.category.sortLabel}
+            value={sort}
+            onChange={(event) => applyUrl({ sort: event.target.value })}
+            className="h-[38px] rounded-[28px] border border-[#cccfcf] bg-white px-4 py-2 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+          >
+            <option value="newest">{tr.category.sortNewest}</option>
+            <option value="price_asc">{tr.category.sortPriceAsc}</option>
+            <option value="price_desc">{tr.category.sortPriceDesc}</option>
+            <option value="popular">{tr.category.sortPopular}</option>
+            <option value="discount">{tr.category.sortDiscount}</option>
+          </select>
         </div>
       </div>
 
