@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const data: any = await getCategoryProducts(slug, locale, {
       page,
       limit,
+      sort: searchParams.get("sort") || undefined,
       attributes: Object.keys(attributes).length > 0 ? attributes : undefined,
       priceMin: priceMin != null ? Number(priceMin) : undefined,
       priceMax: priceMax != null ? Number(priceMax) : undefined,

@@ -81,6 +81,12 @@ test("search reuses catalog filters and load more", async ({ page }) => {
   const sidebar = page.locator("aside");
   await expect(sidebar.getByText("Categorii", { exact: true })).toBeVisible();
   await expect(sidebar.getByRole("button", { name: "Nou", exact: true })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: "Resetează tot", exact: true })).toBeVisible();
+  await page.getByLabel("Sortează produsele").selectOption("price_asc");
+  await page.waitForURL(/sort=price_asc/);
+  await sidebar.getByRole("button", { name: "Resetează tot", exact: true }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.has("sort")).toBe(false);
+  expect(new URL(page.url()).searchParams.get("q")).toBe("hp");
 
   const loadMore = page.getByRole("link", { name: /Vezi mai multe/ });
   await loadMore.scrollIntoViewIfNeeded();
@@ -94,6 +100,13 @@ test("search reuses catalog filters and load more", async ({ page }) => {
   await page.waitForURL(/f_stare=new/);
   expect(new URL(page.url()).searchParams.get("q")).toBe("hp");
   expect(new URL(page.url()).searchParams.has("page")).toBe(false);
+});
+
+test("catalog sorting survives load more", async ({ page }) => {
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  await page.getByLabel("Sortează produsele").selectOption("price_desc");
+  await page.waitForURL(/sort=price_desc/);
+  await expect(page.getByRole("link", { name: /Vezi mai multe/ })).toHaveAttribute("href", "/ro/category/laptops?sort=price_desc&page=2");
 });
 
 test("footer promotions link opens the discounted catalog", async ({ page }) => {

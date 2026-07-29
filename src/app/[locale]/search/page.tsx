@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { CategoryFilter, type FilterDefinition } from "@/components/category-filter";
 import { getCategories, getProductById, searchProductsAll } from "@/lib/crm-api";
-import { mapProductCard } from "@/lib/product-mapper";
+import { hasAttribute, mapProductCard } from "@/lib/product-mapper";
 import { getDict } from "@/lib/translations";
 
 export const dynamic = "force-dynamic";
@@ -62,6 +62,7 @@ export default async function SearchPage({
   const activeFilters = parseFilters(sp);
   const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
   const priceMax = sp.price_max ? Number(sp.price_max) : undefined;
+  const sort = ["newest", "price_asc", "price_desc", "popular", "discount"].includes(String(sp.sort)) ? String(sp.sort) : "newest";
   const filtered = entries.filter(({ source, card }) => {
     const specs = Array.isArray(source.specs) ? source.specs : [];
     const matchesFacets = Object.entries(activeFilters).every(([code, selected]) => {
@@ -71,6 +72,13 @@ export default async function SearchPage({
     return matchesFacets &&
       (priceMin == null || Number.isNaN(priceMin) || card.price >= priceMin) &&
       (priceMax == null || Number.isNaN(priceMax) || card.price <= priceMax);
+  });
+  filtered.sort((a, b) => {
+    if (sort === "price_asc") return a.card.price - b.card.price;
+    if (sort === "price_desc") return b.card.price - a.card.price;
+    if (sort === "discount") return Number(Boolean(b.card.old_price)) - Number(Boolean(a.card.old_price));
+    if (sort === "popular") return Number(hasAttribute(b.source, "popular")) - Number(hasAttribute(a.source, "popular"));
+    return Number(b.card.id) - Number(a.card.id);
   });
 
   const rawCategories: any[] = Array.isArray(categoryData) ? categoryData : (categoryData as any)?.items || [];

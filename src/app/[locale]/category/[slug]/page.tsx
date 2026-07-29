@@ -80,6 +80,7 @@ export default async function CategoryPage({
   const tr = getDict(locale);
   const sp = await searchParams;
   const promotionsOnly = (Array.isArray(sp.type) ? sp.type[0] : sp.type) === "promotions";
+  const sort = ["newest", "price_asc", "price_desc", "popular", "discount"].includes(String(sp.sort)) ? String(sp.sort) : "newest";
   const currentPage = Math.max(1, Number(sp.page) || 1);
   const attributes = parseFilters(sp);
   const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
@@ -113,12 +114,15 @@ export default async function CategoryPage({
         .filter((product: any) => product.old_price > product.price)
         .filter((product: any) => priceMin == null || Number.isNaN(priceMin) || product.price >= priceMin)
         .filter((product: any) => priceMax == null || Number.isNaN(priceMax) || product.price <= priceMax);
+      if (sort === "price_asc") products.sort((a, b) => a.price - b.price);
+      if (sort === "price_desc") products.sort((a, b) => b.price - a.price);
       total = products.length;
       totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
     } else {
       const data: any = await getCategoryProducts(slug, locale, {
         page: currentPage,
         limit: PER_PAGE,
+        sort,
         attributes,
         priceMin: priceMin != null && !Number.isNaN(priceMin) ? priceMin : undefined,
         priceMax: priceMax != null && !Number.isNaN(priceMax) ? priceMax : undefined,

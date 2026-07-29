@@ -57,6 +57,7 @@ export function CategoryFilter({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const sort = searchParams.get("sort") || "newest";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [priceInput, setPriceInput] = useState({
     min: activePrice?.min?.toString() || "",
@@ -125,6 +126,7 @@ export function CategoryFilter({
   const clearAll = useCallback(() => {
     const p = new URLSearchParams(searchParams.toString());
     for (const key of [...p.keys()]) if (key !== "q" && key !== "type") p.delete(key);
+    setPriceInput({ min: "", max: "" });
     const qs = p.toString();
     router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
   }, [router, searchParams]);
@@ -203,14 +205,12 @@ export function CategoryFilter({
   // Conținutul sidebar-ului (reutilizat desktop + drawer mobil).
   const SidebarContent = (
     <div className="space-y-6">
-      {totalActive > 0 && (
-        <button
-          onClick={clearAll}
-          className="text-sm text-[#4e8f28] hover:underline"
-        >
-          {tr.category.resetFilters.replace("{count}", String(totalActive))}
-        </button>
-      )}
+      <button
+        onClick={clearAll}
+        className="text-sm text-[#4e8f28] hover:underline"
+      >
+        {tr.category.resetFilters}
+      </button>
 
       {/* Categorii */}
       {categories.length > 0 && (
@@ -313,10 +313,22 @@ export function CategoryFilter({
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
           {categoryName}
         </h1>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end gap-2">
           {totalItems != null && (
             <span className="text-sm text-[#6b6c6c]">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
           )}
+          <select
+            aria-label={tr.category.sortLabel}
+            value={sort}
+            onChange={(event) => applyUrl({ sort: event.target.value })}
+            className="rounded-[8px] border border-[#cccfcf] bg-white px-3 py-2 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+          >
+            <option value="newest">{tr.category.sortNewest}</option>
+            <option value="price_asc">{tr.category.sortPriceAsc}</option>
+            <option value="price_desc">{tr.category.sortPriceDesc}</option>
+            <option value="popular">{tr.category.sortPopular}</option>
+            <option value="discount">{tr.category.sortDiscount}</option>
+          </select>
           {(filterDefinitions.length > 0 || categories.length > 0) && (
             <button
               onClick={() => setSidebarOpen(true)}
