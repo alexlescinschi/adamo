@@ -357,18 +357,16 @@ export function CategoryFilter({
         ) : null}
 
         {/* Drawer mobil */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-black/30 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
         <div
-          className={`fixed right-0 top-0 z-50 h-dvh w-80 max-w-[85vw] overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 md:hidden ${
+          role="dialog"
+          aria-modal="true"
+          aria-label={tr.category.filters}
+          aria-hidden={!sidebarOpen}
+          className={`fixed inset-0 z-50 flex h-dvh w-full flex-col bg-white transition-transform duration-300 md:hidden ${
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-[#e4e8e4] p-5">
             <span className="text-base font-semibold text-[#1d1d1f]">{tr.category.filters}</span>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -377,13 +375,15 @@ export function CategoryFilter({
               <X className="h-5 w-5" />
             </button>
           </div>
-          {SidebarContent}
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="mt-6 w-full rounded-full bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-4 py-2.5 text-sm font-medium text-white"
-          >
-            {tr.category.viewProducts.replace("{count}", String(totalItems ?? ""))}
-          </button>
+          <div className="flex-1 overflow-y-auto p-5">{SidebarContent}</div>
+          <div className="border-t border-[#e4e8e4] bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="w-full rounded-full bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-4 py-3 text-sm font-medium text-white"
+            >
+              {tr.category.viewProducts.replace("{count}", String(totalItems ?? ""))}
+            </button>
+          </div>
         </div>
 
         {/* Grid produse */}

@@ -56,6 +56,18 @@ for (const [device, viewport] of [
   });
 }
 
+test("mobile filters fill the screen and keep the action visible", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ru/category/laptops", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Фильтры/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Фильтры" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveCSS("width", "390px");
+  const action = dialog.getByRole("button", { name: /Показать \d+ товаров/ });
+  await dialog.locator(".overflow-y-auto").evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect(action).toBeInViewport();
+});
+
 test("a direct catalog page loads the following page and preserves filters", async ({ page }) => {
   await page.goto("/ro/category/laptops?page=2&price_min=1", { waitUntil: "networkidle" });
   const initialProducts = await productHrefs(page);
