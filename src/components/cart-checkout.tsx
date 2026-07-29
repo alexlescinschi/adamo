@@ -720,15 +720,15 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       <div className="rounded-[14px] border border-[#e4e8e4] bg-white p-4">
         <div className="flex justify-between text-[13px]">
           <span className="text-[#6b6c6c]">{tr.cart.subtotal}</span>
-          <span className="font-semibold text-[#1d1d1f]">{formatPrice(total)} MDL</span>
+          <span className="font-semibold text-[#1d1d1f]">{formatPrice(total)} {tr.rates.currency}</span>
         </div>
         <div className="mt-1.5 flex justify-between text-[13px]">
           <span className="text-[#34781f]">{tr.cart.deliveryFree}</span>
-          <span className="font-bold text-[#34781f]">0 MDL</span>
+          <span className="font-bold text-[#34781f]">0 {tr.rates.currency}</span>
         </div>
         <div className="mt-3 border-t border-[#e4e8e4] pt-3 flex justify-between text-[17px] font-bold text-[#1d1d1f]">
           <span>{tr.cart.total}</span>
-          <span>{formatPrice(total)} MDL</span>
+          <span>{formatPrice(total)} {tr.rates.currency}</span>
         </div>
 
         {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}

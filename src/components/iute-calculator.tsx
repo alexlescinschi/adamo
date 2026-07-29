@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 // ponytail: wrapper pt tag-ul iute-as-low-as (iutepay.js).
 // După ce iute.configure() rulează, SDK populează automat acest div cu widgetul
-// "X MDL/lună". Dacă SDK nu e încărcat (chei lipsă), nu randează nimic.
+// "X lei/lună". Dacă SDK nu e încărcat (chei lipsă), nu randează nimic.
 
 interface Props {
   price: number;

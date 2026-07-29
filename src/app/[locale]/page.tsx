@@ -217,7 +217,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <h2 className="mb-[10px] text-center text-[18px] font-black uppercase text-[#1d1d1f]">
           {tr.home.whyTitle}
         </h2>
-        <div className="grid grid-cols-2 overflow-hidden border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 overflow-hidden border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] md:grid-cols-3 lg:grid-cols-5">
           {[
             { Icon: CheckCircle, title: tr.home.whyVerifiedTitle, desc: tr.home.whyVerifiedDesc },
             { Icon: ShieldCheck, title: tr.home.whyWarrantyTitle, desc: tr.home.whyWarrantyDesc },
@@ -227,7 +227,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ].map((item, i, arr) => (
             <article
               key={item.title}
-              className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-r border-[#e1e7ef] bg-white transition-colors duration-[.18s] hover:bg-[#f9fdf6] group ${i === arr.length - 1 ? "border-r-0" : ""}`}
+              className={`flex items-center gap-3 min-h-[74px] px-4 py-[14px] border-b border-[#e1e7ef] bg-white transition-colors duration-[.18s] hover:bg-[#f9fdf6] group last:border-b-0 md:border-b-0 md:border-r ${i === arr.length - 1 ? "md:border-r-0" : ""}`}
             >
               <span className="flex-shrink-0 grid place-items-center w-[38px] h-[38px] text-[#111827] group-hover:text-[#2f7d25] transition-colors duration-[.18s]">
                 <item.Icon className="h-[34px] w-[34px]" strokeWidth={1.5} />

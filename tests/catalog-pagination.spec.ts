@@ -46,7 +46,7 @@ for (const [device, viewport] of [
     const firstCard = page.getByTestId("product-grid").locator("article").first();
     const price = Number((await firstCard.locator("strong").first().innerText()).replace(/\D/g, ""));
     await expect(firstCard.locator("p").last()).toHaveText(
-      `${formatPrice(price / 6)} MDL | 6 luni | 0%.`
+      `${formatPrice(price / 6)} lei | 6 luni | 0%.`
     );
 
     await loadNextPage(page, 2);
@@ -172,4 +172,20 @@ test("home renders promotions in RU and EN", async ({ page }) => {
     const section = page.getByRole("heading", { name: title, exact: true }).locator("../..");
     await expect(section.locator("article")).toHaveCount(2);
   }
+});
+
+test("home uses localized hero copy and single-column mobile benefits", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ro", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: "Alege Laptop", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Garanție 12 luni/ }).locator("..")).toHaveCSS("gap", "0px");
+  const whyItems = page.getByRole("heading", { name: "De ce ADAMO.MD?", exact: true }).locator("..").locator("article");
+  const itemRows = await whyItems.evaluateAll((items) => items.map((item) => item.getBoundingClientRect().y));
+  expect(new Set(itemRows).size).toBe(5);
+
+  await page.goto("/ru", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: "Выбрать ноутбук", exact: true })).toBeVisible();
+  await page.goto("/en", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: "Chose laptop", exact: true })).toBeVisible();
+  await expect(page.locator("h1 em")).toHaveText("gaming");
 });

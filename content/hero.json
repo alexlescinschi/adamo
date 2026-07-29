@@ -3,7 +3,7 @@
     "titleLines": ["Laptopuri premium,", "business și gaming", "în Moldova"],
     "emphasizeWord": "gaming",
     "subtitle": "Importăm laptopuri noi și second-hand din Europa — complet verificate și gata de utilizare.",
-    "primaryCta": { "label": "Vezi laptopuri", "href": "/laptopuri" },
+    "primaryCta": { "label": "Alege Laptop", "href": "/laptopuri" },
     "ghostCta": { "label": "Contactează-ne", "href": "https://wa.me/37379966909" },
     "socialProof": { "text": "Peste 2000+ clienți mulțumiți", "stars": 5 }
   },
@@ -17,9 +17,9 @@
   },
   "en": {
     "titleLines": ["Premium laptops,", "business and gaming", "in Moldova"],
-    "emphasizeWord": "Moldova",
+    "emphasizeWord": "gaming",
     "subtitle": "We import new and used laptops from Europe — fully tested and ready to use.",
-    "primaryCta": { "label": "View laptops", "href": "/laptopuri" },
+    "primaryCta": { "label": "Chose laptop", "href": "/laptopuri" },
     "ghostCta": { "label": "Contact us", "href": "https://wa.me/37379966909" },
     "socialProof": { "text": "Over 2000+ happy customers", "stars": 5 }
   }

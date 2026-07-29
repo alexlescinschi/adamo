@@ -111,7 +111,7 @@ function OrdersContent() {
                 <span className="text-sm text-slate-600">
                   {tr.orders.productCount.replace("{count}", String(order.items?.length || 0))}
                 </span>
-                <span className="font-bold">{formatPrice(order.total ?? 0)} MDL</span>
+                <span className="font-bold">{formatPrice(order.total ?? 0)} {tr.rates.currency}</span>
               </div>
             </div>
           ))}

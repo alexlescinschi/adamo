@@ -23,7 +23,7 @@ export function BenefitsStrip({ tr }: { tr: any }) {
 
   return (
     <>
-      <div className="mx-auto grid grid-cols-2 gap-[10px] border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] overflow-hidden md:grid-cols-3 lg:grid-cols-6 sm:gap-0">
+      <div className="mx-auto grid grid-cols-2 gap-0 border border-[#e1e7ef] rounded-[9px] shadow-[0_18px_45px_rgba(31,41,55,0.08)] overflow-hidden md:grid-cols-3 lg:grid-cols-6">
         {benefits.map((item, i) => {
           const isActive = activeIndex === i;
           return (
