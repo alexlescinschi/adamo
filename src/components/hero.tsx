@@ -82,7 +82,7 @@ export function Hero({ content, images, customerImageAlt, locale }: HeroProps) {
               if (emphasizeWord && line.includes(emphasizeWord)) {
                 const parts = line.split(emphasizeWord);
                 return (
-                  <span key={i} className="block whitespace-nowrap">
+                  <span key={i} className="block break-words">
                     {parts[0]}
                     <em className="not-italic text-[#1769e8]">{emphasizeWord}</em>
                     {parts[1]}
@@ -90,7 +90,7 @@ export function Hero({ content, images, customerImageAlt, locale }: HeroProps) {
                 );
               }
               return (
-                <span key={i} className="block whitespace-nowrap">
+                <span key={i} className="block break-words">
                   {line}
                 </span>
               );

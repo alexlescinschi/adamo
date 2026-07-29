@@ -185,7 +185,40 @@ test("home uses localized hero copy and single-column mobile benefits", async ({
 
   await page.goto("/ru", { waitUntil: "networkidle" });
   await expect(page.getByRole("link", { name: "Выбрать ноутбук", exact: true })).toBeVisible();
+  const titleFits = await page.locator("h1 > span").evaluateAll((lines) => lines.every((line) => {
+    const box = line.getBoundingClientRect();
+    return box.left >= 0 && box.right <= document.documentElement.clientWidth;
+  }));
+  expect(titleFits).toBe(true);
+  await page.getByRole("button", { name: "Меню", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Каталог", exact: true })).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("link", { name: "Ноутбуки", exact: true })).toBeVisible();
   await page.goto("/en", { waitUntil: "networkidle" });
   await expect(page.getByRole("link", { name: "Chose laptop", exact: true })).toBeVisible();
   await expect(page.locator("h1 em")).toHaveText("gaming");
+});
+
+test("mobile product card and gallery interactions", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  const card = page.getByTestId("product-grid").locator("article").first();
+  test.skip((await card.count()) === 0, "CRM catalog credentials are required");
+  const catalogUrl = page.url();
+  await card.getByRole("button", { name: "Adaugă în coș" }).click();
+  expect(page.url()).toBe(catalogUrl);
+  await card.locator("p").first().click();
+  await page.waitForURL(/\/ro\/product\//);
+
+  const quickOrder = page.getByRole("button", { name: /Comandă într-un clic/ });
+  expect((await quickOrder.boundingBox())?.height).toBeGreaterThanOrEqual(64);
+  await page.getByRole("button", { name: "Deschide galeria de imagini" }).click();
+  const gallery = page.getByRole("dialog");
+  await expect(gallery).toBeVisible();
+  const counter = gallery.locator("span").filter({ hasText: /^\d+ \/ \d+$/ });
+  const firstCounter = await counter.textContent();
+  expect(firstCounter).toMatch(/^1 \/ [2-9]\d*$/);
+  await gallery.getByRole("button", { name: "Imaginea următoare" }).click();
+  await expect(counter).not.toHaveText(firstCounter!);
+  await page.keyboard.press("Escape");
+  await expect(gallery).toBeHidden();
 });

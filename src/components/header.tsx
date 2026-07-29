@@ -205,7 +205,11 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
           <Link href={`/${locale}/account`} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px]" aria-label={tr.account.title}>
             <User className="h-[18px] w-[18px] sm:h-6 sm:w-6" />
           </Link>
-          <button onClick={() => setMenuOpen(!menuOpen)} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label={tr.header.menuAria}>
+          <button onClick={() => {
+            const open = !menuOpen;
+            setMenuOpen(open);
+            if (open) setMobileCatalogOpen(true);
+          }} className="grid place-items-center w-[32px] h-[32px] bg-transparent cursor-pointer text-[#1d1d1f] hover:text-[#34781f] transition-colors sm:w-[42px] sm:h-[42px] md:hidden" aria-label={tr.header.menuAria}>
             {menuOpen ? <X className="h-[18px] w-[18px] sm:h-6 sm:w-6" /> : <Menu className="h-[18px] w-[18px] sm:h-6 sm:w-6" />}
           </button>
         </div>

@@ -155,12 +155,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
           <button
             onClick={() => handleBuy("CASH")}
             disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-            className="w-full flex h-[50px] items-center gap-3 rounded-[12px] border-2 border-[#63ad36] bg-[#edf7e8] px-5 text-left hover:bg-[#daf0d2] transition-colors disabled:opacity-40"
+            className="flex min-h-[64px] w-full items-center gap-3 rounded-[12px] border-2 border-[#63ad36] bg-[#edf7e8] px-4 py-3 text-left transition-colors hover:bg-[#daf0d2] disabled:opacity-40 sm:min-h-[50px] sm:px-5 sm:py-2"
           >
             <Truck className="h-5 w-5 flex-shrink-0 text-[#34781f]" />
-            <div>
-              <span className="text-[15px] font-bold text-[#34781f]">{tr.product.orderNow}</span>
-              <span className="block text-[11px] text-[#4e8f28]">{tr.product.orderNowSub}</span>
+            <div className="min-w-0">
+              <span className="text-[15px] font-bold leading-tight text-[#34781f]">{tr.product.orderNow}</span>
+              <span className="mt-1 block text-[11px] leading-snug text-[#4e8f28]">{tr.product.orderNowSub}</span>
             </div>
           </button>
         )}

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Loader2, Check } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
@@ -29,6 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const tr = useTranslations();
   const locale = useLocale();
+  const router = useRouter();
   const resolveUnit = useResolveUnit();
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -58,7 +60,12 @@ export function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <article className={`group relative flex flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)] ${(!hasPrice || isOutOfStock) ? "opacity-60" : ""}`}>
+    <article
+      onClick={(event) => {
+        if (!(event.target as HTMLElement).closest("a, button")) router.push(href);
+      }}
+      className={`group relative flex cursor-pointer flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)] ${(!hasPrice || isOutOfStock) ? "opacity-60" : ""}`}
+    >
       <Link
         href={href}
         className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]"
