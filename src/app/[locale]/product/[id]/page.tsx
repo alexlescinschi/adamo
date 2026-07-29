@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
@@ -98,7 +98,6 @@ export async function generateMetadata({
   }
   if (!product) return {};
 
-  const slug = product.slug ? `${id}-${product.slug}` : id;
   const url = `${SITE_URL}${productPath(locale, id, product.slug)}`;
   const desc =
     (product.description && product.description.slice(0, 160)) ||
@@ -286,11 +285,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       )}
-
-      <Link href={`/${locale}`} className="mt-[70px] inline-flex items-center gap-1 text-sm text-[#4e8f28] hover:underline">
-        <ChevronLeft className="h-4 w-4" />
-        {tr.product.back}
-      </Link>
     </div>
   );
 }

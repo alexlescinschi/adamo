@@ -133,23 +133,35 @@ test("search reuses catalog filters and load more", async ({ page }) => {
 
 test("catalog sorting survives load more", async ({ page }) => {
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
-  await page.getByLabel("Sortează produsele").selectOption("price_desc");
+  const sort = page.getByLabel("Sortează produsele");
+  await sort.selectOption("price_desc");
   await page.waitForURL(/sort=price_desc/);
   await expect(page.getByRole("link", { name: /Vezi mai multe/ })).toHaveAttribute("href", "/ro/category/laptops?sort=price_desc&page=2");
+  await sort.selectOption("discount");
+  await page.waitForURL(/sort=discount/);
+  const discounted = page.getByTestId("product-grid").locator("article");
+  expect(await discounted.count()).toBeGreaterThan(0);
+  await expect(discounted.locator(".line-through")).toHaveCount(await discounted.count());
 });
 
 test("footer promotions link opens the discounted catalog", async ({ page }) => {
   await page.goto("/ro", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Promoții", exact: true }).locator("..").getByRole("link", { name: "Vezi toate" })).toHaveAttribute("href", "/ro/category/laptops?sort=discount");
   const footer = page.locator("footer");
   await expect(footer.getByRole("heading", { name: "Ajutor", exact: true })).toBeVisible();
   await expect(footer.getByRole("heading", { name: "Despre ADAMO", exact: true })).toBeVisible();
   const promotions = footer.getByRole("link", { name: "Promoții", exact: true });
-  await expect(promotions).toHaveAttribute("href", "/ro/category/laptops?type=promotions");
+  await expect(promotions).toHaveAttribute("href", "/ro/category/laptops?sort=discount");
 
   await promotions.click();
-  await page.waitForURL(/type=promotions/);
-  await expect(page.getByRole("heading", { name: "Promoții", exact: true })).toBeVisible();
+  await page.waitForURL(/sort=discount/);
+  await expect(page.getByRole("heading", { name: "Laptopuri", exact: true })).toBeVisible();
+  await expect(page.locator("aside").getByRole("button", { name: "Nou", exact: true })).toBeVisible();
   const cards = page.getByTestId("product-grid").locator("article");
   expect(await cards.count()).toBeGreaterThan(0);
   await expect(cards.locator(".line-through")).toHaveCount(await cards.count());
+  const productHref = await cards.first().locator('a[href*="/product/"]').first().getAttribute("href");
+  expect(productHref).toBeTruthy();
+  await page.goto(productHref!);
+  await expect(page.getByRole("link", { name: "Înapoi la produse", exact: true })).toHaveCount(0);
 });

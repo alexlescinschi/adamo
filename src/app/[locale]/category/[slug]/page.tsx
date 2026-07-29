@@ -81,6 +81,7 @@ export default async function CategoryPage({
   const sp = await searchParams;
   const promotionsOnly = (Array.isArray(sp.type) ? sp.type[0] : sp.type) === "promotions";
   const sort = ["newest", "price_asc", "price_desc", "popular", "discount"].includes(String(sp.sort)) ? String(sp.sort) : "newest";
+  const discountedOnly = promotionsOnly || sort === "discount";
   const currentPage = Math.max(1, Number(sp.page) || 1);
   const attributes = parseFilters(sp);
   const priceMin = sp.price_min ? Number(sp.price_min) : undefined;
@@ -91,7 +92,7 @@ export default async function CategoryPage({
     getCategoryBySlug(slug, locale).catch(() => null),
     getCategories(locale).catch(() => null),
   ]);
-  const filterDefinitions: any[] = promotionsOnly ? [] : (cat as any)?.filterDefinitions || [];
+  const filterDefinitions: any[] = (cat as any)?.filterDefinitions || [];
   const rawCategories: any[] = Array.isArray(allCats)
     ? allCats
     : (allCats as any)?.items || [];
@@ -105,12 +106,19 @@ export default async function CategoryPage({
   let totalPages = 1;
   let total = 0;
   try {
-    if (promotionsOnly) {
+    if (discountedOnly) {
       const data: any = await getPromotions(locale, 200);
       const items = Array.isArray(data) ? data : data?.items || [];
       const details = await Promise.allSettled(items.map((item: any) => getProductById(item.id, locale)));
       products = items
-        .map((item: any, index: number) => mapProductCard(details[index]?.status === "fulfilled" ? { ...details[index].value, ...item } : item))
+        .map((item: any, index: number) => details[index]?.status === "fulfilled" ? { ...details[index].value, ...item } : item)
+        .filter((source: any) => Object.entries(attributes).every(([code, selected]) => {
+          const values = (Array.isArray(source.specs) ? source.specs : [])
+            .filter((spec: any) => spec.code === code)
+            .map((spec: any) => String(spec.filterLink?.value || ""));
+          return selected.some((value) => values.includes(value));
+        }))
+        .map(mapProductCard)
         .filter((product: any) => product.old_price > product.price)
         .filter((product: any) => priceMin == null || Number.isNaN(priceMin) || product.price >= priceMin)
         .filter((product: any) => priceMax == null || Number.isNaN(priceMax) || product.price <= priceMax);
@@ -206,9 +214,9 @@ export default async function CategoryPage({
           categorySlug={slug}
           filterDefinitions={filterDefinitions}
           categories={categories}
-          activeFilters={promotionsOnly ? {} : attributes}
+          activeFilters={attributes}
           activePrice={{ min: priceMin, max: priceMax }}
-          serverPaginated={!promotionsOnly}
+          serverPaginated={!discountedOnly}
           showAbout={!promotionsOnly}
         />
       </Suspense>

@@ -71,12 +71,12 @@ export default async function SearchPage({
     });
     return matchesFacets &&
       (priceMin == null || Number.isNaN(priceMin) || card.price >= priceMin) &&
-      (priceMax == null || Number.isNaN(priceMax) || card.price <= priceMax);
+      (priceMax == null || Number.isNaN(priceMax) || card.price <= priceMax) &&
+      (sort !== "discount" || (card.old_price && card.old_price > card.price));
   });
   filtered.sort((a, b) => {
     if (sort === "price_asc") return a.card.price - b.card.price;
     if (sort === "price_desc") return b.card.price - a.card.price;
-    if (sort === "discount") return Number(Boolean(b.card.old_price)) - Number(Boolean(a.card.old_price));
     if (sort === "popular") return Number(hasAttribute(b.source, "popular")) - Number(hasAttribute(a.source, "popular"));
     return Number(b.card.id) - Number(a.card.id);
   });

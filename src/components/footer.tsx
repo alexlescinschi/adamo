@@ -75,7 +75,7 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
       <div>
         <h3 className="mb-[14px] text-[14px] font-bold uppercase text-[#1d1d1f]">{tr.footer.shop}</h3>
         {helpPages.map((page) => (
-          <Link key={page.slug} href={page.slug === "promotii" ? l("/category/laptops?type=promotions") : l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
+          <Link key={page.slug} href={page.slug === "promotii" ? l("/category/laptops?sort=discount") : l(`/${page.slug}`)} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors">
             {page.title[locale]}
           </Link>
         ))}
