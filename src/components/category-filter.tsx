@@ -370,13 +370,13 @@ export function CategoryFilter({
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
           {categoryName}
         </h1>
-        <div ref={mobileControlsAnchorRef} className="h-[54px] md:h-auto">
+        <div ref={mobileControlsAnchorRef} className="h-10 md:h-auto">
           <div
             data-testid="mobile-catalog-controls"
             data-floating={mobileControlsFloating && !sidebarOpen ? "true" : "false"}
-            className={`grid grid-cols-2 gap-2 rounded-[14px] border border-[#dce3ea] bg-white/95 p-1.5 backdrop-blur-[18px] transition-[box-shadow,transform,opacity] md:static md:flex md:flex-col md:items-end md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none ${
+            className={`grid grid-cols-2 gap-2 transition-[filter,transform,opacity] md:static md:flex md:flex-col md:items-end md:gap-2 md:drop-shadow-none ${
               mobileControlsFloating && !sidebarOpen
-                ? "fixed left-3 right-3 top-[72px] z-20 shadow-[0_12px_32px_rgba(31,41,55,0.18)] animate-in fade-in slide-in-from-top-2"
+                ? "fixed left-3 right-3 top-[72px] z-20 drop-shadow-[0_8px_18px_rgba(31,41,55,0.18)] animate-in fade-in slide-in-from-top-2"
                 : "relative"
             }`}
           >
