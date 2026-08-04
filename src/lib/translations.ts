@@ -88,6 +88,8 @@ const dict = {
       ratesLoading: "Se încarcă ratele...",
     },
     badges: {
+      new: "Nou",
+      "like-new": "Ca nou",
       gaming: "Gaming",
       premium: "Premium",
       ieftin: "Ieftin",
@@ -539,6 +541,8 @@ const dict = {
       ratesLoading: "Загрузка рассрочки...",
     },
     badges: {
+      new: "Новый",
+      "like-new": "Как новый",
       gaming: "Игровой",
       premium: "Премиум",
       ieftin: "Доступный",
@@ -990,6 +994,8 @@ const dict = {
       ratesLoading: "Loading installment plans...",
     },
     badges: {
+      new: "New",
+      "like-new": "Like new",
       gaming: "Gaming",
       premium: "Premium",
       ieftin: "Budget",

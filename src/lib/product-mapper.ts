@@ -10,6 +10,13 @@ const BADGE_GRADIENTS: Record<string, string> = {
 const POPULAR_LABELS = ["popular", "популярный"];
 const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "tip-placa-video"];
 
+export function extractCondition(item: any): "new" | "like-new" | undefined {
+  const specs = item.specs || item.attributes || [];
+  if (!Array.isArray(specs)) return undefined;
+  const condition = specs.find((s: any) => s.code === "stare")?.filterLink?.value;
+  return condition === "new" || condition === "like-new" ? condition : undefined;
+}
+
 export function extractBadge(item: any): { badge?: string; badge_type?: "green"; badge_gradient?: string } {
   const specs = item.specs || item.attributes || [];
   if (!Array.isArray(specs)) return {};
@@ -54,6 +61,7 @@ export function mapProductCard(item: any) {
     // stockCount vine pe cardul de storefront; units_on_warehouse pe detail.
     stock: item.stockCount ?? item.units_on_warehouse ?? undefined,
     specs: extractSpecs(item),
+    condition: extractCondition(item),
     ...badge,
   };
 }

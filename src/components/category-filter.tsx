@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect, type MouseEvent } from "react";
+import { Fragment, useState, useCallback, useEffect, useRef, type MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
-import { X, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, X, SlidersHorizontal } from "lucide-react";
 import { useLocale, useTranslations } from "@/hooks/use-translations";
 
 export interface FilterOption {
@@ -21,6 +21,25 @@ export interface CategoryLite {
   name: string;
 }
 
+interface CategoryBannerData {
+  mediaUrl: string;
+  linkUrl?: string | null;
+  altText?: string | null;
+}
+
+function CategoryBanner({ banner, className, testId }: { banner: CategoryBannerData; className: string; testId: string }) {
+  const image = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={banner.mediaUrl} alt={banner.altText || ""} loading="lazy" decoding="async" className="block h-auto w-full" />
+  );
+
+  return (
+    <div data-testid={testId} className={`col-span-full overflow-hidden rounded-[9px] ${className}`}>
+      {banner.linkUrl ? <a href={banner.linkUrl} className="block">{image}</a> : image}
+    </div>
+  );
+}
+
 interface CategoryFilterProps {
   products: any[];
   categoryName: string;
@@ -35,6 +54,7 @@ interface CategoryFilterProps {
   activePrice?: { min?: number; max?: number };
   serverPaginated?: boolean;
   showAbout?: boolean;
+  categoryBanner?: CategoryBannerData | null;
 }
 
 export function CategoryFilter({
@@ -51,6 +71,7 @@ export function CategoryFilter({
   activePrice,
   serverPaginated,
   showAbout = true,
+  categoryBanner,
 }: CategoryFilterProps) {
   const tr = useTranslations();
   const locale = useLocale();
@@ -59,6 +80,9 @@ export function CategoryFilter({
   const searchParams = useSearchParams();
   const sort = searchParams.get("sort") || "newest";
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileControlsFloating, setMobileControlsFloating] = useState(false);
+  const mobileControlsAnchorRef = useRef<HTMLDivElement>(null);
+  const mobileScrollY = useRef(0);
   const [priceInput, setPriceInput] = useState({
     min: activePrice?.min?.toString() || "",
     max: activePrice?.max?.toString() || "",
@@ -122,6 +146,40 @@ export function CategoryFilter({
   }, [activePrice?.min, activePrice?.max]);
 
   useEffect(() => {
+    const breakpoint = window.matchMedia("(max-width: 767px)");
+    mobileScrollY.current = window.scrollY;
+
+    const handleScroll = () => {
+      if (!breakpoint.matches) {
+        setMobileControlsFloating(false);
+        return;
+      }
+
+      const current = window.scrollY;
+      const delta = current - mobileScrollY.current;
+      if (Math.abs(delta) < 4) return;
+
+      const controlsPassed = (mobileControlsAnchorRef.current?.getBoundingClientRect().bottom ?? 0) < 0;
+      setMobileControlsFloating(controlsPassed && delta < 0);
+      mobileScrollY.current = current;
+    };
+    const handleBreakpoint = () => {
+      if (!breakpoint.matches) setMobileControlsFloating(false);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    breakpoint.addEventListener("change", handleBreakpoint);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      breakpoint.removeEventListener("change", handleBreakpoint);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sidebarOpen) setMobileControlsFloating(false);
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     const min = priceInput.min.trim();
     const max = priceInput.max.trim();
     if (min === (activePrice?.min?.toString() || "") && max === (activePrice?.max?.toString() || "")) return;
@@ -165,6 +223,7 @@ export function CategoryFilter({
     Object.values(activeFilters).reduce((n, v) => n + v.length, 0) +
     (activePrice?.min != null ? 1 : 0) +
     (activePrice?.max != null ? 1 : 0);
+  const hasFilterControls = filterDefinitions.length > 0 || categories.length > 0;
   const loadMore = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -307,40 +366,55 @@ export function CategoryFilter({
 
   return (
     <div>
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div className="mb-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
           {categoryName}
         </h1>
-        <div className="flex items-center justify-between md:flex-col md:items-end md:gap-2">
-          {totalItems != null && (
-            <span className="hidden text-sm text-[#6b6c6c] md:block">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
-          )}
-          {(filterDefinitions.length > 0 || categories.length > 0) && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex h-[38px] items-center gap-1.5 rounded-[28px] border border-[#cccfcf] bg-white px-4 py-2 text-sm text-[#1d1d1f] transition-colors hover:bg-[#f3f6f6] md:hidden"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              {tr.category.filters}
-              {totalActive > 0 && (
-                <span className="ml-1 rounded-full bg-[#63ad36] px-1.5 text-[10px] font-bold text-white">
-                  {totalActive}
-                </span>
-              )}
-            </button>
-          )}
-          <select
-            aria-label={tr.category.sortLabel}
-            value={sort}
-            onChange={(event) => applyUrl({ sort: event.target.value })}
-            className="h-[38px] rounded-[28px] border border-[#cccfcf] bg-white px-4 py-2 text-sm text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
+        <div ref={mobileControlsAnchorRef} className="h-[54px] md:h-auto">
+          <div
+            data-testid="mobile-catalog-controls"
+            data-floating={mobileControlsFloating && !sidebarOpen ? "true" : "false"}
+            className={`grid grid-cols-2 gap-2 rounded-[14px] border border-[#dce3ea] bg-white/95 p-1.5 backdrop-blur-[18px] transition-[box-shadow,transform,opacity] md:static md:flex md:flex-col md:items-end md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none ${
+              mobileControlsFloating && !sidebarOpen
+                ? "fixed left-3 right-3 top-[72px] z-20 shadow-[0_12px_32px_rgba(31,41,55,0.18)] animate-in fade-in slide-in-from-top-2"
+                : "relative"
+            }`}
           >
-            <option value="newest">{tr.category.sortNewest}</option>
-            <option value="price_asc">{tr.category.sortPriceAsc}</option>
-            <option value="price_desc">{tr.category.sortPriceDesc}</option>
-            <option value="popular">{tr.category.sortPopular}</option>
-            <option value="discount">{tr.category.sortDiscount}</option>
-          </select>
+            {totalItems != null && (
+              <span className="hidden text-sm text-[#6b6c6c] md:block">{tr.category.productCount.replace("{count}", String(totalItems))}</span>
+            )}
+            {hasFilterControls && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-[28px] border border-[#ccd5df] bg-white px-3 text-sm font-semibold text-[#1d1d1f] transition-colors hover:border-[#63ad36] hover:bg-[#f6fbf2] md:hidden"
+              >
+                <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{tr.category.filters}</span>
+                {totalActive > 0 && (
+                  <span className="ml-0.5 rounded-full bg-[#63ad36] px-1.5 text-[10px] font-bold text-white">
+                    {totalActive}
+                  </span>
+                )}
+              </button>
+            )}
+            <div className={`relative h-10 min-w-0 rounded-[28px] border border-[#ccd5df] bg-white transition-colors focus-within:border-[#63ad36] md:border-[#cccfcf] ${hasFilterControls ? "" : "col-span-2"}`}>
+              <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#526071] md:hidden" />
+              <select
+                aria-label={tr.category.sortLabel}
+                value={sort}
+                onChange={(event) => applyUrl({ sort: event.target.value })}
+                className="h-full w-full min-w-0 appearance-none rounded-[28px] bg-transparent pl-9 pr-8 text-sm font-semibold text-[#1d1d1f] focus:outline-none md:w-auto md:appearance-auto md:px-4 md:py-2 md:font-normal"
+              >
+                <option value="newest">{tr.category.sortNewest}</option>
+                <option value="price_asc">{tr.category.sortPriceAsc}</option>
+                <option value="price_desc">{tr.category.sortPriceDesc}</option>
+                <option value="popular">{tr.category.sortPopular}</option>
+                <option value="discount">{tr.category.sortDiscount}</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#526071] md:hidden" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -393,8 +467,16 @@ export function CategoryFilter({
           ) : (
             <>
               <div data-testid="product-grid" className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
-                {displayProducts.map((p: any) => (
-                  <ProductCard key={p.id} product={p} />
+                {displayProducts.map((p: any, index: number) => (
+                  <Fragment key={p.id}>
+                    <ProductCard product={p} />
+                    {categoryBanner && index === 7 && (
+                      <CategoryBanner banner={categoryBanner} testId="category-banner-mobile" className="md:hidden" />
+                    )}
+                    {categoryBanner && index === 11 && (
+                      <CategoryBanner banner={categoryBanner} testId="category-banner-desktop" className="hidden md:block" />
+                    )}
+                  </Fragment>
                 ))}
               </div>
 

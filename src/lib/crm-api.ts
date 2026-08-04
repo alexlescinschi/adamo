@@ -130,6 +130,10 @@ export async function getCategoryBySlug(slug: string, locale = "ro") {
   return crmFetch(`/category/categories/${slug}?locale=${locale}`);
 }
 
+export async function getCategoryBanner(slug: string, locale = "ro") {
+  return crmFetch(`/ecommerce/banners/categories/${encodeURIComponent(slug)}/banners?locale=${locale}`);
+}
+
 export interface CategoryProductsQuery {
   page?: number;
   limit?: number;

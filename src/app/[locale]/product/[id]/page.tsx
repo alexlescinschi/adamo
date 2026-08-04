@@ -5,7 +5,7 @@ import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
 import { ProductInfo } from "@/components/product-info";
 import { ProductCard } from "@/components/product-card";
-import { mapProductCard, extractBadge } from "@/lib/product-mapper";
+import { mapProductCard, extractBadge, extractCondition } from "@/lib/product-mapper";
 import { SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
 
@@ -43,6 +43,7 @@ async function getProduct(id: string, locale = "ro") {
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
   const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
   const { badge, badge_gradient } = extractBadge(data);
+  const condition = extractCondition(data);
   const localeTranslation = Array.isArray(data.translations)
     ? data.translations.find((t: any) => t.locale === locale)
     : null;
@@ -60,6 +61,7 @@ async function getProduct(id: string, locale = "ro") {
     brand: rawSpecs.find((s: any) => s.code === "brand" || /^(Бренд|Brand|Бренд)$/i.test(s.label))?.valueLabel,
     badge,
     badge_gradient,
+    condition,
     availability: data.offerSummary?.availability || "OutOfStock",
     category_slug: data.category?.storefrontPathSlug || data.category?.slug || null,
     category_name: data.category?.translation?.name || data.category?.name || null,
@@ -258,7 +260,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-[70px] md:grid-cols-2">
         <div className="min-w-0 md:sticky md:top-24 md:self-start">
-          <div className="relative">
+          <div data-testid="product-gallery" className="relative">
             <ImageGallery
               images={product.images}
               name={product.name}
@@ -266,6 +268,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.badge && (
               <span className={`absolute top-3 left-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)] bg-gradient-to-r ${product.badge_gradient || "from-[#7cc44e] to-[#63ad36]"}`}>
                 {(tr as any).badges?.[product.badge] ?? product.badge}
+              </span>
+            )}
+            {product.condition && (
+              <span
+                data-testid="condition-badge"
+                className={`absolute right-3 top-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+              >
+                {(tr as any).badges[product.condition]}
               </span>
             )}
           </div>

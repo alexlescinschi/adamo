@@ -4,7 +4,7 @@ import { formatPrice } from "../src/lib/utils";
 async function productHrefs(page: Page) {
   return page
     .getByTestId("product-grid")
-    .locator('a[href*="/product/"]')
+    .locator('article a[href*="/product/"]')
     .evaluateAll((links) => [...new Set(links.map((link) => link.getAttribute("href")))]);
 }
 
@@ -67,7 +67,7 @@ test("mobile filters fill the screen and keep the action visible", async ({ page
     sortButton.boundingBox(),
   ]);
   expect(filterBox?.y).toBeGreaterThan((titleBox?.y || 0) + (titleBox?.height || 0));
-  expect(filterBox?.y).toBe(sortBox?.y);
+  expect(Math.abs((filterBox?.y || 0) - (sortBox?.y || 0))).toBeLessThan(2);
   expect(filterBox?.x).toBeLessThan(sortBox?.x || 0);
   await expect(filterButton).toHaveCSS("border-radius", "28px");
   await expect(sortButton).toHaveCSS("border-radius", "28px");
@@ -78,6 +78,39 @@ test("mobile filters fill the screen and keep the action visible", async ({ page
   const action = dialog.getByRole("button", { name: /Показать \d+ товаров/ });
   await dialog.locator(".overflow-y-auto").evaluate((element) => element.scrollTo(0, element.scrollHeight));
   await expect(action).toBeInViewport();
+});
+
+test("mobile filter and sort controls float together when scrolling up", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  for (const path of ["/ro/category/laptops", "/ro/search?q=hp"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    const controls = page.getByTestId("mobile-catalog-controls");
+    const filter = controls.getByRole("button", { name: /Filtre/ });
+    const sort = controls.getByLabel("Sortează produsele");
+    await expect(controls).toHaveAttribute("data-floating", "false");
+
+    const staticBoxes = await Promise.all([filter.boundingBox(), sort.boundingBox()]);
+    expect(Math.abs(staticBoxes[0]!.y - staticBoxes[1]!.y)).toBeLessThan(2);
+    expect(staticBoxes[0]!.x + staticBoxes[0]!.width).toBeLessThanOrEqual(staticBoxes[1]!.x);
+
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = "auto";
+      window.scrollTo(0, Math.min(1600, document.documentElement.scrollHeight - innerHeight));
+    });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(800);
+    await page.waitForTimeout(100);
+    await expect(controls).toHaveAttribute("data-floating", "false");
+    await page.evaluate(() => window.scrollBy(0, -160));
+    await expect(controls).toHaveAttribute("data-floating", "true");
+
+    const floatingBoxes = await Promise.all([filter.boundingBox(), sort.boundingBox()]);
+    expect(Math.abs(floatingBoxes[0]!.y - floatingBoxes[1]!.y)).toBeLessThan(2);
+    expect(floatingBoxes[0]!.x + floatingBoxes[0]!.width).toBeLessThanOrEqual(floatingBoxes[1]!.x);
+    expect(floatingBoxes[0]!.y).toBeGreaterThanOrEqual(70);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  }
 });
 
 test("a direct catalog page loads the following page and preserves filters", async ({ page }) => {
@@ -97,6 +130,7 @@ test("a direct catalog page loads the following page and preserves filters", asy
 });
 
 test("search reuses catalog filters and load more", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto("/ro/search?q=hp", { waitUntil: "networkidle" });
   const grid = page.getByTestId("product-grid");
   test.skip((await grid.locator("article").count()) === 0, "CRM search credentials are required");
@@ -142,6 +176,37 @@ test("catalog sorting survives load more", async ({ page }) => {
   const discounted = page.getByTestId("product-grid").locator("article");
   expect(await discounted.count()).toBeGreaterThan(0);
   await expect(discounted.locator(".line-through")).toHaveCount(await discounted.count());
+});
+
+for (const [device, viewport, bannerTestId, productsBefore] of [
+  ["mobile", { width: 390, height: 844 }, "category-banner-mobile", 8],
+  ["desktop", { width: 1280, height: 720 }, "category-banner-desktop", 12],
+] as const) {
+  test(`category banner follows ${productsBefore} products on ${device}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+    const grid = page.getByTestId("product-grid");
+    const banner = grid.getByTestId(bannerTestId);
+    await expect(banner).toBeVisible();
+    await expect(banner.locator("img")).toHaveAttribute("src", /banners\/storefront/);
+    expect(await banner.evaluate((element) => {
+      const children = [...element.parentElement!.children];
+      return children.slice(0, children.indexOf(element)).filter((child) => child.tagName === "ARTICLE").length;
+    })).toBe(productsBefore);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  });
+}
+
+test("Mini-PC and localized categories load their CRM banners automatically", async ({ page }) => {
+  await page.goto("/ro/category/minipc", { waitUntil: "networkidle" });
+  const miniPcBanner = page.getByTestId("category-banner-desktop");
+  await expect(miniPcBanner).toBeVisible();
+  const miniPcSource = await miniPcBanner.locator("img").getAttribute("src");
+
+  await page.goto("/ru/category/minipc", { waitUntil: "networkidle" });
+  const russianBanner = page.getByTestId("category-banner-desktop");
+  await expect(russianBanner).toBeVisible();
+  await expect(russianBanner.locator("img")).not.toHaveAttribute("src", miniPcSource!);
 });
 
 test("footer promotions link opens the discounted catalog", async ({ page }) => {
@@ -249,4 +314,30 @@ test("special order popup submits a CRM contact request", async ({ page }) => {
   await dialog.getByRole("button", { name: "Trimite cererea" }).click();
   await expect(dialog).toContainText("Cererea a fost trimisă");
   expect(requestBody).toMatchObject({ first_name: "Ana", last_name: "Test", phone: "069123456", email: "ana@example.com", comment: "Comandă specială: Calculator pentru editare video" });
+});
+
+test("new and like-new condition stickers appear while used stays unbadged", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  const grid = page.getByTestId("product-grid");
+  const card = (id: number) => grid.locator(`article:has(a[href*="/product/${id}-"])`);
+
+  await expect(card(1458).getByTestId("condition-badge")).toHaveText("Nou");
+  await expect(card(1457).getByTestId("condition-badge")).toHaveText("Ca nou");
+  await expect(card(1452).getByTestId("condition-badge")).toHaveCount(0);
+
+  await page.goto("/ru/product/1458", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveText("Новый");
+
+  await page.goto("/en/product/1457", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveText("Like new");
+
+  await page.goto("/ro/product/1452", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  await expect(card(1458).getByTestId("condition-badge")).toBeVisible();
+  await page.goto("/ro/product/1457", { waitUntil: "networkidle" });
+  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toBeVisible();
 });

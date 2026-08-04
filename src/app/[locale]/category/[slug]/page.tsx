@@ -1,4 +1,4 @@
-import { getCategoryBySlug, getCategoryProducts, getCategories, getProductById, getPromotions } from "@/lib/crm-api";
+import { getCategoryBanner, getCategoryBySlug, getCategoryProducts, getCategories, getProductById, getPromotions } from "@/lib/crm-api";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CategoryFilter } from "@/components/category-filter";
@@ -100,6 +100,9 @@ export default async function CategoryPage({
     slug: c.storefrontPathSlug || c.slug,
     name: c.name || c.translation?.name || c.slug,
   }));
+  const categoryBanner = await getCategoryBanner((cat as any)?.slug || slug, locale)
+    .then((data: any) => data?.banner?.mediaUrl ? data.banner : null)
+    .catch(() => null);
 
   // Produsele vin filtrate și paginate din CRM.
   let products: any[] = [];
@@ -218,6 +221,7 @@ export default async function CategoryPage({
           activePrice={{ min: priceMin, max: priceMax }}
           serverPaginated={!discountedOnly}
           showAbout={!promotionsOnly}
+          categoryBanner={categoryBanner}
         />
       </Suspense>
     </div>
