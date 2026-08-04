@@ -232,7 +232,11 @@ test("special order popup submits a CRM contact request", async ({ page }) => {
     requestBody = route.request().postDataJSON();
     await route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
   });
-  await page.getByRole("button", { name: "Comandă specială", exact: true }).click();
+  const header = page.locator("header");
+  const specialOrder = header.getByRole("button", { name: "Comandă specială", exact: true });
+  await expect(header.getByRole("link", { name: "Garanție", exact: true })).toHaveCount(0);
+  expect(await specialOrder.evaluate((element) => getComputedStyle(element).color)).toBe(await header.getByRole("link", { name: "Contacte", exact: true }).evaluate((element) => getComputedStyle(element).color));
+  await specialOrder.click();
   const dialog = page.getByRole("dialog", { name: "Comandă orice tehnică" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByAltText("Calculator disponibil la comandă specială")).toBeVisible();

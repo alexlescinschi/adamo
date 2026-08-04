@@ -17,11 +17,10 @@ const PHONE_DISPLAY = "0 799 66 909";
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },
-  { href: "/returnare-si-garantie", key: "warranty" },
   { href: "/contact", key: "contact" },
 ];
 
-export function Header({ categories = [], products = [], publishedPageSlugs = [] }: { categories?: CatalogCategory[]; products?: any[]; publishedPageSlugs?: string[] }) {
+export function Header({ categories = [], products = [] }: { categories?: CatalogCategory[]; products?: any[]; publishedPageSlugs?: string[] }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -83,7 +82,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
   }, [searchOpen]);
 
   const isCatalogActive = pathname.startsWith(`/${locale}/category/`);
-  const navLinks = NAV_LINK_KEYS.filter(({ href }) => href !== "/returnare-si-garantie" || publishedPageSlugs.includes("returnare-si-garantie"));
+  const navLinks = NAV_LINK_KEYS;
 
   const desktopNavLinks = (
     <>
@@ -156,7 +155,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
               </div>
             )}
             {isHome && (
-              <button type="button" onClick={() => setSpecialOrderOpen(true)} className="rounded-[7px] px-[12px] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#b5e79a]">
+              <button type="button" onClick={() => setSpecialOrderOpen(true)} className="rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold text-[#444545] transition-colors hover:bg-[#b5e79a] hover:text-[#1d1d1f]">
                 {tr.nav.specialOrder}
               </button>
             )}
@@ -288,7 +287,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
                   </div>
                 )}
                 {isHome && (
-                  <button type="button" onClick={() => { setMenuOpen(false); setSpecialOrderOpen(true); }} className="rounded-[9px] px-4 py-3 text-left text-sm font-semibold text-[#34781f] transition-colors hover:bg-[#b5e79a]">
+                  <button type="button" onClick={() => { setMenuOpen(false); setSpecialOrderOpen(true); }} className="rounded-[9px] px-4 py-3 text-left text-sm font-semibold text-[#444545] transition-colors hover:bg-[#b5e79a]">
                     {tr.nav.specialOrder}
                   </button>
                 )}
