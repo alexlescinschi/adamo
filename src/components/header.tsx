@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { usePathname, useParams } from "next/navigation";
 import { useCart } from "@/hooks/use-cart";
 import { CartDrawer } from "./cart-drawer";
+import { SpecialOrderModal } from "./special-order-modal";
 import { LocaleSwitcher } from "./locale-switcher";
 import { useTranslations } from "@/hooks/use-translations";
 import { formatPrice } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [specialOrderOpen, setSpecialOrderOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
@@ -153,6 +155,11 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
                 )}
               </div>
             )}
+            {isHome && (
+              <button type="button" onClick={() => setSpecialOrderOpen(true)} className="rounded-[7px] px-[12px] py-[9px] text-[13px] font-semibold text-[#34781f] transition-colors hover:bg-[#b5e79a]">
+                {tr.nav.specialOrder}
+              </button>
+            )}
             {isContact && <LocaleSwitcher />}
           </span>
         );
@@ -280,6 +287,11 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
                     )}
                   </div>
                 )}
+                {isHome && (
+                  <button type="button" onClick={() => { setMenuOpen(false); setSpecialOrderOpen(true); }} className="rounded-[9px] px-4 py-3 text-left text-sm font-semibold text-[#34781f] transition-colors hover:bg-[#b5e79a]">
+                    {tr.nav.specialOrder}
+                  </button>
+                )}
                 {isContact && <LocaleSwitcher />}
               </span>
             );
@@ -290,6 +302,7 @@ export function Header({ categories = [], products = [], publishedPageSlugs = []
         </nav>
       </div>
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+      <SpecialOrderModal open={specialOrderOpen} onClose={() => setSpecialOrderOpen(false)} locale={locale} />
     </>
   );
 }

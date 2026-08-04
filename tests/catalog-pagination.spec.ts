@@ -222,3 +222,27 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(gallery).toBeHidden();
 });
+
+test("special order popup submits a CRM contact request", async ({ page }) => {
+  const invalidEmail = await page.request.post("/api/contacts", { data: { first_name: "Ana", last_name: "Test", phone: "069123456", email: "invalid", comment: "Test" } });
+  expect(invalidEmail.status()).toBe(400);
+  let requestBody: any;
+  await page.goto("/ro", { waitUntil: "networkidle" });
+  await page.route("**/api/contacts", async (route) => {
+    requestBody = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
+  });
+  await page.getByRole("button", { name: "Comandă specială", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Comandă orice tehnică" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByAltText("Calculator disponibil la comandă specială")).toBeVisible();
+  await dialog.getByLabel("Prenume").fill("Ana");
+  await dialog.getByLabel("Nume", { exact: true }).fill("Test");
+  await dialog.getByLabel("Telefon").fill("069123456");
+  await dialog.getByLabel("Email (opțional)").fill("ana@example.com");
+  await dialog.getByLabel("Ce produs cauți?").fill("Calculator pentru editare video");
+  await dialog.getByRole("checkbox").check();
+  await dialog.getByRole("button", { name: "Trimite cererea" }).click();
+  await expect(dialog).toContainText("Cererea a fost trimisă");
+  expect(requestBody).toMatchObject({ first_name: "Ana", last_name: "Test", phone: "069123456", email: "ana@example.com", comment: "Comandă specială: Calculator pentru editare video" });
+});
