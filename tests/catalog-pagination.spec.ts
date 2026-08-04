@@ -113,6 +113,22 @@ test("mobile filter and sort controls float together when scrolling up", async (
   }
 });
 
+test("mobile filter and sort pills scroll together without clipping their text", async ({ page }) => {
+  await page.setViewportSize({ width: 240, height: 844 });
+  await page.goto("/ru/category/laptops", { waitUntil: "networkidle" });
+  const controls = page.getByTestId("mobile-catalog-controls");
+  const filter = controls.getByRole("button", { name: /Фильтры/ });
+  const sort = controls.getByLabel("Сортировать товары");
+
+  await expect(filter.locator("span").first()).toHaveCSS("white-space", "nowrap");
+  await expect(sort).toHaveCSS("white-space", "nowrap");
+  expect(await controls.evaluate((element) => element.scrollWidth)).toBeGreaterThan(
+    await controls.evaluate((element) => element.clientWidth),
+  );
+  await controls.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+  expect(await controls.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+});
+
 test("a direct catalog page loads the following page and preserves filters", async ({ page }) => {
   await page.goto("/ro/category/laptops?page=2&price_min=1", { waitUntil: "networkidle" });
   const initialProducts = await productHrefs(page);

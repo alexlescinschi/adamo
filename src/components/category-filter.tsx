@@ -370,14 +370,14 @@ export function CategoryFilter({
         <h1 className="text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">
           {categoryName}
         </h1>
-        <div ref={mobileControlsAnchorRef} className="h-10 md:h-auto">
+        <div ref={mobileControlsAnchorRef} className="h-10 min-w-0 w-full md:h-auto md:w-auto">
           <div
             data-testid="mobile-catalog-controls"
             data-floating={mobileControlsFloating && !sidebarOpen ? "true" : "false"}
-            className={`grid grid-cols-2 gap-2 transition-[filter,transform,opacity] md:static md:flex md:flex-col md:items-end md:gap-2 md:drop-shadow-none ${
+            className={`flex max-w-full gap-2 overflow-x-auto overflow-y-hidden transition-[filter,transform,opacity] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:static md:max-w-none md:flex-col md:items-end md:overflow-visible md:drop-shadow-none ${
               mobileControlsFloating && !sidebarOpen
                 ? "fixed left-3 right-3 top-[72px] z-20 drop-shadow-[0_8px_18px_rgba(31,41,55,0.18)] animate-in fade-in slide-in-from-top-2"
-                : "relative"
+                : "relative w-full md:w-auto"
             }`}
           >
             {totalItems != null && (
@@ -387,10 +387,10 @@ export function CategoryFilter({
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-[28px] border border-[#ccd5df] bg-white px-3 text-sm font-semibold text-[#1d1d1f] transition-colors hover:border-[#63ad36] hover:bg-[#f6fbf2] md:hidden"
+                className="flex h-10 w-max flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[28px] border border-[#ccd5df] bg-white px-3 text-sm font-semibold text-[#1d1d1f] transition-colors hover:border-[#63ad36] hover:bg-[#f6fbf2] md:hidden"
               >
                 <SlidersHorizontal className="h-4 w-4 flex-shrink-0" />
-                <span className="truncate">{tr.category.filters}</span>
+                <span>{tr.category.filters}</span>
                 {totalActive > 0 && (
                   <span className="ml-0.5 rounded-full bg-[#63ad36] px-1.5 text-[10px] font-bold text-white">
                     {totalActive}
@@ -398,13 +398,13 @@ export function CategoryFilter({
                 )}
               </button>
             )}
-            <div className={`relative h-10 min-w-0 rounded-[28px] border border-[#ccd5df] bg-white transition-colors focus-within:border-[#63ad36] md:border-[#cccfcf] ${hasFilterControls ? "" : "col-span-2"}`}>
+            <div className="relative ml-auto h-10 w-max flex-none rounded-[28px] border border-[#ccd5df] bg-white transition-colors focus-within:border-[#63ad36] md:ml-0 md:border-[#cccfcf]">
               <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#526071] md:hidden" />
               <select
                 aria-label={tr.category.sortLabel}
                 value={sort}
                 onChange={(event) => applyUrl({ sort: event.target.value })}
-                className="h-full w-full min-w-0 appearance-none rounded-[28px] bg-transparent pl-9 pr-8 text-sm font-semibold text-[#1d1d1f] focus:outline-none md:w-auto md:appearance-auto md:px-4 md:py-2 md:font-normal"
+                className="h-full w-auto min-w-max appearance-none whitespace-nowrap rounded-[28px] bg-transparent pl-9 pr-8 text-sm font-semibold text-[#1d1d1f] focus:outline-none md:appearance-auto md:px-4 md:py-2 md:font-normal"
               >
                 <option value="newest">{tr.category.sortNewest}</option>
                 <option value="price_asc">{tr.category.sortPriceAsc}</option>
