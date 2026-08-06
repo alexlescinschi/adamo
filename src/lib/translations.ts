@@ -462,7 +462,7 @@ const dict = {
       laptops: "Ноутбуки",
       warranty: "Гарантия",
       contact: "Контакты",
-      specialOrder: "Специальный заказ",
+      specialOrder: "Спец. Заказ",
       menu: "Меню",
     },
     specialOrder: {
