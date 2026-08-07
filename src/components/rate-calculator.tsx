@@ -64,32 +64,26 @@ export function RateCalculator({ price, productName }: Props) {
     <>
       {/* Inline widget */}
       <div className="mt-4 rounded-[12px] border border-[#e4e8e4] bg-[#f7f9f7] p-4">
-        {/* Badge + price row */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="rounded-[6px] bg-[#63ad36] px-[10px] py-[4px] text-[11px] font-black uppercase tracking-wide text-white">
-            {tr.badge}
-          </span>
-          <span className="text-[22px] font-extrabold text-[#1d1d1f]">{formatPrice(price)} <span className="text-[15px] font-semibold text-[#6b6c6c]">{tr.currency}</span></span>
+        <p className="mb-3 text-[14px] font-bold text-[#1d1d1f]">{tr.estimatesTitle}</p>
+        <div data-testid="rate-clouds" className="mb-3 flex flex-wrap gap-2">
+          {PLANS.map((plan) => (
+            <div
+              key={plan.months}
+              data-months={plan.months}
+              data-rate={plan.rate}
+              className={`whitespace-nowrap rounded-[18px] border px-3 py-2 ${plan.rate === 0 ? "border-[#b9dca5] bg-[#edf7e8]" : "border-[#e1e5e1] bg-white"}`}
+            >
+              <div className="flex items-center gap-2 text-[11px] font-bold">
+                <span className={plan.rate === 0 ? "text-[#34781f]" : "text-[#6b6c6c]"}>{plan.rate}%</span>
+                <span className="text-[#6b6c6c]">{tr.monthCount.replace("{count}", String(plan.months))}</span>
+              </div>
+              <div className="mt-0.5 text-[14px] font-extrabold text-[#1d1d1f]">
+                {formatPrice(monthly(price, plan.months, plan.rate))} <span className="text-[10px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
+              </div>
+            </div>
+          ))}
         </div>
-
-        {/* Plan selector */}
-        <div className="flex items-center gap-3 mb-4">
-          <select
-            value={selectedMonths}
-            onChange={(e) => setSelectedMonths(Number(e.target.value))}
-            className="rounded-[9px] border border-[#e4e8e4] bg-white px-3 py-2 text-[13px] font-semibold text-[#1d1d1f] focus:border-[#63ad36] focus:outline-none"
-          >
-            {PLANS.map((p) => (
-              <option key={p.months} value={p.months}>
-                {p.rate}% · {tr.monthCount.replace("{count}", String(p.months))}
-              </option>
-            ))}
-          </select>
-          <span className="text-[#6b6c6c] text-[13px]">→</span>
-          <span className="text-[18px] font-extrabold text-[#34781f]">
-            {formatPrice(amount)} <span className="text-[13px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
-          </span>
-        </div>
+        <p className="mb-3 text-[10px] text-[#6b6c6c]">{tr.disclaimer}</p>
 
         {/* CTA button */}
         <button

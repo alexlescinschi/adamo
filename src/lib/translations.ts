@@ -309,6 +309,7 @@ const dict = {
     },
     rates: {
       badge: "Preț Rate ADAMO",
+      estimatesTitle: "Rate lunare estimate",
       perMonth: "lei / lună",
       buyInRates: "Cumpără în rate",
       modalSubtitle: "Cumpărare în rate",
@@ -763,6 +764,7 @@ const dict = {
     },
     rates: {
       badge: "Цена в рассрочку ADAMO",
+      estimatesTitle: "Примерные ежемесячные платежи",
       perMonth: "лей / мес.",
       buyInRates: "Купить в рассрочку",
       modalSubtitle: "Покупка в рассрочку",
@@ -1217,6 +1219,7 @@ const dict = {
     },
     rates: {
       badge: "ADAMO Installment Price",
+      estimatesTitle: "Estimated monthly payments",
       perMonth: "lei / mo.",
       buyInRates: "Buy in installments",
       modalSubtitle: "Installment purchase",
