@@ -343,6 +343,7 @@ test("home uses localized hero copy and single-column mobile benefits", async ({
 
 test("mobile product card and gallery interactions", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => { (window as any).iute = { configure() {} }; });
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
   const card = page.getByTestId("product-grid").locator("article").first();
   test.skip((await card.count()) === 0, "CRM catalog credentials are required");
@@ -365,7 +366,11 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["0", "0", "1", "1", "1", "1", "1"]);
   const cloudRows = await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getBoundingClientRect().y));
   expect(new Set(cloudRows).size).toBeGreaterThan(1);
-  await expect(productInfo.getByRole("button", { name: "Achită în rate", exact: true })).toHaveCount(0);
+  const iuteButton = productInfo.getByRole("button", { name: /Achită în rate/ });
+  await expect(iuteButton).toBeVisible();
+  await iuteButton.click();
+  await expect(productInfo.getByText("Smart 0%", { exact: true })).toBeVisible();
+  await expect(productInfo.locator(".iute-as-low-as")).toHaveCount(1);
 
   const quickOrder = page.getByRole("button", { name: /Comandă într-un clic/ });
   expect((await quickOrder.boundingBox())?.height).toBeGreaterThanOrEqual(64);

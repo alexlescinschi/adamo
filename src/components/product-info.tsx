@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/hooks/use-cart";
 import { useResolveUnit } from "@/hooks/use-resolve-unit";
-import { ShoppingCart, Loader2, Minus, Plus, Truck, Info } from "lucide-react";
+import { ShoppingCart, Loader2, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
 import { useLocale, useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
+import { IuteCalculator } from "@/components/iute-calculator";
 import { formatPrice } from "@/lib/utils";
 
 interface ProductInfoProps {
@@ -20,10 +21,20 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const locale = useLocale();
   const [adding, setAdding] = useState(false);
   const [qty, setQty] = useState(1);
+  const [rateOpen, setRateOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [iuteRates, setIuteRates] = useState<{ smart: number; flexi: number | null } | null>(null);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
+
+  useEffect(() => {
+    if (!hasPrice) return;
+    fetch(`/api/payments/iute/calculations?price=${product.price}`)
+      .then((response) => response.json())
+      .then(setIuteRates)
+      .catch(() => {});
+  }, [product.price, hasPrice]);
 
   const handleAddToCart = async () => {
     if (qty > stock) {
@@ -161,9 +172,56 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </button>
         )}
 
+        <div className="overflow-hidden rounded-[12px] bg-gradient-to-r from-[#3d9a2e] to-[#2e7d22] text-white">
+          <button
+            onClick={() => setRateOpen(!rateOpen)}
+            disabled={!hasPrice || product.availability === "OutOfStock"}
+            className="h-[50px] w-full px-5 transition-all hover:from-[#2e7d22] hover:to-[#236b1a] disabled:opacity-40"
+          >
+            <div className="flex items-center gap-3">
+              <img src="/coins.svg" alt="" className="h-5 w-5 flex-shrink-0 brightness-0 invert" />
+              <div className="flex-1 text-left">
+                <span className="text-[15px] font-bold">{tr.product.payInstallments}</span>
+                <span className="block text-[11px] font-normal opacity-80">{tr.product.installmentSub}</span>
+              </div>
+              <ChevronDown className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${rateOpen ? "rotate-180" : ""}`} />
+            </div>
+          </button>
+          <div className={`transition-all duration-300 ${rateOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"}`}>
+            <div className="space-y-1.5 px-5 pb-3">
+              {iuteRates ? (
+                <>
+                  <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
+                    <div className="text-left">
+                      <span className="text-[13px] font-semibold">Smart 0%</span>
+                      <span className="block text-[10px] opacity-70">{tr.rates.smartDescription}</span>
+                    </div>
+                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
+                  </button>
+                  {iuteRates.flexi ? (
+                    <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
+                      <div className="text-left">
+                        <span className="text-[13px] font-semibold">Flexi Shop</span>
+                        <span className="block text-[10px] opacity-70">{tr.rates.flexiDescription}</span>
+                      </div>
+                      <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2"><Loader2 className="h-3 w-3 animate-spin opacity-50" /><span className="text-[11px] opacity-50">{tr.product.flexiLoading}</span></div>
+                  )}
+                  <p className="pt-1 text-[10px] font-normal opacity-60">{tr.product.partialSub}</p>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2"><Loader2 className="h-4 w-4 animate-spin opacity-50" /><span className="text-[12px] opacity-50">{tr.product.ratesLoading}</span></div>
+              )}
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <RateCalculator price={product.price} productName={product.name} />
+      <IuteCalculator price={product.price} sku={String(product.id)} />
 
       {product.description && (
         <div className="mt-6 text-[17px] leading-relaxed text-[#6b6c6c] whitespace-pre-line">{product.description}</div>
