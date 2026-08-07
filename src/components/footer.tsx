@@ -6,9 +6,8 @@ import { useTranslations } from "@/hooks/use-translations";
 import { CONTENT_PAGES } from "@/lib/content-pages";
 import type { ContactSettings } from "@/lib/sanity";
 import type { Locale } from "@/lib/translations";
+import { ADAMO_COMPANY } from "@/lib/company";
 
-const PHONE = "+37379966909";
-const PHONE_DISPLAY = "0 799 66 909";
 const EMAIL = "adamocomputers@gmail.com";
 
 const socialLinks = [
@@ -34,8 +33,6 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
   const locale: Locale = params?.locale === "ru" || params?.locale === "en" ? params.locale : "ro";
   const l = (path: string) => `/${locale}${path}`;
   const tr = useTranslations();
-  const phone = contact?.phone || PHONE;
-  const phoneDisplay = contact?.phone || PHONE_DISPLAY;
   const email = contact?.email || EMAIL;
   const visible = (slug: string) => slug === "promotii" || publishedPageSlugs.includes(slug);
   const helpPages = CONTENT_PAGES.filter((page) => page.group === "help" && visible(page.slug));
@@ -98,7 +95,7 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
         <p className="mb-[10px] text-[14px] leading-[1.45] text-[#536070]">
           <span className="whitespace-pre-line">{contact?.address || tr.footer.fallbackAddress}</span>
         </p>
-        <a href={`tel:${phone}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{phoneDisplay}</a>
+        <a href={`tel:${ADAMO_COMPANY.phone}`} className="block mb-[10px] text-[14px] leading-[1.45] font-bold text-[#263142] hover:text-[#34781f] transition-colors">{ADAMO_COMPANY.phoneDisplay}</a>
         <a href={`mailto:${email}`} className="block mb-[10px] text-[14px] leading-[1.45] text-[#536070] hover:text-[#1d1d1f] transition-colors break-all">{email}</a>
         <p className="mb-[10px] whitespace-pre-line text-[14px] leading-[1.45] text-[#536070]">{contact?.hours || tr.footer.fallbackHours}</p>
       </div>

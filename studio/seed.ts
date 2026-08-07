@@ -55,7 +55,7 @@ for (const { slug, ro, ru, en } of PAGE_DEFINITIONS) {
 transaction.createIfNotExists({
   _id: "drafts.contact-settings",
   _type: "contactSettings",
-  phone: "+37379966909",
+  phone: "+37367222999",
   email: "adamocomputers@gmail.com",
   address_ro: "Mun. Chișinău, Rîșcani, str. Dumitru Rîșcanu 11",
   hours_ro: "Luni - Vineri: 09:00 - 18:00\nSâmbătă: 10:00 - 16:00",

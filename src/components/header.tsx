@@ -11,9 +11,10 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { useTranslations } from "@/hooks/use-translations";
 import { formatPrice } from "@/lib/utils";
 import type { CatalogCategory } from "@/lib/categories";
+import { ADAMO_COMPANY } from "@/lib/company";
 
-const PHONE = "+37379966909";
-const PHONE_DISPLAY = "0 799 66 909";
+const PHONE = ADAMO_COMPANY.phone;
+const PHONE_DISPLAY = ADAMO_COMPANY.phoneDisplay;
 
 const NAV_LINK_KEYS = [
   { href: "/", key: "home" },

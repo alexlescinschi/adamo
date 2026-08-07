@@ -1,3 +1,5 @@
+import { ADAMO_COMPANY } from "@/lib/company";
+
 const BASE = "https://app.fancourier.md/fan/API";
 const WEIGHT = process.env.FANCOURIER_WEIGHT_DEFAULT ?? "1";
 
@@ -29,7 +31,7 @@ export async function createFanCourierAwb(p: AwbParams): Promise<AwbResult> {
     from_name: '"Adamo Computers" SRL',
     from_city: "Chisinau",
     from_country: "MD",
-    from_phone: "+37379966909",
+    from_phone: ADAMO_COMPANY.phone,
     from_email: "adamocomputers@gmail.com",
     to_name: p.toName,
     to_city: p.toCity,

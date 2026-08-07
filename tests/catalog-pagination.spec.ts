@@ -45,9 +45,11 @@ for (const [device, viewport] of [
     await expect(specs).not.toContainText(" / ");
     const firstCard = page.getByTestId("product-grid").locator("article").first();
     const price = Number((await firstCard.locator("strong").first().innerText()).replace(/\D/g, ""));
-    await expect(firstCard.locator("p").last()).toHaveText(
-      `${formatPrice(price / 6)} lei | 6 luni | 0%.`
-    );
+    await expect(firstCard.locator("p").last().locator("span")).toHaveText([
+      `${formatPrice(price / 6)} lei`,
+      "6 luni | 0%",
+    ]);
+    expect(await firstCard.getAttribute("class")).toContain("active:-translate-y-[3px]");
 
     await loadNextPage(page, 2);
     const productsAfterClick = await productHrefs(page);
@@ -55,6 +57,16 @@ for (const [device, viewport] of [
     await expect(loadMore).toHaveAttribute("href", "/ro/category/laptops?page=3");
   });
 }
+
+test("public contact number is consistent across phone and messaging channels", async ({ page }) => {
+  await page.goto("/ro", { waitUntil: "networkidle" });
+
+  await expect(page.getByText("067 222 999", { exact: true }).first()).toBeVisible();
+  expect(await page.locator('a[href="https://wa.me/37367222999"]').count()).toBeGreaterThanOrEqual(1);
+  expect(await page.locator('a[href="viber://chat?number=%2B37367222999"]').count()).toBeGreaterThanOrEqual(1);
+  expect(await page.locator('a[href="tg://resolve?phone=37367222999"]').count()).toBeGreaterThanOrEqual(1);
+  expect(await page.locator('a[href="tel:+37367222999"]').count()).toBeGreaterThanOrEqual(3);
+});
 
 test("mobile filters fill the screen and keep the action visible", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });

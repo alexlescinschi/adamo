@@ -7,8 +7,6 @@ import { getContactSettings, getContentPage, getPublishedContentSlugs } from "@/
 import { localizedAlternates } from "@/lib/site";
 import type { Metadata } from "next";
 
-const PHONE = "+37379966909";
-const PHONE_DISPLAY = "0 799 66 909";
 const EMAIL = "adamocomputers@gmail.com";
 
 export const revalidate = 60;
@@ -36,8 +34,6 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
     getContactSettings(locale),
     getPublishedContentSlugs(),
   ]);
-  const phone = settings?.phone || PHONE;
-  const phoneDisplay = settings?.phone || PHONE_DISPLAY;
   const email = settings?.email || EMAIL;
 
   return (
@@ -66,8 +62,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.phone}</h2>
-                <a href={`tel:${phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
-                  {phoneDisplay}
+                <a href={`tel:${ADAMO_COMPANY.phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
+                  {ADAMO_COMPANY.phoneDisplay}
                 </a>
               </div>
             </div>
@@ -100,8 +96,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[#1d1d1f]">{c.serviceCenter}</h2>
-                <a href={`tel:${phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
-                  {phoneDisplay}
+                <a href={`tel:${ADAMO_COMPANY.phone}`} className="mt-1 block text-sm text-[#4e8f28] hover:underline">
+                  {ADAMO_COMPANY.phoneDisplay}
                 </a>
                 <p className="mt-1 text-sm text-[#6b6c6c]">{c.serviceSub}</p>
               </div>

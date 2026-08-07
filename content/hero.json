@@ -4,7 +4,7 @@
     "emphasizeWord": "gaming",
     "subtitle": "Importăm laptopuri noi și second-hand din Europa — complet verificate și gata de utilizare.",
     "primaryCta": { "label": "Alege Laptop", "href": "/laptopuri" },
-    "ghostCta": { "label": "Contactează-ne", "href": "https://wa.me/37379966909" },
+    "ghostCta": { "label": "Contactează-ne", "href": "https://wa.me/37367222999" },
     "socialProof": { "text": "Peste 2000+ clienți mulțumiți", "stars": 5 }
   },
   "ru": {
@@ -12,7 +12,7 @@
     "emphasizeWord": "игр",
     "subtitle": "Импортируем новые и б/у ноутбуки из США и Европы — полностью проверенные и готовые к работе.",
     "primaryCta": { "label": "Выбрать ноутбук", "href": "/laptopuri" },
-    "ghostCta": { "label": "Связаться с нами", "href": "https://wa.me/37379966909" },
+    "ghostCta": { "label": "Связаться с нами", "href": "https://wa.me/37367222999" },
     "socialProof": { "text": "Более 2000+ довольных клиентов", "stars": 5 }
   },
   "en": {
@@ -20,7 +20,7 @@
     "emphasizeWord": "gaming",
     "subtitle": "We import new and used laptops from Europe — fully tested and ready to use.",
     "primaryCta": { "label": "Chose laptop", "href": "/laptopuri" },
-    "ghostCta": { "label": "Contact us", "href": "https://wa.me/37379966909" },
+    "ghostCta": { "label": "Contact us", "href": "https://wa.me/37367222999" },
     "socialProof": { "text": "Over 2000+ happy customers", "stars": 5 }
   }
 }

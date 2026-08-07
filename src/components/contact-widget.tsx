@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "@/hooks/use-translations";
+import { ADAMO_COMPANY } from "@/lib/company";
 
-const PHONE = "37379966909";
+const PHONE = ADAMO_COMPANY.phoneDigits;
 
 const channels = [
   {

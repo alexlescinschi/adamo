@@ -65,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
       onClick={(event) => {
         if (!(event.target as HTMLElement).closest("a, button")) router.push(href);
       }}
-      className={`group relative flex cursor-pointer flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)] ${(!hasPrice || isOutOfStock) ? "opacity-60" : ""}`}
+      className={`group relative flex cursor-pointer flex-col rounded-[9px] border border-[#e4e8e4] bg-white p-[14px] transition-all hover:-translate-y-[3px] hover:border-[#cfd9e6] hover:shadow-[0_18px_38px_rgba(31,41,55,0.10)] active:-translate-y-[3px] active:border-[#cfd9e6] active:shadow-[0_18px_38px_rgba(31,41,55,0.10)] ${(!hasPrice || isOutOfStock) ? "opacity-60" : ""}`}
     >
       <Link
         href={href}
@@ -119,7 +119,7 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </Link>
 
-      <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] transition-colors">
+      <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] active:text-[#34781f] transition-colors">
         {product.name}
       </Link>
 
@@ -150,8 +150,9 @@ export function ProductCard({ product }: { product: Product }) {
               {product.old_price && product.old_price > product.price && (
                 <span className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} {tr.rates.currency}</span>
               )}
-              <p className="m-0 mt-[3px] text-[8.5px] font-medium text-[#1d1d1f] sm:text-[12.5px]">
-                {tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}
+              <p className="m-0 mt-[3px] text-[8.5px] font-medium leading-[1.25] text-[#1d1d1f] sm:text-[12.5px]">
+                <span className="block">{tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}</span>
+                <span className="block">{tr.product.installmentTerm}</span>
               </p>
             </div>
             <button

@@ -1,3 +1,5 @@
+import { ADAMO_COMPANY } from "@/lib/company";
+
 const BASE = "https://curier-rapid-api.posta.md/ecommerce";
 
 export interface PostaAwbParams {
@@ -73,7 +75,7 @@ export async function createPostaAwb(p: PostaAwbParams): Promise<PostaAwbResult>
       },
     ],
     sender_name: '"Adamo Computers" SRL',
-    sender_phone_number: 37379966909,
+    sender_phone_number: Number(ADAMO_COMPANY.phoneDigits),
     sender_email: "adamocomputers@gmail.com",
     receiver_name: p.toName,
     receiver_phone_number: Number(p.toPhone.replace(/\D/g, "")),
