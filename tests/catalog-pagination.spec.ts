@@ -440,7 +440,7 @@ test("condition appears by product price but not on catalog images", async ({ pa
     productInfo.getByTestId("current-price").boundingBox(),
     productInfo.getByTestId("condition-badge").boundingBox(),
   ]);
-  expect(conditionBox!.x).toBeGreaterThan(priceBox!.x + priceBox!.width);
+  expect(Math.round(conditionBox!.x - priceBox!.x - priceBox!.width)).toBe(10);
 
   await page.goto("/en/product/1457", { waitUntil: "networkidle" });
   await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveText("Like new");

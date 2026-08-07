@@ -85,24 +85,36 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <span className="mt-3 inline-block text-xs font-medium text-[#b64400]">{tr.product.outOfStock}</span>
       )}
 
-      <div className="mt-6 flex items-center justify-between gap-4">
+      <div className="mt-6">
         {hasPrice ? (
           <div className="flex flex-col items-start gap-0.5">
             {product.old_price && product.old_price > product.price && (
               <span data-testid="old-price" className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
             )}
-            <span data-testid="current-price" className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
+            <div className="flex items-center gap-[10px]">
+              <span data-testid="current-price" className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
+              {product.condition && (
+                <span
+                  data-testid="condition-badge"
+                  className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+                >
+                  {(tr as any).badges[product.condition]}
+                </span>
+              )}
+            </div>
           </div>
         ) : (
-          <span className="text-lg font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</span>
-        )}
-        {product.condition && (
-          <span
-            data-testid="condition-badge"
-            className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
-          >
-            {(tr as any).badges[product.condition]}
-          </span>
+          <div className="flex items-center gap-[10px]">
+            <span className="text-lg font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</span>
+            {product.condition && (
+              <span
+                data-testid="condition-badge"
+                className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+              >
+                {(tr as any).badges[product.condition]}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
