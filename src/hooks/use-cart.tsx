@@ -7,6 +7,7 @@ export interface CartItem {
   unit_id: number;
   name: string;
   price: number;
+  old_price?: number;
   qty: number;
   image?: string;
   stock?: number;
@@ -70,7 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (existing) {
         const newQty = Math.min(existing.qty + item.qty, existing.stock || 99);
         return prev.map((i) =>
-          sameItem(i, item.product_id, item.unit_id) ? { ...i, qty: newQty } : i
+          sameItem(i, item.product_id, item.unit_id) ? { ...i, old_price: item.old_price, qty: newQty } : i
         );
       }
       const qty = Math.min(item.qty, item.stock || 99);
@@ -118,7 +119,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const deselected = prev.map((i) => ({ ...i, selected: false }));
       const existingIdx = deselected.findIndex((i) => sameItem(i, item.product_id, item.unit_id));
       if (existingIdx >= 0) {
-        deselected[existingIdx] = { ...deselected[existingIdx], qty: item.qty, selected: true };
+        deselected[existingIdx] = { ...deselected[existingIdx], old_price: item.old_price, qty: item.qty, selected: true };
         return deselected;
       }
       return [...deselected, { ...item, selected: true, qty: Math.min(item.qty, item.stock || 99) }];

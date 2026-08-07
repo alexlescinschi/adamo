@@ -332,10 +332,11 @@ export function CategoryFilter({
                 <li key={c.slug}>
                   <Link
                     href={`/${locale}/category/${c.slug}`}
-                    className={`block text-sm transition-colors ${
+                    data-testid="category-filter-link"
+                    className={`inline-block rounded-[28px] px-3 py-1.5 text-xs transition-colors ${
                       isActive
-                        ? "font-semibold text-[#1d1d1f]"
-                        : "text-[#6b6c6c] hover:text-[#1d1d1f]"
+                        ? "bg-[#1d1d1f] text-white"
+                        : "bg-[#f3f6f6] text-[#444545] hover:bg-[#e8e8ed]"
                     }`}
                   >
                     {c.name}

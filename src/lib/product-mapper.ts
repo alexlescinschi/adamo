@@ -8,7 +8,7 @@ const BADGE_GRADIENTS: Record<string, string> = {
 };
 
 const POPULAR_LABELS = ["popular", "популярный"];
-const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "tip-placa-video"];
+const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "serie-placa-video"];
 
 export function extractCondition(item: any): "new" | "like-new" | undefined {
   const specs = item.specs || item.attributes || [];

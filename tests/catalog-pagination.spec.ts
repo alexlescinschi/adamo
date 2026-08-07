@@ -179,6 +179,15 @@ test("display sizes are grouped into ranges and preserve CRM filtering", async (
   expect(new URL(page.url()).searchParams.get("f_display")).toBe("14-inch,14-1-inch,14-2,145");
 });
 
+test("catalog categories use filter pills on separate rows", async ({ page }) => {
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  const links = page.locator("aside").getByTestId("category-filter-link");
+  expect(await links.count()).toBeGreaterThan(1);
+  await expect(links.first()).toHaveCSS("border-radius", "28px");
+  const rows = await links.evaluateAll((elements) => elements.map((element) => element.getBoundingClientRect().y));
+  expect(new Set(rows).size).toBe(rows.length);
+});
+
 test("search reuses catalog filters and load more", async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto("/ro/search?q=hp", { waitUntil: "networkidle" });
@@ -262,6 +271,7 @@ test("Mini-PC and localized categories load their CRM banners automatically", as
 });
 
 test("footer promotions link opens the discounted catalog", async ({ page }) => {
+  test.setTimeout(90_000);
   await page.goto("/ro", { waitUntil: "networkidle" });
   await expect(page.getByRole("heading", { name: "Promoții", exact: true }).locator("..").getByRole("link", { name: "Vezi toate" })).toHaveAttribute("href", "/ro/category/laptops?sort=discount");
   const footer = page.locator("footer");
@@ -272,15 +282,31 @@ test("footer promotions link opens the discounted catalog", async ({ page }) => 
 
   await promotions.click();
   await page.waitForURL(/sort=discount/);
-  await expect(page.getByRole("heading", { name: "Laptopuri", exact: true })).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("heading", { name: "Laptopuri", exact: true })).toBeVisible({ timeout: 15_000 });
   await expect(page.locator("aside").getByRole("button", { name: "Nou", exact: true })).toBeVisible();
   const cards = page.getByTestId("product-grid").locator("article");
   expect(await cards.count()).toBeGreaterThan(0);
   await expect(cards.locator(".line-through")).toHaveCount(await cards.count());
+  const firstCard = cards.first();
+  const [cardOldPrice, cardCurrentPrice] = await Promise.all([
+    firstCard.getByTestId("old-price").boundingBox(),
+    firstCard.getByTestId("current-price").boundingBox(),
+  ]);
+  expect(cardOldPrice!.y).toBeLessThan(cardCurrentPrice!.y);
   const productHref = await cards.first().locator('a[href*="/product/"]').first().getAttribute("href");
   expect(productHref).toBeTruthy();
+
+  await firstCard.getByRole("button", { name: "Adaugă în coș" }).click();
+  await page.getByRole("button", { name: "Coș", exact: true }).click();
+  const cartOldPrice = page.getByTestId("old-price").last();
+  const cartCurrentPrice = page.getByTestId("current-price").last();
+  expect((await cartOldPrice.boundingBox())!.y).toBeLessThan((await cartCurrentPrice.boundingBox())!.y);
+
   await page.goto(productHref!);
   await expect(page.getByRole("link", { name: "Înapoi la produse", exact: true })).toHaveCount(0);
+  const productInfo = page.getByTestId("product-info");
+  expect((await productInfo.getByTestId("old-price").boundingBox())!.y).toBeLessThan((await productInfo.getByTestId("current-price").boundingBox())!.y);
 });
 
 test("home renders promotions in RU and EN", async ({ page }) => {
@@ -375,6 +401,8 @@ test("new and like-new condition stickers appear while used stays unbadged", asy
   const card = (id: number) => grid.locator(`article:has(a[href*="/product/${id}-"])`);
 
   await expect(card(1458).getByTestId("condition-badge")).toHaveText("Nou");
+  await expect(card(1458).locator("p").first()).toContainText("GeForce RTX 50");
+  await expect(card(1458).locator("p").first()).not.toContainText("Dedicată");
   await expect(card(1457).getByTestId("condition-badge")).toHaveText("Ca nou");
   await expect(card(1452).getByTestId("condition-badge")).toHaveCount(0);
 

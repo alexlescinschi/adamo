@@ -495,7 +495,12 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-bold text-[#1d1d1f]">{item.price > 0 ? `${formatPrice(item.price * item.qty)}` : tr.product.priceOnRequest}</span>
+                      <div className="text-right">
+                        {item.old_price && item.old_price > item.price && (
+                          <span data-testid="old-price" className="block text-[11px] text-[#6b6c6c] line-through">{formatPrice(item.old_price * item.qty)}</span>
+                        )}
+                        <span data-testid="current-price" className="block text-[13px] font-bold text-[#1d1d1f]">{item.price > 0 ? `${formatPrice(item.price * item.qty)}` : tr.product.priceOnRequest}</span>
+                      </div>
                       <button type="button" className="text-[#6b6c6c] hover:text-[#b64400]" onClick={() => removeItem(item.product_id, item.unit_id)}>
                         <Trash2 className="h-4 w-4" />
                       </button>

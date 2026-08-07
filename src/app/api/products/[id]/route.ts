@@ -25,7 +25,7 @@ function transformProduct(data: any, locale: Locale) {
       slug: data.slug,
       description: data.translation?.description || "",
       price: data.offerSummary?.minPrice || 0,
-      old_price: data.discount?.originalPrice || undefined,
+      old_price: data.discount?.compareAtPrice || data.discount?.originalPrice || undefined,
       image_url: data.images?.[0]?.url || null,
       images: data.images || [],
       specs,
@@ -35,7 +35,7 @@ function transformProduct(data: any, locale: Locale) {
     };
   }
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
-  const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
+  const oldPrice = data.discount?.compareAtPrice || data.discount?.originalPrice || data.oldPrice || data.old_price;
 
   return {
     id: data.id,

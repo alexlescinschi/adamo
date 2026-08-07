@@ -52,7 +52,7 @@ export function ProductCard({ product }: { product: Product }) {
     setAdding(true);
     try {
       const unit_id = await resolveUnit(product);
-      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty: 1, image: product.image_url, stock: product.stock });
+      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, old_price: product.old_price, qty: 1, image: product.image_url, stock: product.stock });
       setAdded(true);
       setTimeout(() => setAdded(false), 1500);
     } finally {
@@ -144,12 +144,12 @@ export function ProductCard({ product }: { product: Product }) {
         {hasPrice ? (
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <strong className="block text-[18px] font-extrabold leading-none text-[#34781f] whitespace-nowrap sm:text-[25px]">
+              {product.old_price && product.old_price > product.price && (
+                <span data-testid="old-price" className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} {tr.rates.currency}</span>
+              )}
+              <strong data-testid="current-price" className="block text-[18px] font-extrabold leading-none text-[#34781f] whitespace-nowrap sm:text-[25px]">
                 {formatPrice(product.price)} <small className="text-[10px] sm:text-[13px]">{tr.rates.currency}</small>
               </strong>
-              {product.old_price && product.old_price > product.price && (
-                <span className="block text-[12px] text-[#6b6c6c] line-through whitespace-nowrap sm:text-sm">{formatPrice(product.old_price)} {tr.rates.currency}</span>
-              )}
               <p className="m-0 mt-[3px] text-[8.5px] font-medium leading-[1.25] text-[#1d1d1f] sm:text-[12.5px]">
                 <span className="block">{tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}</span>
                 <span className="block">{tr.product.installmentTerm}</span>

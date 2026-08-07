@@ -45,7 +45,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     setAdding(true);
     try {
       const unit_id = await resolveUnit(product);
-      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, qty, image: product.image_url, stock });
+      addItem({ product_id: product.id, unit_id, name: product.name, price: product.price, old_price: product.old_price, qty, image: product.image_url, stock });
       setToast(tr.product.addedToCart);
       setTimeout(() => setToast(null), 2500);
     } finally {
@@ -63,7 +63,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     try {
       const unit_id = await resolveUnit(product);
       buyNow(
-        { product_id: product.id, unit_id, name: product.name, price: product.price, qty, image: product.image_url, stock },
+        { product_id: product.id, unit_id, name: product.name, price: product.price, old_price: product.old_price, qty, image: product.image_url, stock },
         payment,
       );
     } finally {
@@ -72,7 +72,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
   };
 
   return (
-    <div>
+    <div data-testid="product-info">
       {product.category_slug && (
         <Link href={`/${locale}/category/${product.category_slug}`} className="text-sm text-[#4e8f28] hover:underline mb-2 block">
           {product.category_name || product.category_slug}
@@ -88,11 +88,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       <div className="mt-6">
         {hasPrice ? (
-          <div className="flex items-baseline gap-3">
-            <span className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
+          <div className="flex flex-col items-start gap-0.5">
             {product.old_price && product.old_price > product.price && (
-              <span className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
+              <span data-testid="old-price" className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
             )}
+            <span data-testid="current-price" className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
           </div>
         ) : (
           <span className="text-lg font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</span>

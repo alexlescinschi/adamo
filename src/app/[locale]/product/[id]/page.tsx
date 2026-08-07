@@ -39,7 +39,7 @@ function extractImages(product: any): { url: string }[] {
 async function getProduct(id: string, locale = "ro") {
   const data = await getProductById(id, locale);
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
-  const oldPrice = data.discount?.originalPrice || data.oldPrice || data.old_price;
+  const oldPrice = data.discount?.compareAtPrice || data.discount?.originalPrice || data.oldPrice || data.old_price;
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
   const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
   const { badge, badge_gradient } = extractBadge(data);
