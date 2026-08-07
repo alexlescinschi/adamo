@@ -252,7 +252,8 @@ export function CategoryFilter({
     : Math.min(perPage, Math.max(0, totalItems - loadedPage * perPage));
   const nextPageHref = buildPageHref(loadedPage + 1);
 
-  const groupedFilterDefinitions = groupFilterDefinitions(filterDefinitions);
+  const visibleFilterDefinitions = filterDefinitions.filter((definition) => definition.code.toLowerCase() !== "sticker");
+  const groupedFilterDefinitions = groupFilterDefinitions(visibleFilterDefinitions);
   const totalActive =
     Object.entries(activeFilters).reduce((count, [code, selected]) => {
       const definition = groupedFilterDefinitions.find((candidate) => candidate.code === code);
@@ -265,7 +266,7 @@ export function CategoryFilter({
     }, 0) +
     (activePrice?.min != null ? 1 : 0) +
     (activePrice?.max != null ? 1 : 0);
-  const hasFilterControls = filterDefinitions.length > 0 || categories.length > 0;
+  const hasFilterControls = visibleFilterDefinitions.length > 0 || categories.length > 0;
   const loadMore = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -466,7 +467,7 @@ export function CategoryFilter({
 
       <div className="flex gap-6">
         {/* Sidebar desktop */}
-        {filterDefinitions.length > 0 || categories.length > 0 ? (
+        {hasFilterControls ? (
           <aside className="hidden w-56 flex-shrink-0 md:block">
             <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
               {SidebarContent}

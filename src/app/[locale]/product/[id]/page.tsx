@@ -41,7 +41,7 @@ async function getProduct(id: string, locale = "ro") {
   const price = data.offerSummary?.minPrice || data.minPrice || data.price || 0;
   const oldPrice = data.discount?.compareAtPrice || data.discount?.originalPrice || data.oldPrice || data.old_price;
   const rawSpecs = Array.isArray(data.specs) ? data.specs : [];
-  const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label).map((s: any) => [s.label, s.valueLabel]));
+  const specs = Object.fromEntries(rawSpecs.filter((s: any) => s.label && String(s.code).toLowerCase() !== "sticker").map((s: any) => [s.label, s.valueLabel]));
   const { badge, badge_gradient } = extractBadge(data);
   const condition = extractCondition(data);
   const localeTranslation = Array.isArray(data.translations)
@@ -268,14 +268,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.badge && (
               <span className={`absolute top-3 left-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(99,173,54,0.3)] bg-gradient-to-r ${product.badge_gradient || "from-[#7cc44e] to-[#63ad36]"}`}>
                 {(tr as any).badges?.[product.badge] ?? product.badge}
-              </span>
-            )}
-            {product.condition && (
-              <span
-                data-testid="condition-badge"
-                className={`absolute right-3 top-3 z-10 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
-              >
-                {(tr as any).badges[product.condition]}
               </span>
             )}
           </div>

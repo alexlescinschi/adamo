@@ -86,7 +86,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <span className="mt-3 inline-block text-xs font-medium text-[#b64400]">{tr.product.outOfStock}</span>
       )}
 
-      <div className="mt-6">
+      <div className="mt-6 flex items-center justify-between gap-4">
         {hasPrice ? (
           <div className="flex flex-col items-start gap-0.5">
             {product.old_price && product.old_price > product.price && (
@@ -96,6 +96,14 @@ export function ProductInfo({ product }: ProductInfoProps) {
           </div>
         ) : (
           <span className="text-lg font-medium text-[#6b6c6c]">{tr.product.priceOnRequest}</span>
+        )}
+        {product.condition && (
+          <span
+            data-testid="condition-badge"
+            className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+          >
+            {(tr as any).badges[product.condition]}
+          </span>
         )}
       </div>
 

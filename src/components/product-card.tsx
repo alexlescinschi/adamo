@@ -82,14 +82,6 @@ export function ProductCard({ product }: { product: Product }) {
             {(tr as any).badges?.[product.badge] ?? product.badge}
           </span>
         )}
-        {product.condition && (
-          <span
-            data-testid="condition-badge"
-            className={`absolute right-2 top-2 z-10 rounded-[6px] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
-          >
-            {(tr as any).badges[product.condition]}
-          </span>
-        )}
         {imgs.length > 0 ? (
           <>
             {imgs.map((src, i) => (

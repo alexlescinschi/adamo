@@ -404,30 +404,39 @@ test("special order popup submits a CRM contact request", async ({ page }) => {
   expect(requestBody).toMatchObject({ first_name: "Ana", last_name: "Test", phone: "069123456", email: "ana@example.com", comment: "Comandă specială: Calculator pentru editare video" });
 });
 
-test("new and like-new condition stickers appear while used stays unbadged", async ({ page }) => {
+test("condition appears by product price but not on catalog images", async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
   const grid = page.getByTestId("product-grid");
   const card = (id: number) => grid.locator(`article:has(a[href*="/product/${id}-"])`);
 
-  await expect(card(1458).getByTestId("condition-badge")).toHaveText("Nou");
+  await expect(page.locator("aside").getByText("Sticker", { exact: true })).toHaveCount(0);
+  await expect(card(1458).getByTestId("condition-badge")).toHaveCount(0);
   await expect(card(1458).locator("p").first()).toContainText("GeForce RTX 50");
   await expect(card(1458).locator("p").first()).not.toContainText("Dedicată");
-  await expect(card(1457).getByTestId("condition-badge")).toHaveText("Ca nou");
+  await expect(card(1457).getByTestId("condition-badge")).toHaveCount(0);
   await expect(card(1452).getByTestId("condition-badge")).toHaveCount(0);
 
   await page.goto("/ru/product/1458", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveText("Новый");
+  const productInfo = page.getByTestId("product-info");
+  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
+  await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
+  await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);
+  const [priceBox, conditionBox] = await Promise.all([
+    productInfo.getByTestId("current-price").boundingBox(),
+    productInfo.getByTestId("condition-badge").boundingBox(),
+  ]);
+  expect(conditionBox!.x).toBeGreaterThan(priceBox!.x + priceBox!.width);
 
   await page.goto("/en/product/1457", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveText("Like new");
+  await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveText("Like new");
 
   await page.goto("/ro/product/1452", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
+  await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveCount(0);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
-  await expect(card(1458).getByTestId("condition-badge")).toBeVisible();
+  await expect(card(1458).getByTestId("condition-badge")).toHaveCount(0);
   await page.goto("/ro/product/1457", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toBeVisible();
+  await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toBeVisible();
 });
