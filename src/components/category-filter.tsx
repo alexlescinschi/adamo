@@ -10,6 +10,7 @@ import { useLocale, useTranslations } from "@/hooks/use-translations";
 export interface FilterOption {
   value: string;
   label: string;
+  values?: string[];
 }
 export interface FilterDefinition {
   code: string;
@@ -25,6 +26,37 @@ interface CategoryBannerData {
   mediaUrl: string;
   linkUrl?: string | null;
   altText?: string | null;
+}
+
+const DISPLAY_RANGES = [
+  { value: "under-12.9", label: '< 12.9"', matches: (size: number) => size < 12.9 },
+  { value: "13.0-13.9", label: '13.0" - 13.9"', matches: (size: number) => size >= 13 && size <= 13.9 },
+  { value: "14.0-14.9", label: '14.0" - 14.9"', matches: (size: number) => size >= 14 && size <= 14.9 },
+  { value: "15.0-16.9", label: '15.0" - 16.9"', matches: (size: number) => size >= 15 && size <= 16.9 },
+  { value: "over-17.0", label: '> 17.0"', matches: (size: number) => size > 17 },
+];
+
+function groupFilterDefinitions(definitions: FilterDefinition[]): FilterDefinition[] {
+  return definitions.map((definition) => {
+    if (definition.code !== "display") return definition;
+
+    const grouped = DISPLAY_RANGES.map((range) => ({ ...range, values: [] as string[] }));
+    const unmatched: FilterOption[] = [];
+    for (const option of definition.options) {
+      const size = Number.parseFloat(option.label.replace(",", "."));
+      const range = Number.isNaN(size) ? undefined : grouped.find((candidate) => candidate.matches(size));
+      if (range) range.values.push(option.value);
+      else unmatched.push(option);
+    }
+
+    return {
+      ...definition,
+      options: [
+        ...grouped.filter((range) => range.values.length > 0).map(({ value, label, values }) => ({ value, label, values })),
+        ...unmatched,
+      ],
+    };
+  });
 }
 
 function CategoryBanner({ banner, className, testId }: { banner: CategoryBannerData; className: string; testId: string }) {
@@ -128,11 +160,12 @@ export function CategoryFilter({
   );
 
   const toggleFilter = useCallback(
-    (code: string, value: string) => {
+    (code: string, values: string[]) => {
       const current = activeFilters[code] || [];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
+      const active = values.every((value) => current.includes(value));
+      const next = active
+        ? current.filter((value) => !values.includes(value))
+        : [...new Set([...current, ...values])];
       applyUrl({ [`f_${code}`]: next.length ? next : null });
     },
     [activeFilters, applyUrl]
@@ -219,8 +252,17 @@ export function CategoryFilter({
     : Math.min(perPage, Math.max(0, totalItems - loadedPage * perPage));
   const nextPageHref = buildPageHref(loadedPage + 1);
 
+  const groupedFilterDefinitions = groupFilterDefinitions(filterDefinitions);
   const totalActive =
-    Object.values(activeFilters).reduce((n, v) => n + v.length, 0) +
+    Object.entries(activeFilters).reduce((count, [code, selected]) => {
+      const definition = groupedFilterDefinitions.find((candidate) => candidate.code === code);
+      if (!definition) return count + selected.length;
+      const represented = new Set(definition.options.flatMap((option) => option.values || [option.value]));
+      const selectedOptions = definition.options.filter((option) =>
+        (option.values || [option.value]).some((value) => selected.includes(value))
+      ).length;
+      return count + selectedOptions + selected.filter((value) => !represented.has(value)).length;
+    }, 0) +
     (activePrice?.min != null ? 1 : 0) +
     (activePrice?.max != null ? 1 : 0);
   const hasFilterControls = filterDefinitions.length > 0 || categories.length > 0;
@@ -332,7 +374,7 @@ export function CategoryFilter({
       </div>
 
       {/* Facetări (din filterDefinitions) */}
-      {filterDefinitions.map((fd) => {
+      {groupedFilterDefinitions.map((fd) => {
         const selected = activeFilters[fd.code] || [];
         if (!fd.options?.length) return null;
         return (
@@ -342,11 +384,13 @@ export function CategoryFilter({
             </p>
             <div className="flex flex-wrap gap-1.5">
               {fd.options.map((opt) => {
-                const active = selected.includes(opt.value);
+                const values = opt.values || [opt.value];
+                const active = values.every((value) => selected.includes(value));
                 return (
                   <button
                     key={opt.value}
-                    onClick={() => toggleFilter(fd.code, opt.value)}
+                    onClick={() => toggleFilter(fd.code, values)}
+                    aria-pressed={active}
                     className={`rounded-[28px] px-3 py-1.5 text-xs transition-colors ${
                       active
                         ? "bg-[#1d1d1f] text-white"
@@ -374,6 +418,7 @@ export function CategoryFilter({
           <div
             data-testid="mobile-catalog-controls"
             data-floating={mobileControlsFloating && !sidebarOpen ? "true" : "false"}
+            data-active-filters={totalActive}
             className={`flex max-w-full gap-2 overflow-x-auto overflow-y-hidden transition-[filter,transform,opacity] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:static md:max-w-none md:flex-col md:items-end md:overflow-visible md:drop-shadow-none ${
               mobileControlsFloating && !sidebarOpen
                 ? "fixed left-3 right-3 top-[72px] z-20 drop-shadow-[0_8px_18px_rgba(31,41,55,0.18)] animate-in fade-in slide-in-from-top-2"

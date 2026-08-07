@@ -145,6 +145,28 @@ test("a direct catalog page loads the following page and preserves filters", asy
   expect(await productHrefs(page)).toEqual(expect.arrayContaining(initialProducts));
 });
 
+test("display sizes are grouped into ranges and preserve CRM filtering", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  const sidebar = page.locator("aside");
+  const display = sidebar.getByText("Display", { exact: true }).locator("..");
+  const labels = ['< 12.9"', '13.0" - 13.9"', '14.0" - 14.9"', '15.0" - 16.9"', '> 17.0"'];
+
+  for (const label of labels) await expect(display.getByRole("button", { name: label, exact: true })).toBeVisible();
+  await expect(display.getByRole("button", { name: '13.3"', exact: true })).toHaveCount(0);
+
+  await display.getByRole("button", { name: '13.0" - 13.9"', exact: true }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get("f_display")).toBe("13-3,13-4,135,13-8");
+  await display.getByRole("button", { name: '14.0" - 14.9"', exact: true }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get("f_display")).toBe("13-3,13-4,135,13-8,14-inch,14-1-inch,14-2,145");
+  await expect(page.getByTestId("mobile-catalog-controls")).toHaveAttribute("data-active-filters", "2");
+
+  await display.getByRole("button", { name: '13.0" - 13.9"', exact: true }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get("f_display")).toBe("14-inch,14-1-inch,14-2,145");
+  await loadNextPage(page, 2);
+  expect(new URL(page.url()).searchParams.get("f_display")).toBe("14-inch,14-1-inch,14-2,145");
+});
+
 test("search reuses catalog filters and load more", async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto("/ro/search?q=hp", { waitUntil: "networkidle" });
@@ -155,6 +177,8 @@ test("search reuses catalog filters and load more", async ({ page }) => {
   const sidebar = page.locator("aside");
   await expect(sidebar.getByText("Categorii", { exact: true })).toBeVisible();
   await expect(sidebar.getByRole("button", { name: "Nou", exact: true })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: '13.0" - 13.9"', exact: true })).toBeVisible();
+  await expect(sidebar.getByRole("button", { name: '13.3"', exact: true })).toHaveCount(0);
   await expect(sidebar.getByRole("button", { name: "Resetează tot", exact: true })).toBeVisible();
   await expect(sidebar.getByRole("button", { name: /Aplică preț/ })).toHaveCount(0);
   await sidebar.getByPlaceholder("min").fill("5000");
