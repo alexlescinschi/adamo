@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
@@ -43,6 +44,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
   return (
     <div>
       <div
+        data-testid="gallery-image-frame"
         className="relative w-full aspect-[4/3] overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
         onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; swiped.current = false; }}
         onTouchEnd={(e) => {
@@ -71,20 +73,22 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
             <button aria-label={tr.product.nextImage} onClick={next} className="absolute right-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-sm transition-colors hover:bg-white sm:block">
               <ChevronRight className="h-5 w-5 text-[#1d1d1f]" />
             </button>
-            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-1 text-xs text-white">{selected + 1} / {images.length}</span>
           </>
         )}
       </div>
       {images.length > 1 && (
-        <div className="mt-[10px] flex gap-[10px] overflow-x-auto">
-          {images.map((img: any, i: number) => (
-            <button key={i} onClick={() => setSelected(i)} className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[12px] border-2 transition-colors ${i === selected ? "border-[#63ad36]" : "border-transparent opacity-50 hover:opacity-100"}`}>
-              <Image src={img.url} alt="" fill className="object-cover" sizes="56px" />
-            </button>
-          ))}
-        </div>
+        <>
+          <div data-testid="gallery-counter" className="mt-2 text-center text-xs font-medium text-[#6b6c6c]">{selected + 1} / {images.length}</div>
+          <div className="mt-[10px] flex gap-[10px] overflow-x-auto">
+            {images.map((img: any, i: number) => (
+              <button key={i} onClick={() => setSelected(i)} className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-[12px] border-2 transition-colors ${i === selected ? "border-[#63ad36]" : "border-transparent opacity-50 hover:opacity-100"}`}>
+                <Image src={img.url} alt="" fill className="object-cover" sizes="56px" />
+              </button>
+            ))}
+          </div>
+        </>
       )}
-      {open && (
+      {open && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -100,21 +104,24 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative h-full w-full max-w-6xl" onClick={(event) => event.stopPropagation()}>
-            <Image src={images[selected].url} alt={name} fill className="object-contain" sizes="100vw" priority />
-            {images.length > 1 && (
-              <>
+          <div className="flex h-full w-full max-w-6xl flex-col" onClick={(event) => event.stopPropagation()}>
+            <div className="relative min-h-0 flex-1">
+              <Image src={images[selected].url} alt={name} fill className="object-contain" sizes="100vw" priority />
+              {images.length > 1 && (
+                <>
                 <button aria-label={tr.product.previousImage} onClick={prev} className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:left-4 sm:p-3">
                   <ChevronLeft className="h-6 w-6" />
                 </button>
                 <button aria-label={tr.product.nextImage} onClick={next} className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:right-4 sm:p-3">
                   <ChevronRight className="h-6 w-6" />
                 </button>
-                <span className="absolute bottom-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">{selected + 1} / {images.length}</span>
-              </>
-            )}
+                </>
+              )}
+            </div>
+            {images.length > 1 && <span data-testid="gallery-modal-counter" className="py-2 text-center text-sm text-white">{selected + 1} / {images.length}</span>}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

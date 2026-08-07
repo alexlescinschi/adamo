@@ -346,6 +346,12 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
   const card = page.getByTestId("product-grid").locator("article").first();
   test.skip((await card.count()) === 0, "CRM catalog credentials are required");
+  const cardImage = card.locator('a[href*="/product/"]').first();
+  const cardDots = card.getByTestId("product-card-dots");
+  if (await cardDots.count()) {
+    const [imageBox, dotsBox] = await Promise.all([cardImage.boundingBox(), cardDots.boundingBox()]);
+    expect(dotsBox!.y).toBeGreaterThanOrEqual(imageBox!.y + imageBox!.height);
+  }
   const catalogUrl = page.url();
   await card.getByRole("button", { name: "Adaugă în coș" }).click();
   expect(page.url()).toBe(catalogUrl);
@@ -357,6 +363,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.getByRole("button", { name: "Deschide galeria de imagini" }).click();
   const gallery = page.getByRole("dialog");
   await expect(gallery).toBeVisible();
+  expect(await gallery.evaluate((element) => element.parentElement?.tagName)).toBe("BODY");
   const counter = gallery.locator("span").filter({ hasText: /^\d+ \/ \d+$/ });
   const firstCounter = await counter.textContent();
   expect(firstCounter).toMatch(/^1 \/ [2-9]\d*$/);
@@ -364,6 +371,9 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await expect(counter).not.toHaveText(firstCounter!);
   await page.keyboard.press("Escape");
   await expect(gallery).toBeHidden();
+  const imageFrame = page.getByTestId("gallery-image-frame");
+  const imageCounter = page.getByTestId("gallery-counter");
+  expect((await imageCounter.boundingBox())!.y).toBeGreaterThanOrEqual((await imageFrame.boundingBox())!.y + (await imageFrame.boundingBox())!.height);
 });
 
 test("special order popup submits a CRM contact request", async ({ page }) => {

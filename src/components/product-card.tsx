@@ -103,21 +103,21 @@ export function ProductCard({ product }: { product: Product }) {
                 style={{ transform: `translateX(${(i - imgIdx) * 100}%)`, opacity: i === imgIdx ? 1 : 0 }}
               />
             ))}
-            {hasSlider && (
-              <span className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-                {imgs.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`block w-[6px] h-[6px] rounded-full transition-colors ${i === imgIdx ? "bg-white" : "bg-white/50"}`}
-                  />
-                ))}
-              </span>
-            )}
           </>
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-[#6b6c6c]">{tr.product.noImage}</div>
         )}
       </Link>
+      {hasSlider && (
+        <span data-testid="product-card-dots" className="mb-[8px] flex justify-center gap-1.5" aria-hidden="true">
+          {imgs.map((_, i) => (
+            <span
+              key={i}
+              className={`block h-[6px] w-[6px] rounded-full transition-colors ${i === imgIdx ? "bg-[#63ad36]" : "bg-[#d7ddd7]"}`}
+            />
+          ))}
+        </span>
+      )}
 
       <Link href={href} className="mb-[6px] text-[15px] font-extrabold leading-[1.2] text-[#1d1d1f] line-clamp-2 hover:text-[#34781f] active:text-[#34781f] transition-colors">
         {product.name}
