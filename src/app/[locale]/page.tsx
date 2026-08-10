@@ -5,7 +5,6 @@ import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide
 import { getPublishedProducts, getNewProducts, getPromotions, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
-import Image from "next/image";
 import heroContent from "../../../content/hero.json";
 import { localizedAlternates } from "@/lib/site";
 import type { Metadata } from "next";
@@ -154,17 +153,19 @@ const seoBlocks = [
 function StaticBanner({ banner }: { banner: any }) {
   if (!banner?.mediaUrl) return null;
   const img = (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={banner.mediaUrl}
       alt={banner.altText || ""}
-      fill
-      className="rounded-[28px] object-cover"
+      loading="lazy"
+      decoding="async"
+      className="block h-auto w-full"
     />
   );
   return (
-    <div className="relative aspect-[16/9] overflow-hidden rounded-[28px] bg-[#f3f6f6]">
+    <div className="overflow-hidden rounded-[9px] bg-[#f3f6f6]">
       {banner.linkUrl ? (
-        <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="block h-full">
+        <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="block">
           {img}
         </a>
       ) : (
