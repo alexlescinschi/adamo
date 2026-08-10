@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import { getBlogPosts, sanityImageUrl } from "@/lib/sanity";
+import { BlogList } from "@/components/blog-list";
+import { getPaginatedBlogPosts } from "@/lib/sanity";
 import { localizedAlternates } from "@/lib/site";
 
-const titles = { ro: "Blog", ru: "Блог", en: "Blog" };
+const titles = { ro: "Ultimele articole", ru: "Последние статьи", en: "Latest articles" };
 const empty = { ro: "Nu există articole publicate încă.", ru: "Опубликованных статей пока нет.", en: "There are no published articles yet." };
 
 export const revalidate = 60;
@@ -20,34 +19,20 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-export default async function BlogPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function BlogPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ page?: string }> }) {
   const { locale } = await params;
+  const query = await searchParams;
   const language = locale === "ru" || locale === "en" ? locale : "ro";
-  const posts = await getBlogPosts(language);
+  const page = Math.max(1, Number(query.page) || 1);
+  const posts = await getPaginatedBlogPosts(language, page);
 
   return (
     <div className="py-[70px]">
       <h1 className="mb-10 text-[34px] font-semibold tracking-[-0.031em] text-[#1d1d1f]">{titles[language]}</h1>
-      {posts.length === 0 ? (
+      {posts.items.length === 0 ? (
         <p className="text-[#536070]">{empty[language]}</p>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => {
-            const image = sanityImageUrl(post.coverImage, 800);
-            return (
-              <article key={post.slug} className="overflow-hidden rounded-[14px] border border-[#e1e7ef] bg-white md:rounded-[28px]">
-                {image && <Image src={image} alt={post.coverImage?.alt || ""} width={800} height={450} className="aspect-video w-full object-cover" />}
-                <div className="p-5">
-                  <time className="text-xs text-[#697586]">{new Intl.DateTimeFormat(language, { dateStyle: "medium" }).format(new Date(post.publishedAt))}</time>
-                  <h2 className="mt-2 text-xl font-bold text-[#1d1d1f]">
-                    <Link href={`/${language}/blog/${post.slug}`} className="hover:text-[#34781f]">{post.title}</Link>
-                  </h2>
-                  <p className="mt-3 text-sm leading-6 text-[#536070]">{post.excerpt}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+        <BlogList initialPosts={posts.items} initialPage={posts.page} initialTotalPages={posts.totalPages} locale={language} />
       )}
     </div>
   );

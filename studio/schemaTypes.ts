@@ -180,6 +180,7 @@ const post = defineType({
       title: "Imagine principală",
       type: "image",
       options: { hotspot: true },
+      validation: (rule) => rule.required(),
       fields: [
         defineField({
           name: "alt",

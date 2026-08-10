@@ -35,6 +35,24 @@ export interface BlogPost extends BlogPostSummary {
   updatedAt: string;
 }
 
+export interface BlogPostCard {
+  title: string;
+  excerpt: string;
+  slug: string;
+  publishedAt: string;
+  imageUrl?: string;
+  imageAlt?: string;
+}
+
+export interface PaginatedBlogPosts {
+  items: BlogPostCard[];
+  total: number;
+  totalPages: number;
+  page: number;
+}
+
+export const BLOG_PAGE_SIZE = 9;
+
 export interface ContactSettings {
   phone: string;
   email: string;
@@ -83,6 +101,35 @@ export async function getBlogPosts(locale: string) {
       }`,
     )) || []
   );
+}
+
+export async function getPaginatedBlogPosts(locale: string, requestedPage = 1): Promise<PaginatedBlogPosts> {
+  const lang = languageSuffix(locale);
+  const page = Number.isFinite(requestedPage) ? Math.max(1, Math.floor(requestedPage)) : 1;
+  const start = (page - 1) * BLOG_PAGE_SIZE;
+  const end = start + BLOG_PAGE_SIZE;
+  const result = await fetchSanity<{ items: BlogPostCard[]; total: number }>(
+    `{
+      "items": *[_type == "post" && publishedAt <= now()] | order(publishedAt desc, _id desc) [$start...$end]{
+        "title": title_${lang},
+        "excerpt": excerpt_${lang},
+        "slug": slug.current,
+        publishedAt,
+        "imageUrl": coverImage.asset->url,
+        "imageAlt": coverImage.alt
+      },
+      "total": count(*[_type == "post" && publishedAt <= now()])
+    }`,
+    { start, end },
+  );
+  const total = result?.total || 0;
+
+  return {
+    items: result?.items || [],
+    total,
+    totalPages: Math.max(1, Math.ceil(total / BLOG_PAGE_SIZE)),
+    page,
+  };
 }
 
 export function getBlogPost(slug: string, locale: string) {
