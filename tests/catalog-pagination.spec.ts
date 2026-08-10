@@ -160,6 +160,16 @@ test("a direct catalog page loads the following page and preserves filters", asy
   expect(await productHrefs(page)).toEqual(expect.arrayContaining(initialProducts));
 });
 
+test("price filter waits for typing to finish without dropping digits", async ({ page }) => {
+  await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
+  const minPrice = page.locator("aside").getByPlaceholder("Min");
+
+  await minPrice.pressSequentially("12345", { delay: 600 });
+  await expect(minPrice).toHaveValue("12345");
+  expect(new URL(page.url()).searchParams.get("price_min")).toBeNull();
+  await expect.poll(() => new URL(page.url()).searchParams.get("price_min"), { timeout: 6_000 }).toBe("12345");
+});
+
 test("display sizes are grouped into ranges and preserve CRM filtering", async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto("/ro/category/laptops", { waitUntil: "networkidle" });
@@ -377,6 +387,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.waitForURL(/\/ro\/product\//);
 
   const productInfo = page.getByTestId("product-info");
+  await expect(page.getByTestId("product-why-adamo")).toBeHidden();
   const rateClouds = productInfo.getByTestId("rate-clouds").locator(":scope > div");
   await expect(rateClouds).toHaveCount(7);
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["6", "8", "10", "12", "18", "24", "36"]);
@@ -400,7 +411,13 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   expect(firstCounter).toMatch(/^1 \/ [2-9]\d*$/);
   await gallery.getByRole("button", { name: "Imaginea următoare" }).click();
   await expect(counter).not.toHaveText(firstCounter!);
-  await page.keyboard.press("Escape");
+  await expect(gallery).toHaveCSS("padding-left", "0px");
+  await expect(gallery).toHaveCSS("padding-right", "0px");
+  await gallery.click({ position: { x: 5, y: 5 } });
+  await expect(gallery).toBeHidden();
+  await page.getByRole("button", { name: "Deschide galeria de imagini" }).click();
+  await gallery.dispatchEvent("touchstart", { touches: [{ identifier: 1, clientY: 600 }] });
+  await gallery.dispatchEvent("touchend", { changedTouches: [{ identifier: 1, clientY: 450 }] });
   await expect(gallery).toBeHidden();
   const imageFrame = page.getByTestId("gallery-image-frame");
   const imageCounter = page.getByTestId("gallery-counter");
@@ -451,6 +468,9 @@ test("condition appears by product price but not on catalog images", async ({ pa
 
   await page.goto("/ru/product/1458", { waitUntil: "networkidle" });
   const productInfo = page.getByTestId("product-info");
+  const whyAdamo = page.getByTestId("product-why-adamo");
+  await expect(whyAdamo).toBeVisible();
+  await expect(whyAdamo.locator("article")).toHaveCount(5);
   await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
   await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
   await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);

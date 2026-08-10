@@ -16,6 +16,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const touchStart = useRef(0);
+  const modalTouchStartY = useRef(0);
   const swiped = useRef(false);
 
   const prev = () => setSelected((s) => (s - 1 + images.length) % images.length);
@@ -94,7 +95,11 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           aria-modal="true"
           aria-label={name}
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-3 sm:p-8"
+          onTouchStart={(event) => { modalTouchStartY.current = event.touches[0].clientY; }}
+          onTouchEnd={(event) => {
+            if (Math.abs(modalTouchStartY.current - event.changedTouches[0].clientY) > 70) setOpen(false);
+          }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
         >
           <button
             type="button"
@@ -104,8 +109,9 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="flex h-full w-full max-w-6xl flex-col" onClick={(event) => event.stopPropagation()}>
-            <div className="relative min-h-0 flex-1">
+          <div className="flex h-full w-full flex-col">
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <div className="relative aspect-[4/3] max-h-full w-full max-w-[calc(133.33dvh-54px)]" onClick={(event) => event.stopPropagation()}>
               <Image src={images[selected].url} alt={name} fill className="object-contain" sizes="100vw" priority />
               {images.length > 1 && (
                 <>
@@ -117,6 +123,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
                 </button>
                 </>
               )}
+              </div>
             </div>
             {images.length > 1 && <span data-testid="gallery-modal-counter" className="py-2 text-center text-sm text-white">{selected + 1} / {images.length}</span>}
           </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronRight, CreditCard, Headphones, ShieldCheck, Wrench } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
@@ -271,6 +271,28 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </span>
             )}
           </div>
+          <section data-testid="product-why-adamo" className="mt-6 hidden md:block">
+            <h2 className="mb-3 text-[16px] font-black uppercase tracking-wide text-[#1d1d1f]">{tr.home.whyTitle}</h2>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { Icon: CheckCircle, title: tr.home.whyVerifiedTitle, desc: tr.home.whyVerifiedDesc },
+                { Icon: ShieldCheck, title: tr.home.whyWarrantyTitle, desc: tr.home.whyWarrantyDesc },
+                { Icon: CreditCard, title: tr.home.whyPaymentTitle, desc: tr.home.whyPaymentDesc },
+                { Icon: Wrench, title: tr.home.whyServiceTitle, desc: tr.home.whyServiceDesc },
+                { Icon: Headphones, title: tr.home.whySupportTitle, desc: tr.home.whySupportDesc },
+              ].map(({ Icon, title, desc }, index) => (
+                <article key={title} className={`group flex min-h-[88px] items-start gap-2.5 rounded-[12px] border border-[#e1e7ef] bg-white p-3 transition-colors hover:bg-[#f7fbf4] ${index === 4 ? "col-span-2" : ""}`}>
+                  <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-[9px] bg-[#edf7e8] text-[#34781f]">
+                    <Icon className="h-5 w-5" strokeWidth={1.7} />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-[11px] font-bold uppercase leading-[1.25] text-[#1d1d1f]">{title}</h3>
+                    <p className="mt-1 text-[11px] leading-[1.35] text-[#6b6c6c]">{desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         </div>
         <div>
           <ProductInfo product={product} />

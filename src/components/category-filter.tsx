@@ -216,7 +216,7 @@ export function CategoryFilter({
     const min = priceInput.min.trim();
     const max = priceInput.max.trim();
     if (min === (activePrice?.min?.toString() || "") && max === (activePrice?.max?.toString() || "")) return;
-    const timeout = setTimeout(() => applyUrl({ price_min: min || null, price_max: max || null }), 400);
+    const timeout = setTimeout(() => applyUrl({ price_min: min || null, price_max: max || null }), 3500);
     return () => clearTimeout(timeout);
   }, [activePrice?.min, activePrice?.max, applyUrl, priceInput]);
 
