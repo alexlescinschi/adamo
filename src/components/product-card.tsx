@@ -118,10 +118,10 @@ export function ProductCard({ product }: { product: Product }) {
       {product.specs && product.specs.length > 0 ? (() => {
         const s = product.specs;
         const lines = [
-          `· ${s[0] || ""} ${s[1] || ""}`,
-          `· ${s[2] || ""}`,
-          `· ${s[3] || ""} | ${s[4] || ""} ${s[5] || ""}`,
-          `· ${s[6] || ""}`,
+          `· ${s[0] || ""} ${s[1] || ""} ${s[2] || ""}`,
+          `· ${s[3] || ""}`,
+          `· ${s[4] || ""} | ${s[5] || ""} ${s[6] || ""}`,
+          `· ${s[7] || ""}`,
         ].filter(l => l.length > 2);
         return (
           <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] whitespace-pre-line">
@@ -143,8 +143,9 @@ export function ProductCard({ product }: { product: Product }) {
                 {formatPrice(product.price)} <small className="text-[10px] sm:text-[13px]">{tr.rates.currency}</small>
               </strong>
               <p className="m-0 mt-[3px] text-[8.5px] font-medium leading-[1.25] text-[#1d1d1f] sm:text-[12.5px]">
-                <span className="block">{tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}</span>
-                <span className="block">{tr.product.installmentTerm}</span>
+                <span className="block sm:inline">{tr.product.installments.replace("{amount}", formatPrice(product.price / 6))}</span>
+                <span className="hidden sm:inline"> | </span>
+                <span className="block sm:inline">{tr.product.installmentTerm}</span>
               </p>
             </div>
             <button

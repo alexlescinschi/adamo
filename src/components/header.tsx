@@ -170,10 +170,9 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
   return (
     <>
       <header
-        className={`sticky top-0 z-30 grid items-center gap-6 w-full bg-white/95 backdrop-blur-[18px] transition-transform duration-300 ${headerHidden ? "-translate-y-full" : "translate-y-0"}`}
+        className={`sticky top-0 z-30 flex w-full items-center justify-between gap-2 bg-white/95 backdrop-blur-[18px] transition-transform duration-300 md:grid md:grid-cols-[auto_1fr_auto] md:gap-6 ${headerHidden ? "-translate-y-full" : "translate-y-0"}`}
         style={{
-          gridTemplateColumns: "auto 1fr auto",
-          padding: "11px max(24px, calc((100vw - 1048px) / 2))",
+          padding: "11px max(12px, calc((100vw - 1048px) / 2))",
           boxShadow: "0 10px 28px rgba(31, 41, 55, .035)",
         }}
       >
@@ -189,7 +188,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-3">
+        <div className="ml-auto flex items-center gap-1 sm:gap-3 md:ml-0">
           <a
             href={`tel:${PHONE}`}
             className="mr-1 hidden items-center gap-[10px] rounded-[9px] border border-[#e1e7ef] bg-white px-[13px] py-[8px] transition-colors hover:border-[#63ad36] sm:mr-2 md:flex"

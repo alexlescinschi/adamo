@@ -116,6 +116,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   // --- Submit state ---
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const idempotencyKey = useRef("");
 
   // ponytail: fetch pickup warehouses
@@ -736,11 +737,27 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           <span>{formatPrice(total)} {tr.rates.currency}</span>
         </div>
 
+        <label className="mt-4 flex cursor-pointer items-start gap-2.5 text-[12px] leading-[1.4] text-[#536070]">
+          <input
+            type="checkbox"
+            required
+            checked={termsAccepted}
+            onChange={(event) => setTermsAccepted(event.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 accent-[#63ad36]"
+          />
+          <span>
+            {tr.checkout.agreeTerms}{" "}
+            <Link href={`/${locale}/termeni-si-conditii`} target="_blank" className="font-semibold text-[#34781f] underline hover:text-[#1d1d1f]">
+              {tr.footer.terms}
+            </Link>
+          </span>
+        </label>
+
         {error && <p className="mt-3 text-[13px] text-red-600">{error}</p>}
 
         <button
           type="submit"
-          disabled={submitting || !hasSelected || postaCashUnsupported}
+          disabled={submitting || !hasSelected || postaCashUnsupported || !termsAccepted}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3.5 text-[15px] font-bold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (<><Loader2 className="h-5 w-5 animate-spin" /> {tr.checkout.processing}</>) : (tr.cart.finalizeOrder)}

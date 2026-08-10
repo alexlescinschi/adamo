@@ -45,10 +45,13 @@ for (const [device, viewport] of [
     await expect(specs).not.toContainText(" / ");
     const firstCard = page.getByTestId("product-grid").locator("article").first();
     const price = Number((await firstCard.locator("strong").first().innerText()).replace(/\D/g, ""));
-    await expect(firstCard.locator("p").last().locator("span")).toHaveText([
+    const installmentParts = firstCard.locator("p").last().locator("span");
+    await expect(installmentParts).toHaveText([
       `${formatPrice(price / 6)} lei`,
+      " | ",
       "6 luni | 0%",
     ]);
+    await expect(installmentParts.nth(1)).toHaveCSS("display", device === "desktop" ? "inline" : "none");
     expect(await firstCard.getAttribute("class")).toContain("active:-translate-y-[3px]");
 
     await loadNextPage(page, 2);
@@ -302,6 +305,13 @@ test("footer promotions link opens the discounted catalog", async ({ page }) => 
   const cartOldPrice = page.getByTestId("old-price").last();
   const cartCurrentPrice = page.getByTestId("current-price").last();
   expect((await cartOldPrice.boundingBox())!.y).toBeLessThan((await cartCurrentPrice.boundingBox())!.y);
+  const termsCheckbox = page.getByRole("checkbox", { name: /Termeni și condiții/ });
+  const finalizeOrder = page.getByRole("button", { name: "Finalizează comanda", exact: true });
+  await expect(termsCheckbox).toBeVisible();
+  await expect(termsCheckbox.locator("..").getByRole("link", { name: "Termeni și condiții", exact: true })).toHaveAttribute("href", "/ro/termeni-si-conditii");
+  await expect(finalizeOrder).toBeDisabled();
+  await termsCheckbox.check();
+  await expect(finalizeOrder).toBeEnabled();
 
   await page.goto(productHref!);
   await expect(page.getByRole("link", { name: "Înapoi la produse", exact: true })).toHaveCount(0);
@@ -320,6 +330,13 @@ test("home renders promotions in RU and EN", async ({ page }) => {
 test("home uses localized hero copy and single-column mobile benefits", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/ro", { waitUntil: "networkidle" });
+  const mobileHeader = page.locator("header");
+  const [logoBox, menuBox] = await Promise.all([
+    mobileHeader.locator('a[href="/ro"]').first().boundingBox(),
+    mobileHeader.getByRole("button", { name: "Meniu", exact: true }).boundingBox(),
+  ]);
+  expect(logoBox!.x).toBeLessThan(menuBox!.x);
+  expect(menuBox!.x + menuBox!.width).toBeGreaterThan(350);
   await expect(page.getByRole("link", { name: "Alege Laptop", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: /Garanție 12 luni/ }).locator("..")).toHaveCSS("gap", "0px");
   const whyItems = page.getByRole("heading", { name: "De ce ADAMO.MD?", exact: true }).locator("..").locator("article");
@@ -426,6 +443,7 @@ test("condition appears by product price but not on catalog images", async ({ pa
 
   await expect(page.locator("aside").getByText("Sticker", { exact: true })).toHaveCount(0);
   await expect(card(1458).getByTestId("condition-badge")).toHaveCount(0);
+  await expect(card(1458).locator("p").first()).toContainText("OLED");
   await expect(card(1458).locator("p").first()).toContainText("GeForce RTX 50");
   await expect(card(1458).locator("p").first()).not.toContainText("Dedicată");
   await expect(card(1457).getByTestId("condition-badge")).toHaveCount(0);

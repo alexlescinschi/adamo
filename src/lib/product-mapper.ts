@@ -8,7 +8,7 @@ const BADGE_GRADIENTS: Record<string, string> = {
 };
 
 const POPULAR_LABELS = ["popular", "популярный"];
-const SPEC_LABELS = ["display", "rezolutie", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "serie-placa-video"];
+const SPEC_LABELS = ["display", "rezolutie", "tip-ecran", "serie-procesor", "memorie-ram", "capacitatea-hard-disk", "tip-stocare", "serie-placa-video"];
 
 export function extractCondition(item: any): "new" | "like-new" | undefined {
   const specs = item.specs || item.attributes || [];
@@ -38,10 +38,14 @@ export function hasAttribute(item: any, label: string): boolean {
 export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
   if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((s: any) => SPEC_LABELS.includes(s.code) && s.valueLabel && s.valueLabel !== "No")
-    .sort((a, b) => SPEC_LABELS.indexOf(a.code) - SPEC_LABELS.indexOf(b.code))
-    .map((s: any) => s.valueLabel);
+  const values = SPEC_LABELS.map((code) => {
+    const spec = raw.find((candidate: any) => {
+      const screenTypeLabel = /^(tip ecran|тип экрана|screen type)$/i.test(String(candidate.label || "").trim());
+      return (candidate.code === code || (code === "tip-ecran" && screenTypeLabel)) && candidate.valueLabel && candidate.valueLabel !== "No";
+    });
+    return spec?.valueLabel || "";
+  });
+  return values.some(Boolean) ? values : [];
 }
 
 export function mapProductCard(item: any) {

@@ -188,6 +188,7 @@ const dict = {
       iuteSdkUnavailable: "IutePay SDK nu s-a încărcat. Reîncearcă sau alege altă plată.",
       iuteApplicationFailed: "Aplicația IutePay nu a fost trimisă. Încearcă altă plată.",
       iuteInitializationFailed: "IutePay nu a putut fi inițializată. Încearcă altă metodă de plată.",
+      agreeTerms: "Sunt de acord cu",
     },
     home: {
       popular: "Laptopuri populare în Moldova",
@@ -643,6 +644,7 @@ const dict = {
       iuteSdkUnavailable: "IutePay SDK не загрузился. Повторите попытку или выберите другой способ оплаты.",
       iuteApplicationFailed: "Заявка IutePay не была отправлена. Выберите другой способ оплаты.",
       iuteInitializationFailed: "Не удалось запустить IutePay. Выберите другой способ оплаты.",
+      agreeTerms: "Я согласен с",
     },
     home: {
       popular: "Популярные ноутбуки в Молдове",
@@ -1098,6 +1100,7 @@ const dict = {
       iuteSdkUnavailable: "The IutePay SDK did not load. Try again or choose another payment method.",
       iuteApplicationFailed: "The IutePay application was not submitted. Choose another payment method.",
       iuteInitializationFailed: "IutePay could not be started. Choose another payment method.",
+      agreeTerms: "I agree to the",
     },
     home: {
       popular: "Popular laptops in Moldova",
