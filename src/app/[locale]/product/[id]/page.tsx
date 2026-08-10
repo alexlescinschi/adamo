@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle, ChevronRight, CreditCard, Headphones, ShieldCheck, Wrench } from "lucide-react";
+import { BadgePercent, CheckCircle, ChevronRight, CreditCard, Headphones, ShieldCheck, Wrench } from "lucide-react";
 import { getProductById, getCategoryProducts } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
 import { ImageGallery } from "@/components/image-gallery";
@@ -280,8 +280,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 { Icon: CreditCard, title: tr.home.whyPaymentTitle, desc: tr.home.whyPaymentDesc },
                 { Icon: Wrench, title: tr.home.whyServiceTitle, desc: tr.home.whyServiceDesc },
                 { Icon: Headphones, title: tr.home.whySupportTitle, desc: tr.home.whySupportDesc },
-              ].map(({ Icon, title, desc }, index) => (
-                <article key={title} className={`group flex min-h-[88px] items-start gap-2.5 rounded-[12px] border border-[#e1e7ef] bg-white p-3 transition-colors hover:bg-[#f7fbf4] ${index === 4 ? "col-span-2" : ""}`}>
+                { Icon: BadgePercent, title: tr.home.benefitInstallments, desc: tr.home.benefitInstallmentsDesc.split("\n")[0] },
+              ].map(({ Icon, title, desc }) => (
+                <article key={title} className="group flex min-h-[88px] items-start gap-2.5 rounded-[12px] border border-[#e1e7ef] bg-white p-3 transition-colors hover:bg-[#f7fbf4]">
                   <span className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-[9px] bg-[#edf7e8] text-[#34781f]">
                     <Icon className="h-5 w-5" strokeWidth={1.7} />
                   </span>

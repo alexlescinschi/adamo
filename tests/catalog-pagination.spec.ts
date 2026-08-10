@@ -470,7 +470,7 @@ test("condition appears by product price but not on catalog images", async ({ pa
   const productInfo = page.getByTestId("product-info");
   const whyAdamo = page.getByTestId("product-why-adamo");
   await expect(whyAdamo).toBeVisible();
-  await expect(whyAdamo.locator("article")).toHaveCount(5);
+  await expect(whyAdamo.locator("article")).toHaveCount(6);
   await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
   await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
   await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);
