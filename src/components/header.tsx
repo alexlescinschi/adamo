@@ -244,7 +244,7 @@ export function Header({ categories = [], products = [] }: { categories?: Catalo
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="flex flex-col gap-1 px-4 py-4">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-4">
           {navLinks.map(({ href, key }) => {
             const isHome = href === "/";
             const isContact = href === "/contact";

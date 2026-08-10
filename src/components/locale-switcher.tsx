@@ -36,17 +36,17 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative w-full md:w-auto">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 rounded-[7px] px-[14px] py-[9px] text-[14px] font-semibold text-[#444545] transition-colors hover:bg-[#f3f6f6] hover:text-[#1d1d1f]"
+        className="flex w-full items-center justify-between gap-1 rounded-[9px] px-4 py-3 text-[14px] font-semibold text-[#444545] transition-colors hover:bg-[#f3f6f6] hover:text-[#1d1d1f] md:w-auto md:justify-start md:rounded-[7px] md:px-[14px] md:py-[9px]"
       >
         {currentLocale.toUpperCase()}
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[130px] rounded-[10px] border border-[#e4e8e4] bg-white py-1 shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
+        <div className="mt-1 w-full overflow-hidden rounded-[10px] border border-[#e4e8e4] bg-white py-1 md:absolute md:right-0 md:top-full md:z-50 md:min-w-[130px] md:w-auto md:shadow-[0_4px_20px_rgba(0,0,0,0.1)]">
           {LOCALES.map(({ code, label }) => (
             <button
               key={code}
