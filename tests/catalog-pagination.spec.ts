@@ -389,11 +389,12 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   const productInfo = page.getByTestId("product-info");
   await expect(page.getByTestId("product-why-adamo")).toBeHidden();
   const rateClouds = productInfo.getByTestId("rate-clouds").locator(":scope > div");
-  await expect(rateClouds).toHaveCount(7);
-  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["6", "8", "10", "12", "18", "24", "36"]);
-  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["0", "0", "1", "1", "1", "1", "1"]);
+  await expect(rateClouds).toHaveCount(8);
+  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["4", "6", "8", "10", "12", "18", "24", "36"]);
+  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["0", "0", "1", "1", "1", "1", "1", "1"]);
   const cloudRows = await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getBoundingClientRect().y));
   expect(new Set(cloudRows).size).toBeGreaterThan(1);
+  await expect(productInfo.getByRole("button", { name: "Cumpără în rate", exact: true })).toHaveCount(0);
   const iuteButton = productInfo.getByRole("button", { name: /Achită în rate/ });
   await expect(iuteButton).toBeVisible();
   await iuteButton.click();

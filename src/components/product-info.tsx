@@ -233,7 +233,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <IuteCalculator price={product.price} sku={String(product.id)} />
       </div>
 
-      <RateCalculator price={product.price} productName={product.name} />
+      <RateCalculator price={product.price} />
 
       {product.description && (
         <div className="mt-6 text-[17px] leading-relaxed text-[#6b6c6c] whitespace-pre-line">{product.description}</div>
