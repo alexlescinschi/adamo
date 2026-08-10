@@ -63,23 +63,26 @@ export function RateCalculator({ price, productName }: Props) {
   return (
     <>
       {/* Inline widget */}
-      <div className="mt-4 rounded-[12px] border border-[#e4e8e4] bg-[#f7f9f7] p-4">
+      <div className="mt-5">
         <p className="mb-3 text-[14px] font-bold text-[#1d1d1f]">{tr.estimatesTitle}</p>
-        <div data-testid="rate-clouds" className="mb-3 flex flex-wrap gap-2">
+        <div data-testid="rate-clouds" className="mb-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
           {PLANS.map((plan) => (
             <div
               key={plan.months}
               data-months={plan.months}
               data-rate={plan.rate}
-              className={`whitespace-nowrap rounded-[18px] border px-3 py-2 ${plan.rate === 0 ? "border-[#b9dca5] bg-[#edf7e8]" : "border-[#e1e5e1] bg-white"}`}
+              className="flex min-w-0 items-center gap-2 rounded-full border border-[#e1e7df] bg-[#f8faf8] px-3.5 py-3 shadow-[0_2px_8px_rgba(29,29,31,0.06)]"
             >
-              <div className="flex items-center gap-2 text-[11px] font-bold">
-                <span className={plan.rate === 0 ? "text-[#34781f]" : "text-[#6b6c6c]"}>{plan.rate}%</span>
-                <span className="text-[#6b6c6c]">{tr.monthCount.replace("{count}", String(plan.months))}</span>
-              </div>
-              <div className="mt-0.5 text-[14px] font-extrabold text-[#1d1d1f]">
-                {formatPrice(monthly(price, plan.months, plan.rate))} <span className="text-[10px] font-semibold text-[#6b6c6c]">{tr.perMonth}</span>
-              </div>
+              <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-[#66758a]">
+                {tr.monthCount.replace("{count}", String(plan.months))}
+              </span>
+              <span className="h-6 w-px shrink-0 bg-[#dce3dc]" />
+              <span className="min-w-0 flex-1 whitespace-nowrap text-[14px] font-extrabold text-[#1d1d1f]">
+                {formatPrice(monthly(price, plan.months, plan.rate))} {tr.currency}
+              </span>
+              <span className={`shrink-0 rounded-[10px] px-2 py-1 text-[12px] font-black ${plan.rate === 0 ? "bg-[#dff6d6] text-[#34781f]" : "bg-[#cfe9c4] text-[#2e7d22]"}`}>
+                {plan.rate}%
+              </span>
             </div>
           ))}
         </div>
