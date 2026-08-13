@@ -65,6 +65,15 @@ export function Footer({ contact, publishedPageSlugs = [] }: { contact?: Contact
               </svg>
             </a>
           ))}
+          <a
+            href="https://999.md/ro/profile/ImportGermany"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="999.md"
+            className="grid h-[34px] w-[34px] place-items-center rounded-full border border-[#e1e7ef] bg-white transition-[border-color,background,transform] duration-[.18s] hover:-translate-y-[1px] hover:border-[#9fca86] hover:bg-[#f6fbf2]"
+          >
+            <img src="/logo999.svg" alt="" className="h-[17px] w-auto" />
+          </a>
         </div>
       </div>
 

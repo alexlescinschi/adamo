@@ -98,7 +98,7 @@ export function Hero({ content, images, customerImageAlt, locale }: HeroProps) {
           </h1>
 
           {subtitle && (
-            <p className="mt-0 mb-0 max-w-[336px] text-[14.4px] leading-[1.42] text-[#3f4958] sm:text-[15.8px] sm:leading-[1.46] sm:[text-shadow:0_2px_16px_rgba(255,255,255,0.92)] lg:mb-[18px] lg:max-w-[430px] lg:text-[18px] lg:leading-[1.55] lg:text-[#4b5565] lg:[text-shadow:none] xs:text-[15px] xs:leading-[1.42]">
+            <p className="mt-0 mb-0 max-w-[336px] pb-[15px] text-[14.4px] leading-[1.42] text-[#3f4958] sm:pb-0 sm:text-[15.8px] sm:leading-[1.46] sm:[text-shadow:0_2px_16px_rgba(255,255,255,0.92)] lg:mb-[18px] lg:max-w-[430px] lg:text-[18px] lg:leading-[1.55] lg:text-[#4b5565] lg:[text-shadow:none] xs:text-[15px] xs:leading-[1.42]">
               {subtitle}
             </p>
           )}

@@ -95,7 +95,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
               {product.condition && (
                 <span
                   data-testid="condition-badge"
-                  className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+                  className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] md:hidden ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
                 >
                   {(tr as any).badges[product.condition]}
                 </span>
@@ -151,10 +151,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
               type="button"
               onClick={handleAddToCart}
               disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-              className="flex items-center justify-center gap-2 rounded-[9px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 text-[15px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40 flex-1"
+              className="relative flex items-center justify-center gap-2 rounded-[9px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 text-[15px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40 flex-1"
             >
               {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
               {tr.product.addToCart}
+              {product.condition && (
+                <span
+                  data-testid="condition-badge-desktop"
+                  className={`absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-[6px] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] md:inline-flex ${product.condition === "new" ? "bg-[#4e8f28]" : "bg-[#3979b7]"}`}
+                >
+                  {(tr as any).badges[product.condition]}
+                </span>
+              )}
             </button>
           </div>
           {toast && (

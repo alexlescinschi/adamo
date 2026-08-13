@@ -486,16 +486,18 @@ test("condition appears by product price but not on catalog images", async ({ pa
   await expect(whyAdamo.locator("article")).toHaveCount(6);
   await expect(page.getByTestId("product-why-adamo-mobile")).toBeHidden();
   await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
-  await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
+  await expect(productInfo.getByTestId("condition-badge")).toBeHidden();
+  await expect(productInfo.getByTestId("condition-badge-desktop")).toHaveText("Новый");
   await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);
-  const [priceBox, conditionBox] = await Promise.all([
-    productInfo.getByTestId("current-price").boundingBox(),
-    productInfo.getByTestId("condition-badge").boundingBox(),
+  const addToCart = productInfo.getByRole("button", { name: /Добавить в корзину/ });
+  const [buttonBox, conditionBox] = await Promise.all([
+    addToCart.boundingBox(),
+    productInfo.getByTestId("condition-badge-desktop").boundingBox(),
   ]);
-  expect(Math.round(conditionBox!.x - priceBox!.x - priceBox!.width)).toBe(10);
+  expect(Math.round(conditionBox!.y + conditionBox!.height / 2)).toBe(Math.round(buttonBox!.y + buttonBox!.height / 2));
 
   await page.goto("/en/product/1457", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveText("Like new");
+  await expect(page.getByTestId("product-info").getByTestId("condition-badge-desktop")).toHaveText("Like new");
 
   await page.goto("/ro/product/1452", { waitUntil: "networkidle" });
   await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveCount(0);
