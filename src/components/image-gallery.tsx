@@ -16,7 +16,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const touchStart = useRef(0);
-  const modalTouchStartY = useRef(0);
+  const modalTouchStart = useRef({ x: 0, y: 0 });
   const swiped = useRef(false);
 
   const prev = () => setSelected((s) => (s - 1 + images.length) % images.length);
@@ -95,11 +95,20 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           aria-modal="true"
           aria-label={name}
           onClick={() => setOpen(false)}
-          onTouchStart={(event) => { modalTouchStartY.current = event.touches[0].clientY; }}
-          onTouchEnd={(event) => {
-            if (Math.abs(modalTouchStartY.current - event.changedTouches[0].clientY) > 70) setOpen(false);
+          onTouchStart={(event) => {
+            modalTouchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
           }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
+          onTouchEnd={(event) => {
+            const diffX = modalTouchStart.current.x - event.changedTouches[0].clientX;
+            const diffY = modalTouchStart.current.y - event.changedTouches[0].clientY;
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+              if (diffX > 0) next();
+              else prev();
+            } else if (Math.abs(diffY) > 70) {
+              setOpen(false);
+            }
+          }}
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black/90 touch-none"
         >
           <button
             type="button"
@@ -110,20 +119,18 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
             <X className="h-6 w-6" />
           </button>
           <div className="flex h-full w-full flex-col">
-            <div className="flex min-h-0 flex-1 items-center justify-center">
-              <div className="relative aspect-[4/3] max-h-full w-full max-w-[calc(133.33dvh-54px)]" onClick={(event) => event.stopPropagation()}>
-              <Image src={images[selected].url} alt={name} fill className="object-contain" sizes="100vw" priority />
+            <div className="relative min-h-0 flex-1">
+              <Image src={images[selected].url} alt={name} fill className="object-cover" sizes="100vw" priority />
               {images.length > 1 && (
                 <>
-                <button aria-label={tr.product.previousImage} onClick={prev} className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:left-4 sm:p-3">
+                <button aria-label={tr.product.previousImage} onClick={(event) => { event.stopPropagation(); prev(); }} className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:left-4 sm:p-3">
                   <ChevronLeft className="h-6 w-6" />
                 </button>
-                <button aria-label={tr.product.nextImage} onClick={next} className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:right-4 sm:p-3">
+                <button aria-label={tr.product.nextImage} onClick={(event) => { event.stopPropagation(); next(); }} className="absolute right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:right-4 sm:p-3">
                   <ChevronRight className="h-6 w-6" />
                 </button>
                 </>
               )}
-              </div>
             </div>
             {images.length > 1 && <span data-testid="gallery-modal-counter" className="py-2 text-center text-sm text-white">{selected + 1} / {images.length}</span>}
           </div>

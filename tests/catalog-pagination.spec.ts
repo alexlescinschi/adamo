@@ -399,7 +399,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await expect(iuteButton).toBeVisible();
   await iuteButton.click();
   await expect(productInfo.getByText("Smart 0%", { exact: true })).toBeVisible();
-  await expect(productInfo.locator(".iute-as-low-as")).toHaveCount(1);
+  await expect(productInfo.locator(".iute-as-low-as")).toHaveCount(0);
 
   const quickOrder = page.getByRole("button", { name: /Comandă într-un clic/ });
   expect((await quickOrder.boundingBox())?.height).toBeGreaterThanOrEqual(64);
@@ -412,6 +412,10 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   expect(firstCounter).toMatch(/^1 \/ [2-9]\d*$/);
   await gallery.getByRole("button", { name: "Imaginea următoare" }).click();
   await expect(counter).not.toHaveText(firstCounter!);
+  const counterAfterButton = await counter.textContent();
+  await gallery.dispatchEvent("touchstart", { touches: [{ identifier: 1, clientX: 300, clientY: 300 }] });
+  await gallery.dispatchEvent("touchend", { changedTouches: [{ identifier: 1, clientX: 100, clientY: 310 }] });
+  await expect(counter).not.toHaveText(counterAfterButton!);
   await expect(gallery).toHaveCSS("padding-left", "0px");
   await expect(gallery).toHaveCSS("padding-right", "0px");
   await gallery.click({ position: { x: 5, y: 5 } });

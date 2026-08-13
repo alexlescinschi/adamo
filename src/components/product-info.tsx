@@ -7,7 +7,6 @@ import { useResolveUnit } from "@/hooks/use-resolve-unit";
 import { ShoppingCart, Loader2, Minus, Plus, Truck, ChevronDown, Info } from "lucide-react";
 import { useLocale, useTranslations } from "@/hooks/use-translations";
 import { RateCalculator } from "@/components/rate-calculator";
-import { IuteCalculator } from "@/components/iute-calculator";
 import { formatPrice } from "@/lib/utils";
 
 interface ProductInfoProps {
@@ -229,8 +228,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
             </div>
           </div>
         </div>
-
-        <IuteCalculator price={product.price} sku={String(product.id)} />
       </div>
 
       <RateCalculator price={product.price} />
