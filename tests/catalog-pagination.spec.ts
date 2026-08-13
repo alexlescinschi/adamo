@@ -379,6 +379,13 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   if (await cardDots.count()) {
     const [imageBox, dotsBox] = await Promise.all([cardImage.boundingBox(), cardDots.boundingBox()]);
     expect(dotsBox!.y).toBeGreaterThanOrEqual(imageBox!.y + imageBox!.height);
+    const firstImage = cardImage.locator("img").first();
+    const transformBeforeSwipe = await firstImage.getAttribute("style");
+    const catalogBeforeSwipe = page.url();
+    await cardImage.dispatchEvent("touchstart", { touches: [{ identifier: 1, clientX: 300, clientY: 200 }] });
+    await cardImage.dispatchEvent("touchend", { changedTouches: [{ identifier: 1, clientX: 100, clientY: 205 }] });
+    await expect(page).toHaveURL(catalogBeforeSwipe);
+    await expect(firstImage).not.toHaveAttribute("style", transformBeforeSwipe!);
   }
   const catalogUrl = page.url();
   await card.getByRole("button", { name: "Adaugă în coș" }).click();
@@ -388,6 +395,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
 
   const productInfo = page.getByTestId("product-info");
   await expect(page.getByTestId("product-why-adamo")).toBeHidden();
+  await expect(page.getByTestId("product-why-adamo-mobile")).toBeVisible();
   const rateClouds = productInfo.getByTestId("rate-clouds").locator(":scope > div");
   await expect(rateClouds).toHaveCount(8);
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["4", "6", "8", "10", "12", "18", "24", "36"]);
@@ -476,6 +484,7 @@ test("condition appears by product price but not on catalog images", async ({ pa
   const whyAdamo = page.getByTestId("product-why-adamo");
   await expect(whyAdamo).toBeVisible();
   await expect(whyAdamo.locator("article")).toHaveCount(6);
+  await expect(page.getByTestId("product-why-adamo-mobile")).toBeHidden();
   await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
   await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
   await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);

@@ -43,7 +43,8 @@ export function ProductCard({ product }: { product: Product }) {
   const imgs = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
   const hasSlider = imgs.length > 1;
   const [imgIdx, setImgIdx] = useState(0);
-  const touchStart = useRef(0);
+  const touchStart = useRef({ x: 0, y: 0 });
+  const swiped = useRef(false);
 
   const nextImg = useCallback(() => setImgIdx((i) => (i + 1) % imgs.length), [imgs.length]);
   const prevImg = useCallback(() => setImgIdx((i) => (i - 1 + imgs.length) % imgs.length), [imgs.length]);
@@ -70,11 +71,28 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         href={href}
         className="relative mb-[10px] block aspect-[4/3] overflow-hidden rounded-[7px] bg-[#f3f6f6]"
-        onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
+        onMouseMove={(event) => {
+          if (!hasSlider) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          setImgIdx(Math.min(imgs.length - 1, Math.floor(((event.clientX - rect.left) / rect.width) * imgs.length)));
+        }}
+        onMouseLeave={() => setImgIdx(0)}
+        onClick={(event) => {
+          if (!swiped.current) return;
+          event.preventDefault();
+          swiped.current = false;
+        }}
+        onTouchStart={(e) => {
+          touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          swiped.current = false;
+        }}
         onTouchEnd={(e) => {
-          const diff = touchStart.current - e.changedTouches[0].clientX;
-          if (diff > 40) nextImg();
-          else if (diff < -40) prevImg();
+          const diffX = touchStart.current.x - e.changedTouches[0].clientX;
+          const diffY = touchStart.current.y - e.changedTouches[0].clientY;
+          if (Math.abs(diffX) <= Math.abs(diffY) || Math.abs(diffX) <= 40) return;
+          swiped.current = true;
+          if (diffX > 0) nextImg();
+          else prevImg();
         }}
       >
         {product.badge && (
