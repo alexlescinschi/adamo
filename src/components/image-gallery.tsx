@@ -120,7 +120,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           </button>
           <div className="flex h-full w-full flex-col">
             <div className="relative min-h-0 flex-1">
-              <Image src={images[selected].url} alt={name} fill className="object-cover" sizes="100vw" priority />
+              <Image src={images[selected].url} alt={name} fill className="object-contain" sizes="100vw" priority />
               {images.length > 1 && (
                 <>
                 <button aria-label={tr.product.previousImage} onClick={(event) => { event.stopPropagation(); prev(); }} className="absolute left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white transition-colors hover:bg-white/25 sm:left-4 sm:p-3">

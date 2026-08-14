@@ -40,7 +40,7 @@ export function ProductCard({ product }: { product: Product }) {
   const href = `/${locale}/product/${product.slug ? `${product.id}-${product.slug}` : product.id}`;
 
   // ponytail: mobile swipe only, no desktop auto-play
-  const imgs = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
+  const imgs = (product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : [])).slice(0, 6);
   const hasSlider = imgs.length > 1;
   const [imgIdx, setImgIdx] = useState(0);
   const touchStart = useRef({ x: 0, y: 0 });

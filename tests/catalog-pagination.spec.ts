@@ -397,7 +397,9 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   test.skip((await card.count()) === 0, "CRM catalog credentials are required");
   const cardImage = card.locator('a[href*="/product/"]').first();
   const cardDots = card.getByTestId("product-card-dots");
+  expect(await cardImage.locator("img").count()).toBeLessThanOrEqual(6);
   if (await cardDots.count()) {
+    expect(await cardDots.locator(":scope > span").count()).toBeLessThanOrEqual(6);
     const [imageBox, dotsBox] = await Promise.all([cardImage.boundingBox(), cardDots.boundingBox()]);
     expect(dotsBox!.y).toBeGreaterThanOrEqual(imageBox!.y + imageBox!.height);
     const firstImage = cardImage.locator("img").first();
@@ -438,6 +440,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.getByRole("button", { name: "Deschide galeria de imagini" }).click();
   const gallery = page.getByRole("dialog");
   await expect(gallery).toBeVisible();
+  await expect(gallery.locator("img")).toHaveCSS("object-fit", "contain");
   expect(await gallery.evaluate((element) => element.parentElement?.tagName)).toBe("BODY");
   const counter = gallery.locator("span").filter({ hasText: /^\d+ \/ \d+$/ });
   const firstCounter = await counter.textContent();
