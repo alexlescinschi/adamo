@@ -108,7 +108,7 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
               setOpen(false);
             }
           }}
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black/90 touch-none"
+          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black touch-none"
         >
           <button
             type="button"

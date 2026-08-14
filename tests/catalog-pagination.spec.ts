@@ -444,6 +444,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   await page.getByRole("button", { name: "Deschide galeria de imagini" }).click();
   const gallery = page.getByRole("dialog");
   await expect(gallery).toBeVisible();
+  await expect(gallery).toHaveCSS("background-color", "rgb(0, 0, 0)");
   await expect(gallery.locator("img")).toHaveCSS("object-fit", "contain");
   expect(await gallery.evaluate((element) => element.parentElement?.tagName)).toBe("BODY");
   const counter = gallery.locator("span").filter({ hasText: /^\d+ \/ \d+$/ });
