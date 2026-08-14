@@ -113,7 +113,7 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className="h-full scroll-smooth">
+    <html lang={locale} className="h-full scroll-smooth overflow-x-clip">
       <body className="min-h-full flex flex-col font-sans text-[15px] text-[#111827] overflow-x-hidden overflow-x-clip" style={{ backgroundImage: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
         <CartProvider>
           <Header categories={categories} products={products} publishedPageSlugs={publishedContent.pages.map((page) => page.slug)} />

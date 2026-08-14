@@ -87,6 +87,7 @@ test("Google review links use the verified Adamo place", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const [mobileTrack, mobileSlide] = await Promise.all([track.boundingBox(), firstSlide.boundingBox()]);
   expect(Math.abs(mobileSlide!.width - mobileTrack!.width)).toBeLessThan(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
 test("mobile filters fill the screen and keep the action visible", async ({ page }) => {
