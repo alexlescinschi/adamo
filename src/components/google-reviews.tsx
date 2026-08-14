@@ -23,7 +23,7 @@ export function GoogleReviews({ place, labels }: { place: GooglePlace | null; la
     track.scrollBy({ left: direction * (slide.offsetWidth + 16), behavior: "smooth" });
   }
 
-  const slideClass = "h-[320px] min-w-full shrink-0 snap-start md:min-w-[calc((100%_-_2rem)/3)]";
+  const slideClass = "h-[320px] w-full flex-none snap-start md:w-[calc((100%_-_2rem)/3)]";
 
   return (
     <section className="mb-7" aria-labelledby="google-reviews-title">
