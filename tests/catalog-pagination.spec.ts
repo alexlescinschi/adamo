@@ -76,6 +76,17 @@ test("Google review links use the verified Adamo place", async ({ page }) => {
   const reviews = page.getByRole("heading", { name: "Recenzii Google", exact: true }).locator("..");
   await expect(reviews.getByRole("link", { name: /Scrie o recenzie/ })).toHaveAttribute("href", /placeid=ChIJqbd-7d99yUART8XN00KUImw/);
   await expect(reviews).not.toContainText("34 recenzii");
+  await expect(page.getByText("Google selectează și ordonează aceste recenzii după relevanță.")).toHaveCount(0);
+  expect(await page.getByTestId("google-map").evaluate((map) => Boolean(map.previousElementSibling?.querySelector('[data-testid="google-reviews"]')))).toBe(true);
+  const track = page.getByTestId("google-reviews");
+  const firstSlide = track.locator("article").first();
+  const [desktopTrack, desktopSlide, map] = await Promise.all([track.boundingBox(), firstSlide.boundingBox(), page.getByTestId("google-map").boundingBox()]);
+  expect(Math.abs(desktopSlide!.width * 3 + 32 - desktopTrack!.width)).toBeLessThan(2);
+  expect(map!.width).toBe(desktopTrack!.width);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const [mobileTrack, mobileSlide] = await Promise.all([track.boundingBox(), firstSlide.boundingBox()]);
+  expect(Math.abs(mobileSlide!.width - mobileTrack!.width)).toBeLessThan(2);
 });
 
 test("mobile filters fill the screen and keep the action visible", async ({ page }) => {

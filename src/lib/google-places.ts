@@ -1,4 +1,6 @@
-const ADAMO_PLACE_ID = "ChIJqbd-7d99yUART8XN00KUImw";
+export const ADAMO_PLACE_ID = "ChIJqbd-7d99yUART8XN00KUImw";
+export const ADAMO_MAPS_URI = `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${ADAMO_PLACE_ID}`;
+export const ADAMO_WRITE_REVIEW_URI = `https://search.google.com/local/writereview?placeid=${ADAMO_PLACE_ID}`;
 
 type GoogleText = {
   text?: string;
@@ -70,8 +72,8 @@ export async function getGooglePlace(locale: string): Promise<GooglePlace | null
     return {
       rating: place.rating,
       reviewCount: place.userRatingCount,
-      googleMapsUri: place.googleMapsUri || `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${ADAMO_PLACE_ID}`,
-      writeReviewUri: `https://search.google.com/local/writereview?placeid=${ADAMO_PLACE_ID}`,
+      googleMapsUri: place.googleMapsUri || ADAMO_MAPS_URI,
+      writeReviewUri: ADAMO_WRITE_REVIEW_URI,
       reviews: (place.reviews || []).flatMap((review) => {
         const author = review.authorAttribution;
         if (!review.name || !author?.displayName || !author.uri || !author.photoUri || !review.text?.text || !review.googleMapsUri) return [];

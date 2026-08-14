@@ -1,6 +1,7 @@
 import { ProductCard } from "@/components/product-card";
 import { Hero, type HeroContent } from "@/components/hero";
 import { BenefitsStrip } from "@/components/benefits-strip";
+import { GoogleReviews } from "@/components/google-reviews";
 import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide-react";
 import { getPublishedProducts, getNewProducts, getPromotions, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
@@ -260,71 +261,14 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
       {/* Google My Business */}
       <section className="mb-[70px]">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="overflow-hidden rounded-[9px] border border-[#e1e7ef] h-[300px]">
-            <iframe
-              src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1s${locale}!2s!4v1&hl=${locale}`}
-              width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade" title="Adamo"
-            />
-          </div>
-          <div className="flex flex-col justify-center gap-4 p-6 rounded-[9px] border border-[#e1e7ef] bg-white">
-            <h3 className="text-[18px] font-bold text-[#1d1d1f]">{tr.home.reviewTitle}</h3>
-            {googlePlace && (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[#f5a623] text-[20px]" aria-hidden="true">★★★★★</span>
-                  <span data-testid="google-rating" className="text-[14px] font-semibold text-[#1d1d1f]">{googlePlace.rating.toFixed(1)}</span>
-                  <span data-testid="google-review-count" className="text-[14px] text-[#6b6c6c]">
-                    {tr.home.reviewCount.replace("{count}", String(googlePlace.reviewCount))}
-                  </span>
-                </div>
-                <p className="text-[14px] text-[#536070]">{tr.home.reviewRating}</p>
-              </>
-            )}
-            <p className="text-[14px] text-[#536070]">{tr.home.reviewCta}</p>
-            <a
-              href={googlePlace?.writeReviewUri || "https://search.google.com/local/writereview?placeid=ChIJqbd-7d99yUART8XN00KUImw"}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 self-start rounded-[9px] bg-gradient-to-r from-[#78bb45] to-[#55a02d] px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_10px_20px_rgba(85,160,45,0.25)] hover:from-[#63ad36] hover:to-[#4e8f28] transition-all"
-            >
-              ⭐ {tr.home.writeReview}
-            </a>
-            {googlePlace && (
-              <a href={googlePlace.googleMapsUri} target="_blank" rel="noopener noreferrer" className="self-start text-[13px] text-[#5e5e5e] underline-offset-4 hover:underline">
-                <span translate="no">Google Maps</span>
-              </a>
-            )}
-          </div>
+        <GoogleReviews place={googlePlace} labels={tr.home} />
+        <div data-testid="google-map" className="h-[360px] w-full overflow-hidden rounded-[12px] border border-[#e1e7ef] md:h-[430px]">
+          <iframe
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2720!2d28.8643582!3d47.0367942!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40c97ddfed7eb7a9%3A0x6c229442d3cdc54f!2sAdamo!5e0!3m2!1s${locale}!2s!4v1&hl=${locale}`}
+            width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade" title="Adamo"
+          />
         </div>
-        {googlePlace && googlePlace.reviews.length > 0 && (
-          <div data-testid="google-reviews" className="mt-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {googlePlace.reviews.map((review) => (
-                <article key={review.id} className="flex flex-col gap-4 rounded-[9px] border border-[#e1e7ef] bg-white p-5 shadow-[0_12px_30px_rgba(31,41,55,0.06)]">
-                  <div className="flex items-center gap-3">
-                    <a href={review.authorUri} target="_blank" rel="noopener noreferrer" className="shrink-0" aria-label={review.author}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={review.authorPhotoUri} alt="" width="40" height="40" loading="lazy" referrerPolicy="no-referrer" className="h-10 w-10 rounded-full object-cover" />
-                    </a>
-                    <div className="min-w-0">
-                      <a href={review.authorUri} target="_blank" rel="noopener noreferrer" className="block truncate text-[14px] font-bold text-[#1d1d1f] hover:underline">{review.author}</a>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[14px] tracking-[1px] text-[#f5a623]" aria-label={`${review.rating}/5`}>{"★".repeat(review.rating)}</span>
-                        <span className="text-[12px] text-[#697586]">{review.relativeTime}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="flex-1 whitespace-pre-line text-[14px] leading-[1.55] text-[#536070]">{review.text}</p>
-                  <a href={review.googleMapsUri} target="_blank" rel="noopener noreferrer" className="self-start text-[12px] text-[#5e5e5e] underline-offset-4 hover:underline">
-                    {tr.home.viewReview} <span translate="no">Google Maps</span>
-                  </a>
-                </article>
-              ))}
-            </div>
-            <p className="mt-3 text-[12px] text-[#697586]">{tr.home.reviewOrder}</p>
-          </div>
-        )}
       </section>
     </div>
   );
