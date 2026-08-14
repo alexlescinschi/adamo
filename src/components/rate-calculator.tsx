@@ -16,9 +16,7 @@ const PLANS = [
 
 function monthly(price: number, months: number, rate: number): number {
   if (rate === 0) return Math.ceil(price / months);
-  const r = rate / 100;
-  const factor = Math.pow(1 + r, months);
-  return Math.ceil((price * r * factor) / (factor - 1));
+  return Math.ceil((price * (1 + (months * rate) / 100)) / months);
 }
 
 interface Props {
@@ -45,7 +43,7 @@ export function RateCalculator({ price }: Props) {
               {tr.monthCount.replace("{count}", String(plan.months))}
             </span>
             <span className="h-6 w-px shrink-0 bg-[#dce3dc]" />
-            <span className="min-w-0 truncate whitespace-nowrap text-[14px] font-extrabold text-[#1d1d1f]">
+            <span data-testid="rate-amount" className="min-w-0 truncate whitespace-nowrap text-[14px] font-extrabold text-[#1d1d1f]">
               {formatPrice(monthly(price, plan.months, plan.rate))} {tr.currency}
             </span>
             <span className={`shrink-0 rounded-[10px] px-2 py-1 text-[12px] font-black ${plan.rate === 0 ? "bg-[#dff6d6] text-[#34781f]" : "bg-[#cfe9c4] text-[#2e7d22]"}`}>

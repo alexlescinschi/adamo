@@ -58,11 +58,11 @@ transaction.createIfNotExists({
   phone: "+37367222999",
   email: "adamocomputers@gmail.com",
   address_ro: "Mun. Chișinău, Rîșcani, str. Dumitru Rîșcanu 11",
-  hours_ro: "Luni - Vineri: 10:00 - 18:00\nSâmbătă: 10:00 - 16:00",
+  hours_ro: "Luni - Vineri: 10:00 - 18:00\nSâmbătă - Duminică: 12:00 - 16:00",
   address_ru: "Кишинёв, Рышкановка, ул. Думитру Рышкану 11",
-  hours_ru: "Понедельник - Пятница: 10:00 - 18:00\nСуббота: 10:00 - 16:00",
+  hours_ru: "Понедельник - Пятница: 10:00 - 18:00\nСуббота - Воскресенье: 12:00 - 16:00",
   address_en: "11 Dumitru Riscanu Street, Riscani, Chisinau",
-  hours_en: "Monday - Friday: 10:00 - 18:00\nSaturday: 10:00 - 16:00",
+  hours_en: "Monday - Friday: 10:00 - 18:00\nSaturday - Sunday: 12:00 - 16:00",
 });
 
 await transaction.commit();

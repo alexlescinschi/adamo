@@ -135,12 +135,13 @@ export function ProductCard({ product }: { product: Product }) {
 
       {product.specs && product.specs.length > 0 ? (() => {
         const s = product.specs;
+        const storage = [s[5], s[6]].filter(Boolean).join(" ");
         const lines = [
-          `· ${s[0] || ""} ${s[1] || ""} ${s[2] || ""}`,
-          `· ${s[3] || ""}`,
-          `· ${s[4] || ""} | ${s[5] || ""} ${s[6] || ""}`,
-          `· ${s[7] || ""}`,
-        ].filter(l => l.length > 2);
+          [s[0], s[1], s[2]].filter(Boolean).join(" "),
+          s[3],
+          [s[4], storage].filter(Boolean).join(" | "),
+          s[7],
+        ].filter(Boolean).map((line) => `· ${line}`);
         return (
           <p className="mb-[8px] text-[12px] leading-[1.42] text-[#526071] whitespace-pre-line">
             {lines.join("\n")}
