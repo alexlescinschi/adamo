@@ -86,21 +86,21 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       <div className="mt-6">
         {hasPrice ? (
-          <div className="flex flex-col items-start gap-0.5">
-            {product.old_price && product.old_price > product.price && (
-              <span data-testid="old-price" className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
-            )}
-            <div className="flex items-center gap-[10px]">
-              <span data-testid="current-price" className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
-              {product.condition && (
-                <span
-                  data-testid="condition-badge"
-                  className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] md:hidden ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
-                >
-                  {(tr as any).badges[product.condition]}
-                </span>
+          <div className="grid grid-cols-[136px_minmax(0,1fr)] items-center gap-3">
+            <div className="flex flex-col items-start gap-0.5">
+              {product.old_price && product.old_price > product.price && (
+                <span data-testid="old-price" className="text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
               )}
+              <span data-testid="current-price" className="text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
             </div>
+            {product.condition && (
+              <span
+                data-testid="condition-badge"
+                className={`justify-self-center rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+              >
+                {(tr as any).badges[product.condition]}
+              </span>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-[10px]">
@@ -130,7 +130,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
       {stock > 0 && (
         <div className="mt-3 flex flex-col gap-2">
-          <div className="flex items-stretch gap-3 h-[50px]">
+          <div className="grid h-[50px] grid-cols-[136px_minmax(0,1fr)] gap-3">
             <div className="flex h-[50px] items-stretch rounded-[8px] border border-[#cccfcf]">
               <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))} className="flex items-center px-4 text-[#1d1d1f] hover:bg-[#f3f6f6] transition-colors">
                 <Minus className="h-4 w-4" />
@@ -151,18 +151,10 @@ export function ProductInfo({ product }: ProductInfoProps) {
               type="button"
               onClick={handleAddToCart}
               disabled={!hasPrice || product.availability === "OutOfStock" || adding}
-              className="relative flex items-center justify-center gap-2 rounded-[9px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 text-[15px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40 flex-1"
+              className="flex items-center justify-center gap-2 rounded-[9px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] px-6 text-[15px] font-semibold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-40"
             >
               {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
               {tr.product.addToCart}
-              {product.condition && (
-                <span
-                  data-testid="condition-badge-desktop"
-                  className={`absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-[6px] px-2.5 py-1 text-[10px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] md:inline-flex ${product.condition === "new" ? "bg-[#4e8f28]" : "bg-[#3979b7]"}`}
-                >
-                  {(tr as any).badges[product.condition]}
-                </span>
-              )}
             </button>
           </div>
           {toast && (

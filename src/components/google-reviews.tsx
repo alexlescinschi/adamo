@@ -39,7 +39,11 @@ export function GoogleReviews({ place, labels }: { place: GooglePlace | null; la
 
       <div ref={trackRef} data-testid="google-reviews" className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <article data-review-slide className={`${slideClass} flex flex-col items-center justify-center rounded-[12px] border border-[#e1e7ef] bg-white p-6 text-center shadow-[0_12px_30px_rgba(31,41,55,0.08)]`}>
-          <a href={place?.googleMapsUri || ADAMO_MAPS_URI} target="_blank" rel="noopener noreferrer" translate="no" className="text-[18px] font-semibold text-[#4285f4]">Google Maps</a>
+          <a href={place?.googleMapsUri || ADAMO_MAPS_URI} target="_blank" rel="noopener noreferrer" translate="no" className="flex items-end gap-1.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" width="92" height="30" className="h-[30px] w-[92px] object-contain" />
+            <span className="text-[18px] font-medium leading-[24px] text-[#5f6368]">Maps</span>
+          </a>
           <p className="mt-2 text-[25px] font-extrabold tracking-[-0.02em] text-[#172033]">ADAMO</p>
           {place && (
             <>

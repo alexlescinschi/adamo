@@ -419,7 +419,11 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   const productInfo = page.getByTestId("product-info");
   await expect(page.getByTestId("product-why-adamo")).toBeHidden();
   await expect(page.getByTestId("product-why-adamo-mobile")).toBeVisible();
-  const rateClouds = productInfo.getByTestId("rate-clouds").locator(":scope > div");
+  const ratePanel = productInfo.getByTestId("rate-clouds");
+  await expect(ratePanel).toBeHidden();
+  await productInfo.getByTestId("rate-toggle").click();
+  await expect(ratePanel).toBeVisible();
+  const rateClouds = ratePanel.locator(":scope > div");
   await expect(rateClouds).toHaveCount(8);
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["4", "6", "8", "10", "12", "18", "24", "36"]);
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["0", "0", "1", "1", "1", "1", "1", "1"]);
@@ -513,18 +517,20 @@ test("condition appears by product price but not on catalog images", async ({ pa
   await expect(whyAdamo.locator("article")).toHaveCount(6);
   await expect(page.getByTestId("product-why-adamo-mobile")).toBeHidden();
   await expect(page.getByTestId("product-gallery").getByTestId("condition-badge")).toHaveCount(0);
-  await expect(productInfo.getByTestId("condition-badge")).toBeHidden();
-  await expect(productInfo.getByTestId("condition-badge-desktop")).toHaveText("Новый");
+  await expect(productInfo.getByTestId("condition-badge")).toHaveText("Новый");
   await expect(productInfo.getByText("Sticker", { exact: true })).toHaveCount(0);
   const addToCart = productInfo.getByRole("button", { name: /Добавить в корзину/ });
-  const [buttonBox, conditionBox] = await Promise.all([
+  const [buttonBox, conditionBox, priceBox] = await Promise.all([
     addToCart.boundingBox(),
-    productInfo.getByTestId("condition-badge-desktop").boundingBox(),
+    productInfo.getByTestId("condition-badge").boundingBox(),
+    productInfo.getByTestId("current-price").boundingBox(),
   ]);
-  expect(Math.round(conditionBox!.y + conditionBox!.height / 2)).toBe(Math.round(buttonBox!.y + buttonBox!.height / 2));
+  expect(Math.abs(conditionBox!.x + conditionBox!.width / 2 - (buttonBox!.x + buttonBox!.width / 2))).toBeLessThan(2);
+  expect(Math.abs(conditionBox!.y + conditionBox!.height / 2 - (priceBox!.y + priceBox!.height / 2))).toBeLessThan(2);
+  expect(conditionBox!.y + conditionBox!.height).toBeLessThan(buttonBox!.y);
 
   await page.goto("/en/product/1457", { waitUntil: "networkidle" });
-  await expect(page.getByTestId("product-info").getByTestId("condition-badge-desktop")).toHaveText("Like new");
+  await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveText("Like new");
 
   await page.goto("/ro/product/1452", { waitUntil: "networkidle" });
   await expect(page.getByTestId("product-info").getByTestId("condition-badge")).toHaveCount(0);
