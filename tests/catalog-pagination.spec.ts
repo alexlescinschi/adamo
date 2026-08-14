@@ -71,6 +71,13 @@ test("public contact number is consistent across phone and messaging channels", 
   expect(await page.locator('a[href="tel:+37367222999"]').count()).toBeGreaterThanOrEqual(3);
 });
 
+test("Google review links use the verified Adamo place", async ({ page }) => {
+  await page.goto("/ro", { waitUntil: "networkidle" });
+  const reviews = page.getByRole("heading", { name: "Recenzii Google", exact: true }).locator("..");
+  await expect(reviews.getByRole("link", { name: /Scrie o recenzie/ })).toHaveAttribute("href", /placeid=ChIJqbd-7d99yUART8XN00KUImw/);
+  await expect(reviews).not.toContainText("34 recenzii");
+});
+
 test("mobile filters fill the screen and keep the action visible", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/ru/category/laptops", { waitUntil: "networkidle" });
