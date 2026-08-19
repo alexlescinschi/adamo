@@ -42,7 +42,7 @@ Construiește prima versiune într-un director separat:
 
 ```bash
 release=/srv/adamo/releases/$(date +%Y%m%d%H%M%S)
-sudo -u deploy git clone --depth 1 --branch feat/sanity-staging https://github.com/alexlescinschi/adamo.git "$release"
+sudo -u deploy git clone --depth 1 --branch main https://github.com/alexlescinschi/adamo.git "$release"
 ln -sfn "$release" /srv/adamo/pending
 ```
 
@@ -128,7 +128,7 @@ Comenzile Iute rămân `pending_payment`; AWB-ul se creează numai după confirm
 
 ```bash
 release=/srv/adamo/releases/$(date +%Y%m%d%H%M%S)
-sudo -u deploy git clone --depth 1 --branch feat/sanity-staging https://github.com/alexlescinschi/adamo.git "$release"
+sudo -u deploy git clone --depth 1 --branch main https://github.com/alexlescinschi/adamo.git "$release"
 sudo -u deploy ln -s /srv/adamo/shared/.env.production "$release/.env.production"
 sudo -u deploy npm --prefix "$release" ci
 sudo -u deploy npm --prefix "$release" run build
