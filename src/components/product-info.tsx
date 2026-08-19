@@ -207,7 +207,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
                     </div>
                     <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
                   </button>
-                  {iuteRates.flexi ? (
+                  {iuteRates.flexi && (
                     <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
                       <div className="text-left">
                         <span className="text-[13px] font-semibold">Flexi Shop</span>
@@ -215,8 +215,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
                       </div>
                       <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
                     </button>
-                  ) : (
-                    <div className="flex items-center gap-2 rounded-[8px] bg-white/10 px-3 py-2"><Loader2 className="h-3 w-3 animate-spin opacity-50" /><span className="text-[11px] opacity-50">{tr.product.flexiLoading}</span></div>
                   )}
                   <p className="pt-1 text-[10px] font-normal opacity-60">{tr.product.partialSub}</p>
                 </>

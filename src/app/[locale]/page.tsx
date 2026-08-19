@@ -208,7 +208,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <Section title={tr.home.promotions} products={promotions} viewAllHref={`/${locale}/category/laptops?sort=discount`} tr={tr} />
 
       {(tile1 || tile2) && (
-        <section className="pb-[70px]">
+        <section className="pb-[40px]">
           <div className="grid grid-cols-1 gap-[14px] md:grid-cols-2">
             {tile1 && <StaticBanner banner={tile1} />}
             {tile2 && <StaticBanner banner={tile2} />}

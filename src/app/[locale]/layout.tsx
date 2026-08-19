@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     },
     description: tr.metadata.defaultDescription,
     applicationName: "Adamo",
-    icons: { icon: "/favicon.png?v=3", apple: "/favicon.png?v=3" },
+    icons: { icon: "/favicon.png?v=4", apple: "/favicon.png?v=4" },
     robots: IS_STAGING
       ? { index: false, follow: false, noarchive: true, googleBot: { index: false, follow: false } }
       : { index: true, follow: true, googleBot: { index: true, follow: true } },
