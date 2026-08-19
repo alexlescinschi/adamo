@@ -116,6 +116,9 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className="h-full scroll-smooth">
       <body className="min-h-full flex flex-col font-sans text-[15px] text-[#111827] overflow-x-hidden overflow-x-clip" style={{ backgroundImage: "radial-gradient(circle at 80% 5%, rgba(23,105,232,.08), transparent 28%), radial-gradient(circle at 58% 11%, rgba(226,232,240,.78), transparent 16%), linear-gradient(180deg, #fff 0%, #f8fbff 54%, #fff 100%)", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K6MTDDMQ" height="0" width="0" style={{ display: "none", visibility: "hidden" }} />
+        </noscript>
         <CartProvider>
           <Header categories={categories} products={products} publishedPageSlugs={publishedContent.pages.map((page) => page.slug)} />
           <main className="mx-auto w-full max-w-[1000px] flex-1 px-4 pb-[20px] lg:px-0">{children}</main>
@@ -132,13 +135,13 @@ export default async function LocaleLayout({
           styleUrl={iuteConfig.styleUrl}
         />
 
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-K6MTDDMQ" strategy="afterInteractive" />
-        <Script id="google-tag" strategy="afterInteractive">
+        <Script id="gtm-script" strategy="afterInteractive">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-K6MTDDMQ');
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','GTM-K6MTDDMQ');
           `}
         </Script>
       </body>
