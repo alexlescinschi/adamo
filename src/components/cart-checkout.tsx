@@ -719,7 +719,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         <div className="grid gap-2.5">
           <input type="text" placeholder={tr.checkout.fullName} required value={contact.full_name} onChange={(e) => setContact({ ...contact, full_name: e.target.value })} className={inputCls} />
           <input type="tel" placeholder={tr.checkout.phone} required value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} className={inputCls} />
-          <input type="email" placeholder={tr.checkout.emailOptional} value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} className={inputCls} />
+          <input type="email" placeholder={payChoice === "RATE" ? tr.checkout.email : tr.checkout.emailOptional} required={payChoice === "RATE"} value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} className={inputCls} />
         </div>
       </Section>
 
