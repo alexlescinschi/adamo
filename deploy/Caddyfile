@@ -6,6 +6,15 @@
 	}
 }
 
+adamo.md, www.adamo.md {
+	encode zstd gzip
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy 127.0.0.1:3000
+}
+
 new.adamo.md {
 	encode zstd gzip
 	header X-Robots-Tag "noindex, nofollow, noarchive"
