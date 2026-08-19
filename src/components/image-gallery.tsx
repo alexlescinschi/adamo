@@ -47,6 +47,12 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
       <div
         data-testid="gallery-image-frame"
         className="relative w-full aspect-[4/3] overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
+        onMouseMove={(event) => {
+          if (images.length < 2) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          setSelected(Math.min(images.length - 1, Math.floor(((event.clientX - rect.left) / rect.width) * images.length)));
+        }}
+        onMouseLeave={() => setSelected(0)}
         onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; swiped.current = false; }}
         onTouchEnd={(e) => {
           const diff = touchStart.current - e.changedTouches[0].clientX;
@@ -63,7 +69,9 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
           }}
           className="absolute inset-0 cursor-zoom-in"
         >
-          <Image key={images[selected]?.url} src={images[selected]?.url} alt={name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" priority />
+          {images.map((img, i) => (
+            <Image key={img.url} src={img.url} alt={name} fill className="object-cover transition-transform duration-300" sizes="(max-width: 768px) 100vw, 50vw" priority={i === 0} style={{ transform: `translateX(${(i - selected) * 100}%)`, opacity: i === selected ? 1 : 0 }} />
+          ))}
         </button>
 
         {images.length > 1 && (

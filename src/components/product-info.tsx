@@ -90,11 +90,11 @@ export function ProductInfo({ product }: ProductInfoProps) {
             {product.old_price && product.old_price > product.price && (
               <span data-testid="old-price" className="col-start-1 row-start-1 text-lg text-[#6b6c6c] line-through whitespace-nowrap">{formatPrice(product.old_price)} {tr.rates.currency}</span>
             )}
-            <span data-testid="current-price" className="col-start-1 row-start-2 text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
+            <span data-testid="current-price" className="col-start-1 row-start-2 whitespace-nowrap text-[28px] font-extrabold text-[#1d1d1f]">{formatPrice(product.price)} {tr.rates.currency}</span>
             {product.condition && (
               <span
                 data-testid="condition-badge"
-                className={`col-start-2 row-start-2 self-center justify-self-center rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+                className={`col-start-2 row-start-2 self-center justify-self-center rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-gradient-to-r from-[#6fa9e0] to-[#3979b7]" : "bg-[#3979b7]"}`}
               >
                 {(tr as any).badges[product.condition]}
               </span>
@@ -106,7 +106,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
             {product.condition && (
               <span
                 data-testid="condition-badge"
-                className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-[#63ad36]" : "bg-[#3979b7]"}`}
+                className={`shrink-0 rounded-[6px] px-3 py-1.5 text-[12px] font-black uppercase text-white shadow-[0_3px_10px_rgba(31,41,55,0.18)] ${product.condition === "new" ? "bg-gradient-to-r from-[#6fa9e0] to-[#3979b7]" : "bg-[#3979b7]"}`}
               >
                 {(tr as any).badges[product.condition]}
               </span>

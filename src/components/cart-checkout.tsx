@@ -93,7 +93,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
   // --- Delivery ---
   const [deliveryChoice, setDeliveryChoice] = useState<DeliveryChoice>("MD");
-  const [courierProvider, setCourierProvider] = useState<CourierProvider>("FANCOURIER");
+  const [courierProvider, setCourierProvider] = useState<CourierProvider>("POSTA_RAPIDA");
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [warehouseId, setWarehouseId] = useState<number | undefined>();
   const [delivery, setDelivery] = useState({ city: "", address: "", addressNr: "", addressBl: "", addressAp: "", postalCode: "" });
@@ -258,7 +258,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
   // ponytail: RATE = IutePay BNPL redirect. Treate ca pre-plată (cod 0 la curier).
   const payMode: "CASH" | "BANK_TRANSFER" | "RATE" =
     payChoice === "BANK" ? "BANK_TRANSFER" : payChoice === "RATE" ? "RATE" : "CASH";
-  const postaCashUnsupported = !isPickup && courierProvider === "POSTA_RAPIDA" && payMode === "CASH";
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedItems.length === 0) {
@@ -654,12 +653,6 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
             onClick={() => setPayChoice("RATE")}
           />
         </div>
-        {postaCashUnsupported && (
-          <p className="mt-3 rounded-[8px] border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
-            {tr.checkout.postaCashWarning}
-          </p>
-        )}
-
         {payChoice === "BANK" && (
           <div className="mt-3 space-y-3">
             <div className="grid gap-2.5 rounded-[10px] border border-[#63ad36] bg-[#f7fbf4] p-3">
@@ -757,7 +750,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
         <button
           type="submit"
-          disabled={submitting || !hasSelected || postaCashUnsupported || !termsAccepted}
+          disabled={submitting || !hasSelected || !termsAccepted}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-r from-[#7cc44e] to-[#63ad36] py-3.5 text-[15px] font-bold text-white hover:from-[#63ad36] hover:to-[#4e8f28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? (<><Loader2 className="h-5 w-5 animate-spin" /> {tr.checkout.processing}</>) : (tr.cart.finalizeOrder)}

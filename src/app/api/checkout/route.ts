@@ -25,7 +25,6 @@ type CheckoutErrorCode =
   | "invalidPostaAddress"
   | "invalidFanAddress"
   | "courierRequired"
-  | "postaCashUnsupported"
   | "requestTooLarge"
   | "checkoutUnavailable"
   | "rateLimited"
@@ -139,9 +138,6 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
     courier = { provider, city: courierCity, street, postalCode, number, building, apartment };
   } else {
     return "courierRequired";
-  }
-  if (courier.provider === "POSTA_RAPIDA" && payMode === "CASH") {
-    return "postaCashUnsupported";
   }
 
   return {
