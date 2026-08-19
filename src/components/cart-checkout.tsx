@@ -290,7 +290,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         const wh = warehouses.find((w: any) => w.id === warehouseId) as any;
         iuteAddress = {
           line1: wh?.address || wh?.title || wh?.name || "",
-          city: wh?.city || "",
+          city: wh?.city || wh?.location || "",
           zipcode: wh?.zipCode || wh?.zip_code || "",
         };
       } else if (courierProvider === "POSTA_RAPIDA") {
