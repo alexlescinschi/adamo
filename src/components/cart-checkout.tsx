@@ -282,8 +282,17 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         comment: fullComment || undefined,
       };
 
+      // ponytail: adresă reală pt. Iute Credit (KYC) — nu doar payload-ul de livrare CRM.
+      let iuteAddress = { line1: "", city: "", zipcode: "" };
+
       if (isPickup && warehouseId != null && warehouseId > 0) {
         payload.warehouse_id = warehouseId;
+        const wh = warehouses.find((w: any) => w.id === warehouseId) as any;
+        iuteAddress = {
+          line1: wh?.address || wh?.title || wh?.name || "",
+          city: wh?.city || "",
+          zipcode: wh?.zipCode || wh?.zip_code || "",
+        };
       } else if (courierProvider === "POSTA_RAPIDA") {
         const regionName = postaRegions.find((r) => r.id === postaDelivery.regionId)?.name || "";
         const cityName = postaCities.find((c) => c.id === postaDelivery.cityId)?.name || "";
@@ -299,6 +308,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           block: postaDelivery.block,
           zipCode: postaDelivery.zipCode || undefined,
         };
+        iuteAddress = {
+          line1: [postaDelivery.street, postaDelivery.block].filter(Boolean).join(", "),
+          city: [cityName, regionName].filter(Boolean).join(", "),
+          zipcode: postaDelivery.zipCode || "",
+        };
       } else {
         payload.delivery = { city: delivery.city, address: delivery.address };
         payload.courier = {
@@ -309,6 +323,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           number: delivery.addressNr || undefined,
           building: delivery.addressBl || undefined,
           apartment: delivery.addressAp || undefined,
+        };
+        iuteAddress = {
+          line1: [delivery.address, delivery.addressNr, delivery.addressBl, delivery.addressAp].filter(Boolean).join(", "),
+          city: delivery.city,
+          zipcode: delivery.postalCode || "",
         };
       }
 
@@ -325,6 +344,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
+        if (err.code === "operationConflict") {
+          idempotencyKey.current = "";
+          localStorage.removeItem("adamo-checkout-operation");
+        }
         setError(localizedCheckoutError(err.code));
         setSubmitting(false);
         return;
@@ -390,11 +413,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                 phoneNumber: contact.phone || "",
                 email: contact.email || "",
                 address: {
-                  line1: "",
+                  line1: iuteAddress.line1,
                   line2: "",
-                  city: "",
+                  city: iuteAddress.city,
                   state: "",
-                  zipcode: "",
+                  zipcode: iuteAddress.zipcode,
                   country: "mda",
                 },
               },
@@ -403,11 +426,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
                 phoneNumber: contact.phone || "",
                 email: contact.email || "",
                 address: {
-                  line1: "",
+                  line1: iuteAddress.line1,
                   line2: "",
-                  city: "",
+                  city: iuteAddress.city,
                   state: "",
-                  zipcode: "",
+                  zipcode: iuteAddress.zipcode,
                   country: "mda",
                 },
               },
