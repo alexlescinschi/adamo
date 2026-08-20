@@ -48,7 +48,8 @@ adamo-vercel-template 2/
 adamo-vercel-template 3/
 
 # local scripts and samples (not part of project)
-scripts/
+scripts/*
+!scripts/sync-999.mjs
 
 # CRM docs credentials (local only)
 .env.crm-docs

@@ -118,6 +118,24 @@ Caddy folosește aceleași intervale pentru a transmite către Next.js IP-ul rea
 - Iute allowlist: `https://new.adamo.md`, dacă este necesar
 - Apelantul 999: `Authorization: Bearer <SYNC_999_SECRET>`
 
+### Sincronizare 999
+
+Workerul separat sincronizează CRM cu 999. Pentru prima verificare, setează
+`N999_SYNC_ENABLED=true` și `N999_SYNC_PRODUCT_IDS=<product_id>` în
+`/srv/adamo/shared/.env.production`, apoi instalează timerul:
+
+```bash
+cp /srv/adamo/current/deploy/adamo-999-sync.service /etc/systemd/system/
+cp /srv/adamo/current/deploy/adamo-999-sync.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now adamo-999-sync.timer
+systemctl start adamo-999-sync.service
+```
+
+După validarea produsului de test, golește `N999_SYNC_PRODUCT_IDS` pentru a
+sincroniza toate laptopurile storefront eligibile. Verifică execuțiile cu
+`journalctl -u adamo-999-sync.service`.
+
 Înainte de testarea linkurilor din footer, rulează seed-ul Studio și publică paginile aprobate. Drafturile nu sunt expuse de storefront.
 
 Dacă o comandă este creată cu expedierea `failed` sau `pending`, nu repeta checkoutul. Verifică order ID-ul în CRM și creează sau reconciliază AWB-ul în portalul curierului.

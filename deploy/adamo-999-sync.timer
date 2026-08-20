@@ -1,0 +1,11 @@
+[Unit]
+Description=Run ADAMO 999 marketplace synchronization every five minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+RandomizedDelaySec=20
+Unit=adamo-999-sync.service
+
+[Install]
+WantedBy=timers.target
