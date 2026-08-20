@@ -27,8 +27,9 @@ function OrdersContent() {
     if (order.status_slug === "new") return tr.orders.statusNew;
     if (order.status_slug === "closed") return tr.orders.statusClosed;
     if (order.status_slug === "refusal") return tr.orders.statusRefused;
+    if (order.status_slug === "return") return tr.orders.statusReturned;
     if (order.status_slug === "processing" || order.status_slug === "in_progress") return tr.orders.statusProcessing;
-    return tr.orders.statusUnknown;
+    return order.status || tr.orders.statusUnknown;
   };
 
   useEffect(() => {
@@ -107,6 +108,27 @@ function OrdersContent() {
                   {statusLabel(order)}
                 </span>
               </div>
+              {order.items?.length > 0 && (
+                <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                  {order.items.map((item: any) => (
+                    <div key={item.id || `${item.product_id}-${item.name}`} className="flex items-start justify-between gap-4 text-sm">
+                      <div className="min-w-0">
+                        {item.product_id ? (
+                          <Link href={`/${locale}/product/${item.product_id}`} className="font-medium text-slate-900 hover:text-[#4e8f28]">
+                            {item.name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-slate-900">{item.name}</span>
+                        )}
+                        <span className="ml-2 text-slate-500">x{item.qty}</span>
+                      </div>
+                      <span className="shrink-0 font-medium text-slate-700">
+                        {formatPrice(item.price * item.qty)} {tr.rates.currency}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="mt-3 border-t border-slate-100 pt-3 flex justify-between">
                 <span className="text-sm text-slate-600">
                   {tr.orders.productCount.replace("{count}", String(order.items?.length || 0))}

@@ -1,24 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import { refreshCrmToken, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
+import { crmFetch, refreshCrmToken, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
 
-// ponytail: CRM deal row are amount (string/Decimal, nu total), positions (nu items),
-// stage.name (nu status). Normalizăm la forma pe care o citește frontend-ul.
+function normalizeItem(item: any) {
+  const product = item.product || item.unit?.product || {};
+  return {
+    id: item.id,
+    product_id: item.product_id ?? product.id,
+    name: product.name || item.name || `Produs #${item.product_id ?? item.id}`,
+    qty: Number(item.qty ?? item.quantity ?? 1),
+    price: Number(item.price ?? item.base_price ?? 0),
+  };
+}
+
 function normalizeDeal(d: any) {
+  const items = d.positions || d.items || d.lines || [];
   return {
     id: d.id,
     created_at: d.created_at,
-    status: d.stage?.name || d.stage_name || d.status,
+    status: d.stage?.name || d.stage_name || (typeof d.status === "string" ? d.status : d.status?.name),
     status_slug: d.stage?.slug || d.stage_slug || d.status_slug || d.status?.slug || null,
-    items: d.positions || d.items || d.lines || [],
+    items: Array.isArray(items) ? items.map(normalizeItem) : [],
     total: Number(d.amount ?? d.final_total ?? d.total ?? 0),
   };
 }
 
-function normalizeDealsList(data: any) {
+async function normalizeDealsList(data: any) {
   const list = Array.isArray(data) ? data : data?.items || data?.deals || data?.data || [];
-  return Array.isArray(list) ? list.map(normalizeDeal) : [];
+  if (!Array.isArray(list)) return [];
+
+  const detailed = await Promise.all(list.map(async (deal: any) => {
+    if (!Number.isSafeInteger(deal?.id) || deal.id < 1) return deal;
+    const hasDetailedItems = Array.isArray(deal.items)
+      && deal.items.length > 0
+      && deal.items.every((item: any) => item.product?.name || item.unit?.product?.name || item.name);
+    if (hasDetailedItems) return deal;
+
+    try {
+      const data = await crmFetch(`/deals/${deal.id}`);
+      return { ...deal, ...(data?.order || data) };
+    } catch (error) {
+      console.error("Account order detail error:", {
+        orderId: deal.id,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      return deal;
+    }
+  }));
+
+  return detailed.map(normalizeDeal);
 }
 
 export async function GET(request: NextRequest) {
@@ -44,7 +75,7 @@ export async function GET(request: NextRequest) {
           });
           if (res.ok) {
             const data = await res.json();
-            const response = NextResponse.json(normalizeDealsList(data));
+            const response = NextResponse.json(await normalizeDealsList(data));
             setTokenCookies(response, refreshed);
             return response;
           }
@@ -58,7 +89,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data, { status: res.status });
     }
 
-    return NextResponse.json(normalizeDealsList(data));
+    return NextResponse.json(await normalizeDealsList(data));
   } catch (error) {
     console.error("Account orders error:", error);
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
