@@ -52,6 +52,19 @@ type OperationRecord =
   | { state: "processing" | "unknown"; requestHash: string }
   | { state: "completed"; requestHash: string; response: Record<string, unknown> };
 
+type GuestReceipt = {
+  orderId: number | string;
+  payMode: PayMode;
+  deliveryMethod: "PICKUP" | "COURIER";
+  courierProvider?: CourierProvider;
+  delivery?: { city: string; address: string };
+  items: { id: number; name: string; qty: number; price: number }[];
+  total: number;
+  shipment: Record<string, unknown> | null;
+  invoiceUrl?: string;
+  invoiceHandle?: string;
+};
+
 const MAX_BODY_BYTES = 50_000;
 const OPERATION_TTL = 30 * 24 * 60 * 60;
 const ALLOWED_KEYS = new Set(["items", "delivery_method", "pay_mode", "warehouse_id", "contact", "delivery", "courier", "comment"]);
@@ -62,6 +75,49 @@ function errorResponse(code: CheckoutErrorCode, status: number, headers?: Header
 
 function shortHash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 32);
+}
+
+async function createGuestReceipt(
+  orderId: number,
+  order: any,
+  checkout: ValidCheckout,
+  shipment: Record<string, unknown> | null,
+  invoice: any,
+  invoiceHandle?: string,
+) {
+  if (!redis) return null;
+
+  let detail = order;
+  try {
+    detail = await crmFetch(`/deals/${orderId}`);
+  } catch {
+    // The order is already created; a receipt with product IDs is still useful.
+  }
+
+  const sourceItems = detail?.items || detail?.order?.items || order?.items || [];
+  const items = Array.isArray(sourceItems)
+    ? sourceItems.map((item: any) => ({
+        id: Number(item.product_id ?? item.product?.id ?? item.unit?.product?.id ?? item.id),
+        name: item.product?.name || item.unit?.product?.name || `Produs #${item.product_id ?? item.id}`,
+        qty: Number(item.qty ?? 1),
+        price: Number(item.price ?? item.base_price ?? 0),
+      }))
+    : [];
+  const handle = randomBytes(32).toString("base64url");
+  const receipt: GuestReceipt = {
+    orderId,
+    payMode: checkout.payMode,
+    deliveryMethod: checkout.deliveryMethod,
+    courierProvider: checkout.courier?.provider,
+    delivery: checkout.delivery,
+    items,
+    total: Number(detail?.amount ?? detail?.order?.amount ?? order?.amount ?? 0),
+    shipment,
+    invoiceUrl: invoice?.url,
+    invoiceHandle,
+  };
+  await redis.set(`receipt:v1:${shortHash(handle)}`, receipt, { ex: OPERATION_TTL });
+  return handle;
 }
 
 function text(value: unknown, max: number, required = false) {
@@ -327,12 +383,25 @@ export async function POST(request: NextRequest) {
         }
         invoice = await getOrderInvoice(orderId, data.invoice_access_token).catch(() => null);
       }
+      let receiptHandle: string | null = null;
+      if (!ecommerceToken) {
+        try {
+          receiptHandle = await createGuestReceipt(orderId, data?.order || data, checkout, shipment, invoice, invoiceHandle);
+        } catch (error) {
+          console.error("[checkout] guest receipt creation failed", {
+            orderId,
+            error: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
       responseBody = {
         id: orderId,
         orderId,
         shipment,
         invoice,
         invoiceHandle,
+        accountLinked: Boolean(ecommerceToken),
+        receiptHandle,
       };
     }
 

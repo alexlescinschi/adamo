@@ -355,6 +355,9 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       const order = await res.json();
       const orderId = order.id || order.orderId;
+      const guestSuccessUrl = !order.accountLinked && order.receiptHandle
+        ? `/${locale}/checkout/success?receipt=${encodeURIComponent(order.receiptHandle)}`
+        : "";
 
       const saveCheckout = () => {
         localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
@@ -364,6 +367,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       if (payMode === "BANK_TRANSFER") {
         saveCheckout();
+        if (guestSuccessUrl) {
+          onDone?.();
+          router.push(guestSuccessUrl);
+          return;
+        }
         sessionStorage.setItem("adamo-bank-invoice", JSON.stringify({
           orderId: String(orderId),
           invoiceUrl: order.invoice?.url,
@@ -453,6 +461,10 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       } else {
         saveCheckout();
         onDone?.();
+        if (guestSuccessUrl) {
+          router.push(guestSuccessUrl);
+          return;
+        }
         const shipmentNumber = order.shipment?.number || order.shipment?.awb;
         const shipmentStatus = order.shipment?.status;
         router.push(`/${locale}/account/orders?success=true&orderId=${orderId}${shipmentNumber ? `&awb=${encodeURIComponent(shipmentNumber)}` : ""}${shipmentStatus ? `&shipment=${encodeURIComponent(shipmentStatus)}` : ""}`);
