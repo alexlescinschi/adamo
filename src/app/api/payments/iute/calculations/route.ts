@@ -6,7 +6,7 @@ const CRM_CONFIG_URL = "https://api.crm.adamo.md/v1/ecommerce/checkout/iute/conf
 const loanProducts = [
   { id: "b89e31f4-078f-4a3f-969e-445770b83395", months: [4], key: "smart4" },
   { id: "835bac6b-0c4a-4763-9517-73e0e020bfcb", months: [6], key: "smart6" },
-  { id: "4d59770d-e72f-41b8-bbf1-78ec27278d76", months: [6, 8, 12, 18, 24, 36], key: "flexi" },
+  { id: "4d59770d-e72f-41b8-bbf1-78ec27278d76", months: [8, 10, 12, 18, 24, 36], key: "flexi" },
 ] as const;
 
 type IuteCalculation = {
@@ -60,11 +60,16 @@ export async function GET(request: NextRequest) {
         ?.monthlyRepayment ?? null;
     };
 
-    return NextResponse.json({
-      smart4: monthlyPayment("smart4", 4),
-      smart6: monthlyPayment("smart6", 6),
-      flexi: monthlyPayment("flexi", 36),
-    });
+    const smart4 = monthlyPayment("smart4", 4);
+    const smart6 = monthlyPayment("smart6", 6);
+    const flexi = monthlyPayment("flexi", 36);
+    const plans = [
+      { months: 4, monthlyPayment: smart4, kind: "smart" },
+      { months: 6, monthlyPayment: smart6, kind: "smart" },
+      ...[8, 10, 12, 18, 24, 36].map((months) => ({ months, monthlyPayment: monthlyPayment("flexi", months), kind: "flexi" })),
+    ].filter((plan): plan is { months: number; monthlyPayment: number; kind: "smart" | "flexi" } => plan.monthlyPayment !== null);
+
+    return NextResponse.json({ smart4, smart6, flexi, plans });
   } catch {
     return NextResponse.json({ error: "IutePay calculations are unavailable" }, { status: 503 });
   }

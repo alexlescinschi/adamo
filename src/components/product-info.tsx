@@ -22,7 +22,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [iuteRates, setIuteRates] = useState<{ smart4: number | null; smart6: number | null; flexi: number | null } | null>(null);
+  const [iuteRates, setIuteRates] = useState<{
+    smart4: number | null;
+    smart6: number | null;
+    flexi: number | null;
+    plans: { months: number; monthlyPayment: number; kind: "smart" | "flexi" }[];
+  } | null>(null);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
@@ -233,7 +238,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         </div>
       </div>
 
-      <RateCalculator price={product.price} />
+      <RateCalculator price={product.price} plans={iuteRates?.plans} />
 
       {product.description && (
         <div className="mt-6 text-[17px] leading-relaxed text-[#6b6c6c] whitespace-pre-line">{product.description}</div>

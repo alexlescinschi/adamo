@@ -429,10 +429,7 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   const rateClouds = ratePanel.locator(":scope > div");
   await expect(rateClouds).toHaveCount(8);
   expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-months")))).toEqual(["4", "6", "8", "10", "12", "18", "24", "36"]);
-  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["0", "0", "1", "1", "1", "1", "1", "1"]);
-  const productPrice = Number((await productInfo.getByTestId("current-price").textContent())!.replace(/\D/g, ""));
-  const eightMonthAmount = Number((await productInfo.locator('[data-months="8"]').getByTestId("rate-amount").textContent())!.replace(/\D/g, ""));
-  expect(eightMonthAmount).toBe(Math.ceil((productPrice * 1.08) / 8));
+  expect(await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getAttribute("data-rate")))).toEqual(["smart", "smart", "flexi", "flexi", "flexi", "flexi", "flexi", "flexi"]);
   const cloudRows = await rateClouds.evaluateAll((clouds) => clouds.map((cloud) => cloud.getBoundingClientRect().y));
   expect(new Set(cloudRows).size).toBeGreaterThan(1);
   await expect(productInfo.getByRole("button", { name: "Cumpără în rate", exact: true })).toHaveCount(0);
