@@ -1,6 +1,6 @@
 // Centralized mapping between the checkout UI state and the CRM
 // `payment_method` value. The checkout endpoint accepts only:
-//   ONLINE, BANK_TRANSFER, IUTE, FAN_COURIER_RAMBUS, MICROINVEST
+//   ONLINE, BANK_TRANSFER, IUTE, FAN_COURIER_RAMBUS, COURIER_RAMBURS, MICROINVEST
 // (CASH/CARD exist in the wider deal enum but are rejected at checkout.)
 
 export type CourierProvider = "FANCOURIER" | "POSTA_RAPIDA";
@@ -10,6 +10,7 @@ export type CrmPaymentMethod =
   | "BANK_TRANSFER"
   | "IUTE"
   | "FAN_COURIER_RAMBUS"
+  | "COURIER_RAMBURS"
   | "MICROINVEST";
 
 export const PAYMENT_METHOD = {
@@ -17,14 +18,14 @@ export const PAYMENT_METHOD = {
   BANK_TRANSFER: "BANK_TRANSFER",
   IUTE: "IUTE",
   FAN_COURIER_RAMBUS: "FAN_COURIER_RAMBUS",
+  COURIER_RAMBURS: "COURIER_RAMBURS",
 } as const satisfies Record<string, CrmPaymentMethod>;
 
 // payMode = UI selection ("Plată la livrare" vs "Transfer bancar" vs "Rate IutePay").
 // - BANK_TRANSFER: same regardless of delivery.
 // - RATE (IutePay BNPL): payment_method=IUTE, redirect la IutePay după creare order.
-// - CASH: FAN uses FAN_COURIER_RAMBUS. CRM has no Poșta COD enum, so Poșta and
-//   pickup use ONLINE to avoid an automatic FAN AWB; checkout adds an explicit
-//   [CURIER POSTA_RAPIDA RAMBURS] note. ponytail: replace when CRM adds Poșta COD.
+// - CASH: FAN uses FAN_COURIER_RAMBUS; Curier Rapid uses COURIER_RAMBURS;
+//   pickup is paid in-store and uses the CRM's documented ONLINE value.
 export function resolvePaymentMethod(
   payMode: "CASH" | "BANK_TRANSFER" | "RATE",
   deliveryMethod: "PICKUP" | "COURIER",
@@ -32,7 +33,8 @@ export function resolvePaymentMethod(
 ): CrmPaymentMethod {
   if (payMode === "BANK_TRANSFER") return PAYMENT_METHOD.BANK_TRANSFER;
   if (payMode === "RATE") return PAYMENT_METHOD.IUTE;
-  return deliveryMethod === "COURIER" && courierProvider === "FANCOURIER"
-    ? PAYMENT_METHOD.FAN_COURIER_RAMBUS
-    : PAYMENT_METHOD.ONLINE;
+  if (deliveryMethod !== "COURIER") return PAYMENT_METHOD.ONLINE;
+  return courierProvider === "POSTA_RAPIDA"
+    ? PAYMENT_METHOD.COURIER_RAMBURS
+    : PAYMENT_METHOD.FAN_COURIER_RAMBUS;
 }
