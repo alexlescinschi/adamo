@@ -87,6 +87,7 @@ const dict = {
       perMonthShort: "lei/lună",
       flexiLoading: "Flexi Shop - se încarcă...",
       ratesLoading: "Se încarcă ratele...",
+      from: "de la",
     },
     badges: {
       new: "Nou",
@@ -322,6 +323,7 @@ const dict = {
       estimatesTitle: "Rate lunare estimate",
       disclaimer: "* Datele sunt informative. Rata finală se stabilește la aprobare.",
       smartDescription: "4 luni · 0% dobândă",
+      smartSixDescription: "6 luni · 0% dobândă",
       flexiDescription: "6-36 luni · dobândă standard",
       currency: "lei",
       monthCount: "{count} luni",
@@ -537,6 +539,7 @@ const dict = {
       perMonthShort: "лей/мес.",
       flexiLoading: "Flexi Shop - загрузка...",
       ratesLoading: "Загрузка рассрочки...",
+      from: "от",
     },
     badges: {
       new: "Новый",
@@ -772,6 +775,7 @@ const dict = {
       estimatesTitle: "Примерные ежемесячные платежи",
       disclaimer: "* Данные информационные. Окончательная ставка устанавливается при одобрении.",
       smartDescription: "4 месяца · 0% процентов",
+      smartSixDescription: "6 месяцев · 0% процентов",
       flexiDescription: "6-36 месяцев · стандартная ставка",
       currency: "лей",
       monthCount: "{count} месяцев",
@@ -987,6 +991,7 @@ const dict = {
       perMonthShort: "lei/month",
       flexiLoading: "Flexi Shop - loading...",
       ratesLoading: "Loading installment plans...",
+      from: "from",
     },
     badges: {
       new: "New",
@@ -1222,6 +1227,7 @@ const dict = {
       estimatesTitle: "Estimated monthly payments",
       disclaimer: "* Figures are indicative. Final rate is set upon approval.",
       smartDescription: "4 months · 0% interest",
+      smartSixDescription: "6 months · 0% interest",
       flexiDescription: "6-36 months · standard interest",
       currency: "lei",
       monthCount: "{count} months",

@@ -22,18 +22,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
   const [qty, setQty] = useState(1);
   const [rateOpen, setRateOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [iuteRates, setIuteRates] = useState<{ smart: number; flexi: number | null } | null>(null);
+  const [iuteRates, setIuteRates] = useState<{ smart4: number | null; smart6: number | null; flexi: number | null } | null>(null);
 
   const hasPrice = product.price > 0;
   const stock = product.units_total ?? 0;
 
   useEffect(() => {
     if (!hasPrice) return;
-    fetch(`/api/payments/iute/calculations?price=${product.price}`)
-      .then((response) => response.json())
+    fetch(`/api/payments/iute/calculations?price=${product.price}&productId=${product.id}`)
+      .then((response) => response.ok ? response.json() : null)
       .then(setIuteRates)
-      .catch(() => {});
-  }, [product.price, hasPrice]);
+      .catch(() => setIuteRates(null));
+  }, [product.id, product.price, hasPrice]);
 
   const handleAddToCart = async () => {
     if (qty > stock) {
@@ -200,20 +200,27 @@ export function ProductInfo({ product }: ProductInfoProps) {
             <div className="space-y-1.5 px-5 pb-3">
               {iuteRates ? (
                 <>
-                  <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
+                  {iuteRates.smart4 && <button data-testid="iute-plan-smart-4" onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
                     <div className="text-left">
                       <span className="text-[13px] font-semibold">Smart 0%</span>
                       <span className="block text-[10px] opacity-70">{tr.rates.smartDescription}</span>
                     </div>
-                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
-                  </button>
+                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart4)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
+                  </button>}
+                  {iuteRates.smart6 && <button data-testid="iute-plan-smart-6" onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
+                    <div className="text-left">
+                      <span className="text-[13px] font-semibold">Smart 0%</span>
+                      <span className="block text-[10px] opacity-70">{tr.rates.smartSixDescription}</span>
+                    </div>
+                    <span className="text-[14px] font-bold">{formatPrice(iuteRates.smart6)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
+                  </button>}
                   {iuteRates.flexi && (
-                    <button onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
+                    <button data-testid="iute-plan-flexi" onClick={() => handleBuy("RATE")} disabled={!hasPrice || product.availability === "OutOfStock" || adding} className="flex w-full items-center justify-between rounded-[8px] bg-white/15 px-3 py-2 transition-colors hover:bg-white/25 disabled:opacity-40">
                       <div className="text-left">
                         <span className="text-[13px] font-semibold">Flexi Shop</span>
                         <span className="block text-[10px] opacity-70">{tr.rates.flexiDescription}</span>
                       </div>
-                      <span className="text-[14px] font-bold">{formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
+                      <span className="text-[14px] font-bold">{tr.product.from} {formatPrice(iuteRates.flexi)} <small className="text-[10px] font-normal">{tr.product.perMonthShort}</small></span>
                     </button>
                   )}
                   <p className="pt-1 text-[10px] font-normal opacity-60">{tr.product.partialSub}</p>

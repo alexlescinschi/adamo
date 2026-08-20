@@ -439,7 +439,9 @@ test("mobile product card and gallery interactions", async ({ page }) => {
   const iuteButton = productInfo.getByRole("button", { name: /Achită în rate/ });
   await expect(iuteButton).toBeVisible();
   await iuteButton.click();
-  await expect(productInfo.getByText("Smart 0%", { exact: true })).toBeVisible();
+  await expect(productInfo.getByTestId("iute-plan-smart-4")).toBeVisible();
+  await expect(productInfo.getByTestId("iute-plan-smart-6")).toBeVisible();
+  await expect(productInfo.getByTestId("iute-plan-flexi")).toBeVisible();
   await expect(productInfo.locator(".iute-as-low-as")).toHaveCount(0);
 
   const quickOrder = page.getByRole("button", { name: /Comandă într-un clic/ });
