@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Home + pagini statice per locale
   for (const l of LOCALES) {
     entries.push({ url: `${SITE_URL}/${l}`, lastModified: now, changeFrequency: "daily", priority: 1 });
-    for (const p of ["/contact", "/blog", "/harta-site-ului", "/login", "/register"]) {
+    for (const p of ["/contact", "/blog", "/harta-site-ului"]) {
       entries.push({ url: `${SITE_URL}/${l}${p}`, lastModified: now, changeFrequency: "monthly", priority: 0.3 });
     }
     for (const page of content.pages.filter((item) => item.slug !== "contact")) {

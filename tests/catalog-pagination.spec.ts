@@ -389,7 +389,7 @@ test("home uses localized hero copy and single-column mobile benefits", async ({
   await expect(page.getByRole("link", { name: "Ноутбуки", exact: true })).toBeVisible();
   await page.goto("/en", { waitUntil: "networkidle" });
   await expect(page.getByRole("link", { name: "Chose laptop", exact: true })).toBeVisible();
-  await expect(page.locator("h1 em")).toHaveText("gaming");
+  await expect(page.locator("h1 em")).toHaveText("Premium");
 });
 
 test("mobile product card and gallery interactions", async ({ page }) => {

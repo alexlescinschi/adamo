@@ -38,6 +38,28 @@ const nextConfig: NextConfig = {
         destination: "/:locale/politica-de-confidentialitate",
         permanent: true,
       },
+      // ponytail: căi vechi fără locale — redirect direct într-un singur hop,
+      // nu prin /:locale/ (audit SEO 2026-08-20).
+      {
+        source: "/laptopuri",
+        destination: "/ro/category/laptops",
+        permanent: true,
+      },
+      {
+        source: "/minipc",
+        destination: "/ro/category/minipc",
+        permanent: true,
+      },
+      {
+        source: "/pc_station",
+        destination: "/ro/category/minipc",
+        permanent: true,
+      },
+      {
+        source: "/accesorii",
+        destination: "/ro/category/accesorii",
+        permanent: true,
+      },
       // 301-uri de la vechile URL-uri Tilda/ADAMO.MD (audit 2026-08-20) — 156 linkuri.
       { source: "/laptopuri/tproduct/566452680-452699064452-ca-nou-lenovo-thinkbook-i5-11gen-16gb-mx", destination: "/ro/product/1171-buy-lenovo-thinkbook-in-chisinau-moldova-business-156-intel-core-i5-16-gb-lenovo-ips-60-hz-1920x1080-i5-1135g7-ca-nou-ssd-1-tb-dedicata-geforce-mx-series", permanent: true },
       { source: "/laptopuri/tproduct/566452680-628544209832-nou-gaming-hp-victus-144hz-i5-12500h-rtx", destination: "/ro/product/1233-buy-hp-victus-gaming-in-chisinau-moldova-512-gb-156-16-gb-i5-12500h-1920x1080-geforce-rtx-40-intel-core-i5-nu-dedicata-ssd-hp-nou-gaming", permanent: true },

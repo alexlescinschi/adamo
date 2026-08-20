@@ -13,7 +13,7 @@ export default defineConfig({
     env: {
       ...process.env,
       DEPLOY_ENV: "staging",
-      SITE_URL: "https://new.adamo.md",
+      SITE_URL: "https://adamo.md",
       SYNC_999_SECRET: "test-sync-secret-123456",
     },
   },

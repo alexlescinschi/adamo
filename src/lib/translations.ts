@@ -432,8 +432,8 @@ const dict = {
       profileUpdateFailed: "Datele personale nu au putut fi salvate.",
     },
     metadata: {
-      defaultTitle: "Adamo - Magazin Online",
-      defaultDescription: "Magazinul oficial Adamo. Produse de calitate la prețuri bune.",
+      defaultTitle: "Laptopuri și calculatoare în Chișinău, Moldova | ADAMO.MD",
+      defaultDescription: "Laptopuri, mini-PC și calculatoare verificate. Garanție 12–24 luni, rate 0% și livrare gratuită în Chișinău și toată Moldova.",
       openGraphTitle: "Adamo - Laptopuri premium în Moldova",
       openGraphDescription: "Laptopuri premium, business și gaming în Moldova. Garanție 12-24 luni, livrare gratuită și rate 0%.",
       imageAlt: "Adamo - Laptopuri premium",
@@ -882,8 +882,8 @@ const dict = {
       profileUpdateFailed: "Не удалось сохранить личные данные.",
     },
     metadata: {
-      defaultTitle: "Adamo - Интернет-магазин",
-      defaultDescription: "Официальный магазин Adamo. Качественные товары по выгодным ценам.",
+      defaultTitle: "Ноутбуки и компьютеры в Кишинёве, Молдова | ADAMO.MD",
+      defaultDescription: "Проверенные ноутбуки, mini-PC и компьютеры. Гарантия 12–24 месяца, рассрочка 0% и бесплатная доставка по Кишинёву и всей Молдове.",
       openGraphTitle: "Adamo - Премиум-ноутбуки в Молдове",
       openGraphDescription: "Премиум-ноутбуки для бизнеса и игр в Молдове. Гарантия 12-24 месяца, бесплатная доставка и рассрочка 0%.",
       imageAlt: "Adamo - Премиум-ноутбуки",
@@ -1332,8 +1332,8 @@ const dict = {
       profileUpdateFailed: "Your personal details could not be saved.",
     },
     metadata: {
-      defaultTitle: "Adamo - Online Store",
-      defaultDescription: "The official Adamo store. Quality products at great prices.",
+      defaultTitle: "Laptops & Computers in Chisinau, Moldova | ADAMO.MD",
+      defaultDescription: "Verified laptops, mini PCs and computers with 12–24 month warranty, 0% installments and free delivery across Chisinau and Moldova.",
       openGraphTitle: "Adamo - Premium laptops in Moldova",
       openGraphDescription: "Premium business and gaming laptops in Moldova. 12-24 month warranty, free delivery and 0% installments.",
       imageAlt: "Adamo - Premium laptops",

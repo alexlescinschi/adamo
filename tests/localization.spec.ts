@@ -92,32 +92,27 @@ test("RU and EN metadata is localized", async ({ request }) => {
   const ru = await request.get("/ru").then((response) => response.text());
   const en = await request.get("/en").then((response) => response.text());
 
-  expect(ru).toContain("Adamo - Интернет-магазин");
+  expect(ru).toContain("Ноутбуки и компьютеры в Кишинёве, Молдова | ADAMO.MD");
   expect(ru).toContain("ru_RU");
-  expect(en).toContain("Adamo - Online Store");
+  expect(en).toContain("Laptops &amp; Computers in Chisinau, Moldova | ADAMO.MD");
   expect(en).toContain("en_US");
-  expect(ru).not.toContain("Magazinul oficial Adamo");
-  expect(en).not.toContain("Magazinul oficial Adamo");
+  expect(ru).not.toContain("Laptopuri și calculatoare în Chișinău, Moldova");
+  expect(en).not.toContain("Laptopuri și calculatoare în Chișinău, Moldova");
 });
 
-test("locale cookie preserves language and Accept-Language honors quality", async ({ request }) => {
-  const preferred = await request.get("/", {
+test("locale defaults to ro regardless of Accept-Language; cookie still overrides", async ({ request }) => {
+  // ponytail: SEO fix 2026-08-20 — Accept-Language sniffing removed, default is always ro.
+  const ignoredHeader = await request.get("/", {
     headers: { "Accept-Language": "ro;q=0,en;q=1" },
     maxRedirects: 0,
   });
-  expect(preferred.headers().location).toContain("/en");
-
-  const rejected = await request.get("/", {
-    headers: { "Accept-Language": "en;q=0" },
-    maxRedirects: 0,
-  });
-  expect(rejected.headers().location).toContain("/ro");
+  expect(ignoredHeader.headers().location).toContain("/ro");
 
   const dotted = await request.get("/product/model-15.6", {
     headers: { "Accept-Language": "ru" },
     maxRedirects: 0,
   });
-  expect(dotted.headers().location).toContain("/ru/product/model-15.6");
+  expect(dotted.headers().location).toContain("/ro/product/model-15.6");
 
   const russian = await request.get("/ru");
   expect(russian.status()).toBe(200);
@@ -132,6 +127,6 @@ test("utility routes are noindex and home owns its canonical", async ({ request 
   const home = await request.get("/en").then((response) => response.text());
 
   expect(login).toContain('name="robots" content="noindex, nofollow"');
-  expect(home).toContain('rel="canonical" href="https://new.adamo.md/en"');
-  expect(login).not.toContain('rel="canonical" href="https://new.adamo.md/en"');
+  expect(home).toContain('rel="canonical" href="https://adamo.md/en"');
+  expect(login).not.toContain('rel="canonical" href="https://adamo.md/en"');
 });

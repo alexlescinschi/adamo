@@ -2,21 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { DEFAULT_LOCALE, LOCALES, normalizeLocale } from "@/lib/locale";
 import type { Locale } from "@/lib/translations";
 
+// ponytail: SEO — nu mai deducem limba din Accept-Language. Crawlerele nu
+// trimit un header consistent, deci varianta implicită a site-ului trebuie
+// să fie mereu aceeași (RO). Limba se schimbă manual, din UI.
 function getPreferredLocale(req: NextRequest): Locale {
   const cookie = req.cookies.get("NEXT_LOCALE")?.value;
   if (cookie && LOCALES.includes(cookie as Locale)) return normalizeLocale(cookie);
-
-  const accept = req.headers.get("accept-language") || "";
-  const preferred = accept
-    .split(",")
-    .map((part, index) => {
-      const [tag, ...params] = part.trim().split(";");
-      const q = Number(params.find((param) => param.trim().startsWith("q="))?.split("=")[1] ?? 1);
-      return { locale: tag.substring(0, 2).toLowerCase(), q: Number.isFinite(q) ? q : 0, index };
-    })
-    .filter(({ locale, q }) => LOCALES.includes(locale as Locale) && q > 0 && q <= 1)
-    .sort((a, b) => b.q - a.q || a.index - b.index)[0]?.locale;
-  return preferred ? normalizeLocale(preferred) : DEFAULT_LOCALE;
+  return DEFAULT_LOCALE;
 }
 
 export function proxy(req: NextRequest) {
