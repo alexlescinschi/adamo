@@ -1,5 +1,4 @@
 import "server-only";
-import { unstable_cache } from "next/cache";
 import type { CrmPaymentMethod } from "@/lib/checkout";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
@@ -11,53 +10,99 @@ interface LoginResponse {
   expiresIn: string;
 }
 
-const getAccessToken = unstable_cache(
-  async (): Promise<string> => {
-    const res = await fetch(`${CRM_BASE_URL}/auth/login`, {
+export class CrmApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly path: string,
+  ) {
+    super(message);
+    this.name = "CrmApiError";
+  }
+}
+
+// CRM tokens can expire before a persistent Next.js data-cache entry does.
+// Keep them briefly in-process and always recover from a 401 below.
+const CRM_TOKEN_CACHE_MS = 10 * 60 * 1000;
+let accessToken = "";
+let accessTokenExpiresAt = 0;
+let loginPromise: Promise<string> | null = null;
+
+async function login(): Promise<string> {
+  let res: Response;
+  try {
+    res = await fetch(`${CRM_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ login: CRM_LOGIN, password: CRM_PASSWORD }),
       cache: "no-store",
+      signal: AbortSignal.timeout(CRM_TIMEOUT_MS),
     });
+  } catch {
+    throw new CrmApiError("CRM login unavailable", 503, "/auth/login");
+  }
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`CRM login failed ${res.status}: ${text}`);
-    }
+  if (!res.ok) {
+    throw new CrmApiError(`CRM login failed (${res.status})`, res.status, "/auth/login");
+  }
 
-    const data: LoginResponse = await res.json();
-    return data.accessToken;
-  },
-  ["crm-access-token"],
-  { revalidate: 12 * 60 * 60 }
-);
+  const data: LoginResponse = await res.json();
+  if (!data.accessToken) {
+    throw new CrmApiError("CRM login returned no access token", 502, "/auth/login");
+  }
+  accessToken = data.accessToken;
+  accessTokenExpiresAt = Date.now() + CRM_TOKEN_CACHE_MS;
+  return accessToken;
+}
+
+async function getAccessToken(): Promise<string> {
+  if (accessToken && Date.now() < accessTokenExpiresAt) return accessToken;
+  if (!loginPromise) {
+    loginPromise = login().finally(() => {
+      loginPromise = null;
+    });
+  }
+  return loginPromise;
+}
+
+function invalidateAccessToken(token: string) {
+  if (accessToken !== token) return;
+  accessToken = "";
+  accessTokenExpiresAt = 0;
+}
 
 // ponytail: cap de 8s pe orice request CRM — unul blocat nu mai ține renderul la infinit.
 const CRM_TIMEOUT_MS = 8000;
 
 export async function crmFetch(path: string, options?: RequestInit) {
-  const token = await getAccessToken();
   const url = `${CRM_BASE_URL}${path}`;
-
   const isMutation = options?.method && options.method !== "GET";
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      ...(options?.headers || {}),
-    },
-    // GET-urile cache-uite revalidă la 60s; mutațiile sunt no-store. Timeout pe toate.
-    signal: options?.signal ?? AbortSignal.timeout(CRM_TIMEOUT_MS),
-    ...(isMutation
-      ? { cache: "no-store" }
-      : { next: { revalidate: 60 } }),
-  });
+  const request = (token: string) =>
+    fetch(url, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...(options?.headers || {}),
+      },
+      // GET-urile cache-uite revalidă la 60s; mutațiile sunt no-store. Timeout pe toate.
+      signal: options?.signal ?? AbortSignal.timeout(CRM_TIMEOUT_MS),
+      ...(isMutation
+        ? { cache: "no-store" }
+        : { next: { revalidate: 60 } }),
+    });
+
+  let token = await getAccessToken();
+  let res = await request(token);
+  if (res.status === 401) {
+    invalidateAccessToken(token);
+    token = await getAccessToken();
+    res = await request(token);
+  }
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`CRM API error ${res.status}: ${text}`);
+    throw new CrmApiError(`CRM API request failed (${res.status})`, res.status, path);
   }
 
   return res.json();

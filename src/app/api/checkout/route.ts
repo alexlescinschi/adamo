@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createOrder, crmFetch, getOrderInvoice, type CheckoutPayload } from "@/lib/crm-api";
+import { CrmApiError, createOrder, crmFetch, getOrderInvoice, type CheckoutPayload } from "@/lib/crm-api";
 import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { ADAMO_COMPANY } from "@/lib/company";
 import { createFanCourierAwb } from "@/lib/fancourier";
@@ -207,7 +207,12 @@ async function createShipment(order: any, checkout: ValidCheckout) {
       : { provider: checkout.courier.provider, status: "created", number: (result as any).awb, trackingUrl: (result as any).trackingUrl };
     await redis.set(key, shipment, { ex: 30 * 24 * 60 * 60 });
     return shipment;
-  } catch {
+  } catch (error) {
+    console.error("[checkout] shipment creation failed", {
+      provider: checkout.courier.provider,
+      orderId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
     const failed = { provider: checkout.courier.provider, status: "failed" };
     await redis.set(key, failed, { ex: OPERATION_TTL });
     return failed;
@@ -220,10 +225,6 @@ export async function POST(request: NextRequest) {
   if (!redis && process.env.NODE_ENV === "production") {
     return errorResponse("checkoutUnavailable", 503);
   }
-
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
-  const limited = await rateLimit(`rate:checkout:${shortHash(ip)}`, 5, 600);
-  if (!limited.allowed) return errorResponse("rateLimited", 429, { "Retry-After": "600" });
 
   const idempotencyKey = request.headers.get("idempotency-key") || "";
   if (!/^[a-zA-Z0-9_-]{16,128}$/.test(idempotencyKey)) {
@@ -239,9 +240,6 @@ export async function POST(request: NextRequest) {
   const checkout = validateCheckout(rawBody);
   if (typeof checkout === "string") return errorResponse(checkout, 400);
 
-  const phoneLimit = await rateLimit(`rate:checkout-phone:${shortHash(checkout.contact.phone)}`, 10, 3600);
-  if (!phoneLimit.allowed) return errorResponse("rateLimited", 429);
-
   const requestHash = shortHash(JSON.stringify(checkout));
   const operationKey = `checkout:v1:${shortHash(idempotencyKey)}`;
   if (redis) {
@@ -249,8 +247,18 @@ export async function POST(request: NextRequest) {
     if (existing?.requestHash !== undefined) {
       if (existing.requestHash !== requestHash) return errorResponse("operationConflict", 409);
       if (existing.state === "completed") return NextResponse.json(existing.response);
-      return errorResponse("alreadyProcessing", 409);
+      return errorResponse(existing.state === "unknown" ? "orderUnknown" : "alreadyProcessing", existing.state === "unknown" ? 502 : 409);
     }
+  }
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
+  const limited = await rateLimit(`rate:checkout:${shortHash(ip)}`, 5, 600);
+  if (!limited.allowed) return errorResponse("rateLimited", 429, { "Retry-After": "600" });
+
+  const phoneLimit = await rateLimit(`rate:checkout-phone:${shortHash(checkout.contact.phone)}`, 10, 3600);
+  if (!phoneLimit.allowed) return errorResponse("rateLimited", 429);
+
+  if (redis) {
     const claimed = await redis.set(operationKey, { state: "processing", requestHash }, { nx: true, ex: OPERATION_TTL });
     if (!claimed) return errorResponse("alreadyProcessing", 409);
   }
@@ -330,8 +338,23 @@ export async function POST(request: NextRequest) {
 
     if (redis) await redis.set(operationKey, { state: "completed", requestHash, response: responseBody }, { ex: OPERATION_TTL });
     return NextResponse.json(responseBody, { status: 201 });
-  } catch {
-    if (redis) await redis.set(operationKey, { state: "unknown", requestHash }, { ex: OPERATION_TTL });
-    return errorResponse("orderUnknown", 502);
+  } catch (error) {
+    const crmError = error instanceof CrmApiError ? error : null;
+    const definitelyRejected = crmError !== null
+      && (crmError.path === "/auth/login" || (crmError.status >= 400 && crmError.status < 500));
+    console.error("[checkout] order creation failed", {
+      source: crmError ? "crm" : "network",
+      status: crmError?.status,
+      path: crmError?.path,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+
+    if (redis) {
+      if (definitelyRejected) await redis.del(operationKey);
+      else await redis.set(operationKey, { state: "unknown", requestHash }, { ex: OPERATION_TTL });
+    }
+    return crmError?.status === 401 || crmError?.path === "/auth/login"
+      ? errorResponse("checkoutUnavailable", 503)
+      : errorResponse("orderUnknown", 502);
   }
 }

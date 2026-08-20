@@ -71,7 +71,7 @@ export async function createPostaAwb(p: PostaAwbParams): Promise<PostaAwbResult>
         quantity: 1,
         declared_amount: Number(p.cod || 0),
         description: "Electronice",
-        item_type: 1, // ponytail: "Palet" default, verify via /nomenclatures/item-types if needed
+        item_type: 2, // Colet
       },
     ],
     sender_name: '"Adamo Computers" SRL',
@@ -214,7 +214,7 @@ export async function getPostaTariff(p: PostaAwbParams): Promise<{ cost: number;
             height: Number(process.env.POSTA_RAPIDA_HEIGHT ?? 10),
             quantity: 1,
             description: "Electronice",
-            item_type: 1,
+            item_type: 2,
           },
         ],
         cash_on_delivery_amount: String(p.cod || 0),
