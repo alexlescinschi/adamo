@@ -31,7 +31,8 @@ type CheckoutErrorCode =
   | "invalidSession"
   | "operationConflict"
   | "alreadyProcessing"
-  | "orderUnknown";
+  | "orderUnknown"
+  | "contactConflict";
 
 type CourierInput =
   | { provider: "POSTA_RAPIDA"; regionId: number; cityId: number; street: string; block: string; zipCode?: string }
@@ -75,6 +76,15 @@ function errorResponse(code: CheckoutErrorCode, status: number, headers?: Header
 
 function shortHash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 32);
+}
+
+// CRM face `prisma.contact.create()` la checkout și crapă cu 500 (P2002) când
+// telefonul/emailul există deja în contacts — inclusiv rânduri soft-deleted,
+// invizibile în listări. Vezi raportul vendor: checkout trebuie să facă upsert.
+function isContactConflictError(error: unknown) {
+  return error instanceof CrmApiError
+    && error.status === 500
+    && /P2002|Unique constraint/i.test(error.message);
 }
 
 async function createGuestReceipt(
@@ -362,7 +372,19 @@ export async function POST(request: NextRequest) {
       };
     } else {
       const ecommerceToken = request.cookies.get("ecommerceAccessToken")?.value;
-      const data = await createOrder(payload, ecommerceToken);
+      let data;
+      try {
+        data = await createOrder(payload, ecommerceToken);
+      } catch (error) {
+        // Conflict pe email (contact duplicat în CRM): emailul e opțional,
+        // reîncercăm fără el ca comanda să plece mai departe.
+        if (isContactConflictError(error) && /`email`/i.test((error as Error).message) && checkout.contact.email) {
+          const retryPayload: CheckoutPayload = { ...payload, contact: { ...payload.contact, email: undefined } };
+          data = await createOrder(retryPayload, ecommerceToken);
+        } else {
+          throw error;
+        }
+      }
       const orderId = positiveInt(data?.order?.id ?? data?.id ?? data?.orderId);
       if (!orderId) throw new Error("CRM did not return an order ID");
 
@@ -409,6 +431,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(responseBody, { status: 201 });
   } catch (error) {
     const crmError = error instanceof CrmApiError ? error : null;
+    // Contact duplicat în CRM (inclusiv rânduri soft-deleted): crash-ul e la
+    // crearea contactului, înainte de deal — comanda sigur nu există.
+    if (isContactConflictError(error)) {
+      console.error("[checkout] contact conflict", {
+        path: crmError?.path,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      if (redis) await redis.del(operationKey);
+      return errorResponse("contactConflict", 400);
+    }
     const definitelyRejected = crmError !== null
       && (crmError.path === "/auth/login" || (crmError.status >= 400 && crmError.status < 500));
     console.error("[checkout] order creation failed", {

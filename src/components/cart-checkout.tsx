@@ -344,7 +344,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        if (err.code === "operationConflict") {
+        if (err.code === "operationConflict" || err.code === "orderUnknown") {
           idempotencyKey.current = "";
           localStorage.removeItem("adamo-checkout-operation");
         }
