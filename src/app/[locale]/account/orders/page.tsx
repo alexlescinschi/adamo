@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { CheckCircle, ChevronLeft, Loader2, Package } from "lucide-react";
+import { CheckCircle, ChevronLeft, Loader2, Package, Truck } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useTranslations } from "@/hooks/use-translations";
 
@@ -31,9 +31,31 @@ function OrdersContent() {
     if (order.status_slug === "processing" || order.status_slug === "in_progress") return tr.orders.statusProcessing;
     return order.status || tr.orders.statusUnknown;
   };
+  const shipmentStatusLabel = (shipment: any) => {
+    switch (shipment.status) {
+      case "created": return tr.orders.shipmentCreated;
+      case "pickup_courier_assigned":
+      case "pickup_courier_accepted": return tr.orders.shipmentPickup;
+      case "pickup_confirm_shipment":
+      case "price_recalculated":
+      case "deposit_received":
+      case "deposit_released": return tr.orders.shipmentInTransit;
+      case "delivered":
+      case "completed": return tr.orders.shipmentDelivered;
+      case "returned": return tr.orders.shipmentReturned;
+      case "canceled":
+      case "abandoned":
+      case "destroyed": return tr.orders.shipmentCancelled;
+      case "failed":
+      case "pickup_courier_rejected":
+      case "pickup_failed": return tr.orders.shipmentFailed;
+      default: return tr.orders.statusUnknown;
+    }
+  };
 
   useEffect(() => {
-    fetch("/api/account/orders")
+    let active = true;
+    const loadOrders = () => fetch("/api/account/orders")
       .then((res) => {
         if (res.status === 401) {
           router.push(`/${locale}/login`);
@@ -42,6 +64,7 @@ function OrdersContent() {
         return res.json();
       })
       .then((data) => {
+        if (!active) return;
         if (Array.isArray(data)) {
           setOrders(data);
         } else if (data && Array.isArray(data.items)) {
@@ -50,8 +73,15 @@ function OrdersContent() {
           setOrders([]);
         }
       })
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+      .catch(() => active && setOrders([]))
+      .finally(() => active && setLoading(false));
+
+    loadOrders();
+    const interval = setInterval(loadOrders, 5 * 60 * 1000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, [locale, router]);
 
   return (
@@ -127,6 +157,18 @@ function OrdersContent() {
                       </span>
                     </div>
                   ))}
+                </div>
+              )}
+              {order.shipment && (
+                <div className="mt-3 flex items-start gap-2 border-t border-slate-100 pt-3 text-sm">
+                  <Truck className="mt-0.5 h-4 w-4 shrink-0 text-[#4e8f28]" />
+                  <div>
+                    <p className="font-medium text-slate-800">{tr.orders.shipmentCourier}</p>
+                    <p className="text-slate-600">{tr.orders.shipmentNumber}: {order.shipment.shippingNumber}</p>
+                    {order.shipment.awb && <p className="text-slate-600">{tr.orders.shipmentAwb}: {order.shipment.awb}</p>}
+                    <p className="font-medium text-[#34781f]">{shipmentStatusLabel(order.shipment)}</p>
+                    {order.shipment.updatedAt && <p className="text-xs text-slate-500">{tr.orders.shipmentUpdated}: {new Date(order.shipment.updatedAt).toLocaleString(dateLocale)}</p>}
+                  </div>
                 </div>
               )}
               <div className="mt-3 border-t border-slate-100 pt-3 flex justify-between">

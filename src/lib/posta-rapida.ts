@@ -20,6 +20,13 @@ export interface PostaAwbResult {
   awb: string | null;
 }
 
+export interface PostaShipmentStatus {
+  shippingNumber: string;
+  awb: string | null;
+  status: string;
+  updatedAt: string | null;
+}
+
 async function postaFetch<T = Record<string, unknown>>(
   path: string,
   init?: RequestInit,
@@ -98,6 +105,23 @@ export async function createPostaAwb(p: PostaAwbParams): Promise<PostaAwbResult>
   return {
     shippingNumber: json.shipping_number,
     awb: json.awb_number || null,
+  };
+}
+
+export async function getPostaShipmentStatus(shippingNumber: string): Promise<PostaShipmentStatus> {
+  const [shipment, logs] = await Promise.all([
+    postaFetch<any>(`/shipping/${encodeURIComponent(shippingNumber)}`),
+    postaFetch<any[]>(`/shipping/${encodeURIComponent(shippingNumber)}/logs`),
+  ]);
+  const latest = Array.isArray(logs)
+    ? [...logs].sort((a, b) => Date.parse(b?.created_at || "") - Date.parse(a?.created_at || ""))[0]
+    : null;
+
+  return {
+    shippingNumber: String(shipment?.shipping_number || shippingNumber),
+    awb: shipment?.awb_number ? String(shipment.awb_number) : null,
+    status: String(shipment?.status || latest?.action || "created"),
+    updatedAt: typeof latest?.created_at === "string" ? latest.created_at : typeof shipment?.modified_at === "string" ? shipment.modified_at : null,
   };
 }
 

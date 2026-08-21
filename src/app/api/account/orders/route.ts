@@ -1,7 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { crmFetch, refreshCrmToken, CRM_TOKEN_MAX_AGE, CRM_REFRESH_MAX_AGE } from "@/lib/crm-api";
+import { getPostaShipmentStatus, type PostaShipmentStatus } from "@/lib/posta-rapida";
+import { redis } from "@/lib/redis";
 
 const CRM_BASE_URL = process.env.CRM_API_URL || "https://api.crm.adamo.md/v1";
+
+type StoredShipment = {
+  provider?: string;
+  status?: string;
+  shippingNumber?: string;
+  awb?: string | null;
+};
+
+async function getShipment(orderId: number): Promise<PostaShipmentStatus | null> {
+  if (!redis) return null;
+  try {
+    const shipment = await redis.get<StoredShipment>(`shipment:v1:POSTA_RAPIDA:${orderId}`);
+    if (shipment?.provider !== "POSTA_RAPIDA" || !shipment.shippingNumber) return null;
+
+    const cacheKey = `shipment:v1:tracking:${shipment.shippingNumber}`;
+    const cached = await redis.get<PostaShipmentStatus>(cacheKey);
+    if (cached) return cached;
+
+    const tracked = await getPostaShipmentStatus(shipment.shippingNumber);
+    await redis.set(cacheKey, tracked, { ex: 300 });
+    return tracked;
+  } catch (error) {
+    console.error("Shipment tracking error:", { orderId, error: error instanceof Error ? error.message : "Unknown error" });
+    return null;
+  }
+}
 
 function normalizeItem(item: any) {
   const product = item.product || item.unit?.product || {};
@@ -49,7 +77,11 @@ async function normalizeDealsList(data: any) {
     }
   }));
 
-  return detailed.map(normalizeDeal);
+  const orders = detailed.map(normalizeDeal);
+  return Promise.all(orders.map(async (order) => ({
+    ...order,
+    shipment: Number.isSafeInteger(order.id) ? await getShipment(order.id) : null,
+  })));
 }
 
 export async function GET(request: NextRequest) {
