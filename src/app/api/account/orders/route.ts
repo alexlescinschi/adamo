@@ -9,24 +9,76 @@ type StoredShipment = {
   provider?: string;
   status?: string;
   shippingNumber?: string;
+  number?: string;
   awb?: string | null;
+  trackingUrl?: string;
 };
 
-async function getShipment(orderId: number): Promise<PostaShipmentStatus | null> {
+type ShipmentInfo = PostaShipmentStatus & {
+  provider: string;
+  trackingUrl?: string;
+};
+
+// Checkout salvează numărul în `number` (POSTA_RAPIDA) sau `number`/`awb`
+// (FANCOURIER) — citim ambele denumiri ca să nu pierdem expedițiile vechi.
+function storedNumber(shipment: StoredShipment | null): string | null {
+  const nr = shipment?.number || shipment?.shippingNumber;
+  return typeof nr === "string" && nr ? nr : null;
+}
+
+function fanShipment(nr: string, trackingUrl?: string): ShipmentInfo {
+  return {
+    provider: "FANCOURIER",
+    shippingNumber: nr,
+    awb: null,
+    trackingUrl: trackingUrl || `https://app.fancourier.md/tracking?awb=${nr}`,
+    status: "created",
+    updatedAt: null,
+  };
+}
+
+async function getShipment(orderId: number, crmFanAwb?: string | null): Promise<ShipmentInfo | null> {
   if (!redis) return null;
   try {
-    const shipment = await redis.get<StoredShipment>(`shipment:v1:POSTA_RAPIDA:${orderId}`);
-    if (shipment?.provider !== "POSTA_RAPIDA" || !shipment.shippingNumber) return null;
+    const [posta, fan] = await Promise.all([
+      redis.get<StoredShipment>(`shipment:v1:POSTA_RAPIDA:${orderId}`),
+      redis.get<StoredShipment>(`shipment:v1:FANCOURIER:${orderId}`),
+    ]);
 
-    const cacheKey = `shipment:v1:tracking:${shipment.shippingNumber}`;
-    const cached = await redis.get<PostaShipmentStatus>(cacheKey);
-    if (cached) return cached;
+    if (fan?.provider === "FANCOURIER") {
+      const fanNumber = storedNumber(fan);
+      if (fanNumber) return fanShipment(fanNumber, fan.trackingUrl);
+    }
 
-    const tracked = await getPostaShipmentStatus(shipment.shippingNumber);
-    await redis.set(cacheKey, tracked, { ex: 300 });
-    return tracked;
+    if (posta?.provider === "POSTA_RAPIDA") {
+      const postaNumber = storedNumber(posta);
+      if (postaNumber) {
+        const cacheKey = `shipment:v1:tracking:${postaNumber}`;
+        const cached = await redis.get<PostaShipmentStatus>(cacheKey);
+        if (cached) return { provider: "POSTA_RAPIDA", ...cached };
+
+        try {
+          const tracked = await getPostaShipmentStatus(postaNumber);
+          await redis.set(cacheKey, tracked, { ex: 300 });
+          return { provider: "POSTA_RAPIDA", ...tracked };
+        } catch (error) {
+          // Tracking live picat: afișăm cel puțin numărul din Redis.
+          console.error("Shipment tracking error:", { orderId, error: error instanceof Error ? error.message : "Unknown error" });
+          return {
+            provider: "POSTA_RAPIDA",
+            shippingNumber: postaNumber,
+            awb: posta.awb ?? null,
+            status: posta.status || "created",
+            updatedAt: null,
+          };
+        }
+      }
+    }
+
+    if (crmFanAwb) return fanShipment(String(crmFanAwb));
+    return null;
   } catch (error) {
-    console.error("Shipment tracking error:", { orderId, error: error instanceof Error ? error.message : "Unknown error" });
+    console.error("Shipment lookup error:", { orderId, error: error instanceof Error ? error.message : "Unknown error" });
     return null;
   }
 }
@@ -51,6 +103,7 @@ function normalizeDeal(d: any) {
     status_slug: d.stage?.slug || d.stage_slug || d.status_slug || d.status?.slug || null,
     items: Array.isArray(items) ? items.map(normalizeItem) : [],
     total: Number(d.amount ?? d.final_total ?? d.total ?? 0),
+    fan_courier_awb_no: d.fan_courier_awb_no ?? null,
   };
 }
 
@@ -80,7 +133,7 @@ async function normalizeDealsList(data: any) {
   const orders = detailed.map(normalizeDeal);
   return Promise.all(orders.map(async (order) => ({
     ...order,
-    shipment: Number.isSafeInteger(order.id) ? await getShipment(order.id) : null,
+    shipment: Number.isSafeInteger(order.id) ? await getShipment(order.id, order.fan_courier_awb_no) : null,
   })));
 }
 

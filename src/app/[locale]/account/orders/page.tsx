@@ -167,6 +167,11 @@ function OrdersContent() {
                     <p className="text-slate-600">{tr.orders.shipmentNumber}: {order.shipment.shippingNumber}</p>
                     {order.shipment.awb && <p className="text-slate-600">{tr.orders.shipmentAwb}: {order.shipment.awb}</p>}
                     <p className="font-medium text-[#34781f]">{shipmentStatusLabel(order.shipment)}</p>
+                    {order.shipment.trackingUrl && (
+                      <a href={order.shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-block font-medium text-[#4e8f28] hover:underline">
+                        {tr.orders.trackShipment} →
+                      </a>
+                    )}
                     {order.shipment.updatedAt && <p className="text-xs text-slate-500">{tr.orders.shipmentUpdated}: {new Date(order.shipment.updatedAt).toLocaleString(dateLocale)}</p>}
                   </div>
                 </div>
