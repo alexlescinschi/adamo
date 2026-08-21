@@ -7,17 +7,41 @@ import { SITE_URL } from "@/lib/site";
 const LOCALES = ["ro", "ru", "en"];
 
 // Endpoint public, folosit deja în generateStaticParams.
-async function getProductIds(): Promise<{ ids: number[]; slugs: string[] }> {
+async function getProductIds(): Promise<number[]> {
   try {
     const res = await fetch("https://api.crm.adamo.md/v1/ecommerce/products/ids?locale=ro", {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return { ids: [], slugs: [] };
+    if (!res.ok) return [];
     const data = await res.json();
-    return { ids: data.ids || [], slugs: data.slugs || [] };
+    return data.ids || [];
   } catch {
-    return { ids: [], slugs: [] };
+    return [];
   }
+}
+
+async function getProductUrls(ids: number[]): Promise<string[]> {
+  const urls: string[] = [];
+  const jobs = LOCALES.flatMap((locale) => ids.map((id) => ({ id, locale })));
+
+  // Canonical metadata uses the product-detail slug, not the abbreviated ids-feed slug.
+  for (let index = 0; index < jobs.length; index += 20) {
+    const batch = await Promise.all(jobs.slice(index, index + 20).map(async ({ id, locale }) => {
+      try {
+        const res = await fetch(`https://api.crm.adamo.md/v1/ecommerce/products/${id}?locale=${locale}`, {
+          next: { revalidate: 3600 },
+        });
+        if (!res.ok) return null;
+        const product = await res.json();
+        return product.slug ? `${SITE_URL}/${locale}/product/${id}-${product.slug}` : null;
+      } catch {
+        return null;
+      }
+    }));
+    urls.push(...batch.filter((url): url is string => Boolean(url)));
+  }
+
+  return urls;
 }
 
 async function getCategorySlugs(): Promise<string[]> {
@@ -62,17 +86,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Produse per locale
-  const { ids, slugs } = await getProductIds();
-  for (const l of LOCALES) {
-    ids.forEach((id, i) => {
-      const slugPart = slugs[i] ? `${id}-${slugs[i]}` : String(id);
-      entries.push({
-        url: `${SITE_URL}/${l}/product/${slugPart}`,
-        lastModified: now,
-        changeFrequency: "weekly",
-        priority: 0.6,
-      });
+  // Produse: sitemapul trebuie să emită exact URL-ul canonical al paginii.
+  for (const url of await getProductUrls(await getProductIds())) {
+    entries.push({
+      url,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6,
     });
   }
 

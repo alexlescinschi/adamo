@@ -60,6 +60,26 @@ const nextConfig: NextConfig = {
         destination: "/ro/category/accesorii",
         permanent: true,
       },
+      {
+        source: "/servers",
+        destination: "/ro/category/servere",
+        permanent: true,
+      },
+      {
+        source: "/ro/servers",
+        destination: "/ro/category/servere",
+        permanent: true,
+      },
+      {
+        source: "/ru/servers",
+        destination: "/ru/category/servery",
+        permanent: true,
+      },
+      {
+        source: "/en/servers",
+        destination: "/en/category/servers",
+        permanent: true,
+      },
       // 301-uri de la vechile URL-uri Tilda/ADAMO.MD (audit 2026-08-20) — 156 linkuri.
       { source: "/laptopuri/tproduct/566452680-452699064452-ca-nou-lenovo-thinkbook-i5-11gen-16gb-mx", destination: "/ro/product/1171-buy-lenovo-thinkbook-in-chisinau-moldova-business-156-intel-core-i5-16-gb-lenovo-ips-60-hz-1920x1080-i5-1135g7-ca-nou-ssd-1-tb-dedicata-geforce-mx-series", permanent: true },
       { source: "/laptopuri/tproduct/566452680-628544209832-nou-gaming-hp-victus-144hz-i5-12500h-rtx", destination: "/ro/product/1233-buy-hp-victus-gaming-in-chisinau-moldova-512-gb-156-16-gb-i5-12500h-1920x1080-geforce-rtx-40-intel-core-i5-nu-dedicata-ssd-hp-nou-gaming", permanent: true },

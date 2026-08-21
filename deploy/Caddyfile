@@ -6,7 +6,11 @@
 	}
 }
 
-adamo.md, www.adamo.md {
+www.adamo.md {
+	redir https://adamo.md{uri} permanent
+}
+
+adamo.md {
 	encode zstd gzip
 	request_body {
 		max_size 1MB
