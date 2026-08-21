@@ -210,7 +210,7 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
 async function createShipment(order: any, checkout: ValidCheckout) {
   if (!checkout.courier) return null;
 
-  if (order?.fan_courier_awb_no) {
+  if (checkout.courier.provider === "FANCOURIER" && order?.fan_courier_awb_no) {
     return { provider: "FANCOURIER", status: "existing", number: String(order.fan_courier_awb_no) };
   }
 
