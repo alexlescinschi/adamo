@@ -87,7 +87,9 @@ export async function createPostaAwb(p: PostaAwbParams): Promise<PostaAwbResult>
     receiver_name: p.toName,
     receiver_phone_number: Number(p.toPhone.replace(/\D/g, "")),
     ...(p.toEmail ? { receiver_email: p.toEmail } : {}),
-    payment_type: "transfer",
+    // ponytail: "cash" lasă expedierea neachitată — achitare manuală din portalul
+    // Curier Rapid (transfer = plată automată din sold + intrare automată în flux).
+    payment_type: process.env.POSTA_RAPIDA_PAYMENT_TYPE ?? "cash",
     ...(p.cod && p.cod > 0 ? { cash_on_delivery_amount: String(p.cod) } : {}),
     declared_amount: String(p.cod || 0),
     payer: "sender",
