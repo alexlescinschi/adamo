@@ -4,6 +4,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ContactWidget } from "@/components/contact-widget";
 import { IuteScript } from "@/components/iute-script";
+import { CookieConsent } from "@/components/cookie-consent";
 import { CartProvider } from "@/hooks/use-cart";
 import { getCategories, getNewProducts, crmFetch } from "@/lib/crm-api";
 import { extractCategories } from "@/lib/categories";
@@ -124,6 +125,7 @@ export default async function LocaleLayout({
           <main className="mx-auto w-full max-w-[1000px] flex-1 px-4 pb-[20px] lg:px-0">{children}</main>
           <Footer contact={contactSettings || undefined} publishedPageSlugs={publishedContent.pages.map((page) => page.slug)} />
           <ContactWidget />
+          <CookieConsent />
         </CartProvider>
 
         {/* ponytail: IutePay config from CRM. Zero env vars — everything from /config endpoint. */}
