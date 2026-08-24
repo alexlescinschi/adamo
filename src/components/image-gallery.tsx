@@ -47,12 +47,6 @@ export function ImageGallery({ images, name }: ImageGalleryProps) {
       <div
         data-testid="gallery-image-frame"
         className="relative w-full aspect-[4/3] overflow-hidden rounded-[14px] md:rounded-[28px] bg-[#f3f6f6]"
-        onMouseMove={(event) => {
-          if (images.length < 2) return;
-          const rect = event.currentTarget.getBoundingClientRect();
-          setSelected(Math.min(images.length - 1, Math.floor(((event.clientX - rect.left) / rect.width) * images.length)));
-        }}
-        onMouseLeave={() => setSelected(0)}
         onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; swiped.current = false; }}
         onTouchEnd={(e) => {
           const diff = touchStart.current - e.changedTouches[0].clientX;
