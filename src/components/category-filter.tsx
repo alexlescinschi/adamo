@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useCallback, useEffect, useRef, type MouseEvent } from "react";
+import { Fragment, useState, useCallback, useEffect, useRef, useTransition, type MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ProductCard } from "./product-card";
@@ -111,6 +111,7 @@ export function CategoryFilter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const sort = searchParams.get("sort") || "newest";
+  const [isPending, startTransition] = useTransition();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileControlsFloating, setMobileControlsFloating] = useState(false);
   const mobileControlsAnchorRef = useRef<HTMLDivElement>(null);
@@ -119,6 +120,11 @@ export function CategoryFilter({
     min: activePrice?.min?.toString() || "",
     max: activePrice?.max?.toString() || "",
   });
+  // Păstrează selecția locală cât timp serverul încarcă următoarea combinație.
+  const [optimisticFilters, setOptimisticFilters] = useState(activeFilters);
+  const filtersRef = useRef(activeFilters);
+  const paramsRef = useRef(searchParams.toString());
+  const filterNavigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Paginile următoare se adaugă după produsele primite de la server.
   const [additionalProducts, setAdditionalProducts] = useState<any[]>([]);
@@ -136,10 +142,21 @@ export function CategoryFilter({
     setLoadMoreError(false);
   }, [catalogStateKey, page, serverPaginated]);
 
-  // Reconstruiește query-ul: suprascrie/scoate un filtru, păstrează restul, resetează page.
+  useEffect(() => {
+    paramsRef.current = searchParams.toString();
+    filtersRef.current = activeFilters;
+    setOptimisticFilters(activeFilters);
+  }, [activeFilters, searchParams]);
+
+  useEffect(() => () => {
+    if (filterNavigationTimer.current) clearTimeout(filterNavigationTimer.current);
+  }, []);
+
+  // Construiește URL-ul din ultima selecție locală, nu din URL-ul vechi primit
+  // de la server cât timp o navigare precedentă este încă în curs.
   const buildUrl = useCallback(
     (updates: Record<string, string | string[] | null>) => {
-      const p = new URLSearchParams(searchParams.toString());
+      const p = new URLSearchParams(paramsRef.current);
       for (const [key, val] of Object.entries(updates)) {
         if (val === null || (Array.isArray(val) && val.length === 0)) p.delete(key);
         else p.set(key, Array.isArray(val) ? val.join(",") : String(val));
@@ -147,28 +164,41 @@ export function CategoryFilter({
       // orice toggle de filtru resetează pagina la 1
       p.delete("page");
       const qs = p.toString();
-      return qs ? `?${qs}` : window.location.pathname;
+      paramsRef.current = qs;
+      return `${pathname}${qs ? `?${qs}` : ""}`;
     },
-    [searchParams]
+    [pathname]
   );
 
   const applyUrl = useCallback(
     (updates: Record<string, string | string[] | null>) => {
-      router.push(buildUrl(updates), { scroll: false });
+      if (filterNavigationTimer.current) clearTimeout(filterNavigationTimer.current);
+      startTransition(() => router.replace(buildUrl(updates), { scroll: false }));
     },
-    [router, buildUrl]
+    [router, buildUrl, startTransition]
   );
 
   const toggleFilter = useCallback(
     (code: string, values: string[]) => {
-      const current = activeFilters[code] || [];
+      const current = filtersRef.current[code] || [];
       const active = values.every((value) => current.includes(value));
       const next = active
         ? current.filter((value) => !values.includes(value))
         : [...new Set([...current, ...values])];
-      applyUrl({ [`f_${code}`]: next.length ? next : null });
+      const updated = { ...filtersRef.current };
+      if (next.length) updated[code] = next;
+      else delete updated[code];
+      filtersRef.current = updated;
+      setOptimisticFilters(updated);
+
+      const url = buildUrl({ [`f_${code}`]: next.length ? next : null });
+      if (filterNavigationTimer.current) clearTimeout(filterNavigationTimer.current);
+      filterNavigationTimer.current = setTimeout(() => {
+        filterNavigationTimer.current = null;
+        startTransition(() => router.replace(url, { scroll: false }));
+      }, 180);
     },
-    [activeFilters, applyUrl]
+    [buildUrl, router, startTransition]
   );
 
   useEffect(() => {
@@ -221,12 +251,16 @@ export function CategoryFilter({
   }, [activePrice?.min, activePrice?.max, applyUrl, priceInput]);
 
   const clearAll = useCallback(() => {
-    const p = new URLSearchParams(searchParams.toString());
+    const p = new URLSearchParams(paramsRef.current);
     for (const key of [...p.keys()]) if (key !== "q" && key !== "type") p.delete(key);
     setPriceInput({ min: "", max: "" });
+    filtersRef.current = {};
+    setOptimisticFilters({});
+    if (filterNavigationTimer.current) clearTimeout(filterNavigationTimer.current);
     const qs = p.toString();
-    router.push(qs ? `?${qs}` : window.location.pathname, { scroll: false });
-  }, [router, searchParams]);
+    paramsRef.current = qs;
+    startTransition(() => router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false }));
+  }, [pathname, router, startTransition]);
 
   // Fiecare pagină are URL propriu și păstrează filtrele active.
   const buildPageHref = useCallback(
@@ -255,7 +289,7 @@ export function CategoryFilter({
   const visibleFilterDefinitions = filterDefinitions.filter((definition) => definition.code.toLowerCase() !== "sticker");
   const groupedFilterDefinitions = groupFilterDefinitions(visibleFilterDefinitions);
   const totalActive =
-    Object.entries(activeFilters).reduce((count, [code, selected]) => {
+    Object.entries(optimisticFilters).reduce((count, [code, selected]) => {
       const definition = groupedFilterDefinitions.find((candidate) => candidate.code === code);
       if (!definition) return count + selected.length;
       const represented = new Set(definition.options.flatMap((option) => option.values || [option.value]));
@@ -282,7 +316,7 @@ export function CategoryFilter({
     setLoadingMore(true);
     setLoadMoreError(false);
     try {
-      const p = new URLSearchParams(searchParams.toString());
+      const p = new URLSearchParams(paramsRef.current);
       p.set("page", String(nextPage));
       p.set("limit", String(perPage));
       p.set("locale", locale);
@@ -308,7 +342,7 @@ export function CategoryFilter({
     } finally {
       setLoadingMore(false);
     }
-  }, [buildPageHref, canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, searchParams, serverPaginated, visible]);
+  }, [buildPageHref, canLoadMore, categorySlug, loadedPage, loadingMore, locale, perPage, serverPaginated, visible]);
 
   // Conținutul sidebar-ului (reutilizat desktop + drawer mobil).
   const SidebarContent = (
@@ -377,7 +411,7 @@ export function CategoryFilter({
 
       {/* Facetări (din filterDefinitions) */}
       {groupedFilterDefinitions.map((fd) => {
-        const selected = activeFilters[fd.code] || [];
+        const selected = optimisticFilters[fd.code] || [];
         if (!fd.options?.length) return null;
         return (
           <div key={fd.code}>
@@ -513,7 +547,7 @@ export function CategoryFilter({
             </p>
           ) : (
             <>
-              <div data-testid="product-grid" className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
+              <div data-testid="product-grid" aria-busy={isPending || undefined} className="grid grid-cols-2 gap-[14px] md:grid-cols-3">
                 {displayProducts.map((p: any, index: number) => (
                   <Fragment key={p.id}>
                     <ProductCard product={p} />
