@@ -27,12 +27,13 @@ export const PAYMENT_METHOD = {
 // - CASH: FAN uses FAN_COURIER_RAMBUS; Curier Rapid uses COURIER_RAMBURS;
 //   pickup is paid in-store and uses the CRM's documented ONLINE value.
 export function resolvePaymentMethod(
-  payMode: "CASH" | "BANK_TRANSFER" | "RATE",
+  payMode: "CASH" | "BANK_TRANSFER" | "RATE" | "BPAY",
   deliveryMethod: "PICKUP" | "COURIER",
   courierProvider?: CourierProvider,
 ): CrmPaymentMethod {
   if (payMode === "BANK_TRANSFER") return PAYMENT_METHOD.BANK_TRANSFER;
   if (payMode === "RATE") return PAYMENT_METHOD.IUTE;
+  if (payMode === "BPAY") return PAYMENT_METHOD.ONLINE;
   if (deliveryMethod !== "COURIER") return PAYMENT_METHOD.ONLINE;
   return courierProvider === "POSTA_RAPIDA"
     ? PAYMENT_METHOD.COURIER_RAMBURS

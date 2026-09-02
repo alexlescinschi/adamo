@@ -5,9 +5,10 @@ import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { ADAMO_COMPANY } from "@/lib/company";
 import { createFanCourierAwb } from "@/lib/fancourier";
 import { createPostaAwb } from "@/lib/posta-rapida";
+import { createBpayPayment, isBpayConfigured } from "@/lib/bpay";
 import { rateLimit, redis } from "@/lib/redis";
 
-type PayMode = "CASH" | "BANK_TRANSFER" | "RATE";
+type PayMode = "CASH" | "BANK_TRANSFER" | "RATE" | "BPAY";
 
 type CheckoutErrorCode =
   | "invalidRequest"
@@ -47,6 +48,7 @@ interface ValidCheckout {
   delivery?: { city: string; address: string };
   courier?: CourierInput;
   comment?: string;
+  locale: "ro" | "ru" | "en";
 }
 
 type OperationRecord =
@@ -68,7 +70,7 @@ type GuestReceipt = {
 
 const MAX_BODY_BYTES = 50_000;
 const OPERATION_TTL = 30 * 24 * 60 * 60;
-const ALLOWED_KEYS = new Set(["items", "delivery_method", "pay_mode", "warehouse_id", "contact", "delivery", "courier", "comment"]);
+const ALLOWED_KEYS = new Set(["items", "delivery_method", "pay_mode", "warehouse_id", "contact", "delivery", "courier", "comment", "locale"]);
 
 function errorResponse(code: CheckoutErrorCode, status: number, headers?: HeadersInit) {
   return NextResponse.json({ error: "Checkout failed", code }, { status, headers });
@@ -162,7 +164,8 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
   const deliveryMethod = body.delivery_method;
   if (deliveryMethod !== "PICKUP" && deliveryMethod !== "COURIER") return "invalidDeliveryMethod";
   const payMode = body.pay_mode;
-  if (payMode !== "CASH" && payMode !== "BANK_TRANSFER" && payMode !== "RATE") return "invalidPaymentMethod";
+  if (payMode !== "CASH" && payMode !== "BANK_TRANSFER" && payMode !== "RATE" && payMode !== "BPAY") return "invalidPaymentMethod";
+  const locale = body.locale === "ru" || body.locale === "en" ? body.locale : "ro";
 
   const fullName = text(body.contact?.full_name, 100, true);
   const phone = typeof body.contact?.phone === "string" ? body.contact.phone.replace(/\D/g, "") : "";
@@ -176,7 +179,7 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
   if (deliveryMethod === "PICKUP") {
     const warehouseId = positiveInt(body.warehouse_id);
     if (!warehouseId) return "pickupRequired";
-    return { items, deliveryMethod, payMode, warehouseId, contact: { full_name: fullName, phone, email }, comment };
+    return { items, deliveryMethod, payMode, warehouseId, contact: { full_name: fullName, phone, email }, comment, locale };
   }
 
   const city = text(body.delivery?.city, 150, true);
@@ -214,6 +217,7 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
     delivery: { city, address },
     courier,
     comment,
+    locale,
   };
 }
 
@@ -305,6 +309,9 @@ export async function POST(request: NextRequest) {
   }
   const checkout = validateCheckout(rawBody);
   if (typeof checkout === "string") return errorResponse(checkout, 400);
+  if (checkout.payMode === "BPAY" && checkout.deliveryMethod !== "PICKUP") return errorResponse("pickupRequired", 400);
+  if (checkout.payMode === "BPAY" && !isBpayConfigured()) return errorResponse("checkoutUnavailable", 503);
+  if (checkout.payMode === "BPAY" && !redis) return errorResponse("checkoutUnavailable", 503);
 
   const requestHash = shortHash(JSON.stringify(checkout));
   const operationKey = `checkout:v1:${shortHash(idempotencyKey)}`;
@@ -388,7 +395,7 @@ export async function POST(request: NextRequest) {
       const orderId = positiveInt(data?.order?.id ?? data?.id ?? data?.orderId);
       if (!orderId) throw new Error("CRM did not return an order ID");
 
-      const shipment = checkout.deliveryMethod === "COURIER"
+      const shipment = checkout.deliveryMethod === "COURIER" && checkout.payMode !== "BPAY"
         ? await createShipment({ ...data?.order, id: orderId }, checkout)
         : null;
 
@@ -416,15 +423,44 @@ export async function POST(request: NextRequest) {
           });
         }
       }
-      responseBody = {
-        id: orderId,
-        orderId,
-        shipment,
-        invoice,
-        invoiceHandle,
-        accountLinked: Boolean(ecommerceToken),
-        receiptHandle,
-      };
+      if (checkout.payMode === "BPAY") {
+        const amount = Number(data?.order?.amount ?? data?.amount);
+        if (!Number.isFinite(amount) || amount <= 0) throw new Error("CRM did not return an order amount");
+        const siteUrl = (process.env.SITE_URL || "https://adamo.md").replace(/\/$/, "");
+        const bpay = createBpayPayment({
+          order_id: orderId,
+          amount,
+          description: `Comanda ADAMO #${orderId}`,
+          success_url: `${siteUrl}/${checkout.locale}/checkout/bpay/success`,
+          fail_url: `${siteUrl}/${checkout.locale}/checkout/bpay/fail`,
+          callback_url: `${siteUrl}/api/payments/bpay/callback`,
+        });
+        if (!redis) throw new Error("Redis is required for BPay");
+        await redis.set(`bpay:v1:${bpay.payment.uuid}`, {
+          orderId,
+          uuid: bpay.payment.uuid,
+          amount,
+          state: "pending",
+        }, { ex: OPERATION_TTL });
+        responseBody = {
+          id: orderId,
+          orderId,
+          shipment: null,
+          accountLinked: Boolean(ecommerceToken),
+          receiptHandle,
+          bpay: { action: bpay.gatewayUrl, data: bpay.data, key: bpay.key },
+        };
+      } else {
+        responseBody = {
+          id: orderId,
+          orderId,
+          shipment,
+          invoice,
+          invoiceHandle,
+          accountLinked: Boolean(ecommerceToken),
+          receiptHandle,
+        };
+      }
     }
 
     if (redis) await redis.set(operationKey, { state: "completed", requestHash, response: responseBody }, { ex: OPERATION_TTL });

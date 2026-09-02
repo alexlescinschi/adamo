@@ -38,7 +38,16 @@ NEXT_PUBLIC_SANITY_DATASET=production
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
+# BPay sandbox
+BPAY_MERCHANT_ID=adamodev
+BPAY_SECRET_KEY=
+BPAY_GATEWAY_URL=https://pay.dev5.bpay.md/merchant
+
 ```
+
+BPay requires `SITE_URL=https://adamo.md` for its public callback at
+`/api/payments/bpay/callback`. BPay orders are created as local pickup orders
+and remain in the CRM `Резерв` stage; no courier shipment is created.
 
 ## Development
 

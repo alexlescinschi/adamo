@@ -13,7 +13,7 @@ import type { CourierProvider } from "@/lib/checkout";
 import { formatPrice } from "@/lib/utils";
 
 type DeliveryChoice = "MD" | "PICKUP" | "CHISINAU";
-type PayChoice = "CASH" | "CARD" | "BANK" | "RATE";
+type PayChoice = "CASH" | "BPAY" | "BANK" | "RATE";
 
 // ponytail: secțiune cu titlu + icon, card alb
 function Section({ icon: Icon, title, children }: { icon: React.ElementType; title: string; children: React.ReactNode }) {
@@ -212,11 +212,19 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
   // ponytail: verific dacă IutePay e activ (chei prezente). Activează opțiune RATE.
   const [iuteEnabled, setIuteEnabled] = useState(false);
+  const [bpayEnabled, setBpayEnabled] = useState(false);
   useEffect(() => {
     fetch("/api/payments/iute")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => setIuteEnabled(Boolean(data?.enabled)))
       .catch(() => setIuteEnabled(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/payments/bpay")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setBpayEnabled(Boolean(data?.enabled)))
+      .catch(() => setBpayEnabled(false));
   }, []);
 
   function copyIban() {
@@ -253,11 +261,11 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
     );
   }
 
-  const isPickup = deliveryChoice === "PICKUP";
+  const isPickup = deliveryChoice === "PICKUP" || payChoice === "BPAY";
   const deliveryMethod: "PICKUP" | "COURIER" = isPickup ? "PICKUP" : "COURIER";
   // ponytail: RATE = IutePay BNPL redirect. Treate ca pre-plată (cod 0 la curier).
-  const payMode: "CASH" | "BANK_TRANSFER" | "RATE" =
-    payChoice === "BANK" ? "BANK_TRANSFER" : payChoice === "RATE" ? "RATE" : "CASH";
+  const payMode: "CASH" | "BANK_TRANSFER" | "RATE" | "BPAY" =
+    payChoice === "BANK" ? "BANK_TRANSFER" : payChoice === "RATE" ? "RATE" : payChoice === "BPAY" ? "BPAY" : "CASH";
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedItems.length === 0) {
@@ -280,6 +288,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         pay_mode: payMode,
         contact: { full_name: contact.full_name, phone: contact.phone, email: contact.email || undefined },
         comment: fullComment || undefined,
+        locale,
       };
 
       // ponytail: adresă reală pt. Iute Credit (KYC) — nu doar payload-ul de livrare CRM.
@@ -359,13 +368,35 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         ? `/${locale}/checkout/success?receipt=${encodeURIComponent(order.receiptHandle)}`
         : "";
 
-      const saveCheckout = () => {
+      const saveCheckout = (emptyCart = true, resetOperation = true) => {
         localStorage.setItem("adamo-checkout", JSON.stringify({ contact, delivery: { ...delivery }, courierProvider, postaDelivery }));
-        localStorage.removeItem("adamo-checkout-operation");
-        clearCart();
+        if (resetOperation) localStorage.removeItem("adamo-checkout-operation");
+        if (emptyCart) clearCart();
       };
 
-      if (payMode === "BANK_TRANSFER") {
+      if (payMode === "BPAY") {
+        const bpay = order.bpay;
+        if (!bpay?.action || !bpay?.data || !bpay?.key) {
+          setError(tr.checkout.genericError);
+          setSubmitting(false);
+          return;
+        }
+        // Keep the cart if BPay is cancelled; the success page clears it after redirect.
+        saveCheckout(false, false);
+        onDone?.();
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = bpay.action;
+        for (const [name, value] of Object.entries({ data: bpay.data, key: bpay.key })) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = String(value);
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
+      } else if (payMode === "BANK_TRANSFER") {
         saveCheckout();
         if (guestSuccessUrl) {
           onDone?.();
@@ -553,6 +584,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         <div className="space-y-2">
           <OptionRow
             selected={deliveryChoice === "MD"}
+            disabled={payChoice === "BPAY"}
             icon={MapPin}
             label={tr.cart.deliveryMD}
             badge={tr.checkout.free}
@@ -566,6 +598,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
           />
           <OptionRow
             selected={deliveryChoice === "CHISINAU"}
+            disabled={payChoice === "BPAY"}
             icon={Truck}
             label={tr.cart.deliveryChisinau}
             badge={tr.checkout.free}
@@ -574,7 +607,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         </div>
 
         {/* Expand PICKUP */}
-        {deliveryChoice === "PICKUP" && (
+        {isPickup && (
           <select
             value={warehouseId || ""}
             onChange={(e) => setWarehouseId(Number(e.target.value))}
@@ -591,7 +624,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
         )}
 
         {/* Expand COURIER */}
-        {deliveryChoice !== "PICKUP" && (
+        {!isPickup && (
           <div className="mt-3 space-y-3">
             <div className="flex gap-2">
               <button
@@ -676,7 +709,7 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
       <Section icon={Wallet} title={tr.checkout.paymentMethod}>
         <div className="space-y-2">
           <OptionRow selected={payChoice === "CASH"} icon={Wallet} label={tr.cart.payCash} onClick={() => setPayChoice("CASH")} />
-          <OptionRow selected={false} disabled comingSoon icon={CreditCard} label={tr.cart.payCard} badge={tr.checkout.comingSoon} onClick={() => setPayChoice("CARD")} />
+          <OptionRow selected={payChoice === "BPAY"} disabled={!bpayEnabled} comingSoon={!bpayEnabled} icon={CreditCard} label={tr.cart.payCard} badge={!bpayEnabled ? tr.checkout.comingSoon : undefined} onClick={() => { setPayChoice("BPAY"); setDeliveryChoice("PICKUP"); }} />
           <OptionRow selected={payChoice === "BANK"} icon={Landmark} label={tr.cart.payBank} onClick={() => setPayChoice("BANK")} />
           <OptionRow
             selected={payChoice === "RATE"}
