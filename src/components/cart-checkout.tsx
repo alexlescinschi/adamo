@@ -212,13 +212,19 @@ export function CartCheckoutContent({ onDone }: { onDone?: () => void }) {
 
   // ponytail: verific dacă IutePay e activ (chei prezente). Activează opțiune RATE.
   const [iuteEnabled, setIuteEnabled] = useState(false);
-  // BPay remains unavailable until its CRM integration is complete.
-  const bpayEnabled = false;
+  const [bpayEnabled, setBpayEnabled] = useState(false);
   useEffect(() => {
     fetch("/api/payments/iute")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => setIuteEnabled(Boolean(data?.enabled)))
       .catch(() => setIuteEnabled(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/payments/bpay")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setBpayEnabled(Boolean(data?.enabled)))
+      .catch(() => setBpayEnabled(false));
   }, []);
 
   function copyIban() {

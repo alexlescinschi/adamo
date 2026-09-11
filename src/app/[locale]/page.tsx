@@ -3,15 +3,15 @@ import { Hero, type HeroContent } from "@/components/hero";
 import { BenefitsStrip } from "@/components/benefits-strip";
 import { GoogleReviews } from "@/components/google-reviews";
 import { ShieldCheck, CreditCard, Wrench, CheckCircle, Headphones } from "lucide-react";
-import { getPopularProducts, getNewProducts, getPromotions, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
+import { getPublishedProducts, getNewProducts, getPromotions, getProductById, getHomeCarousel, getHomeStaticBanners } from "@/lib/crm-api";
 import { getDict } from "@/lib/translations";
-import { extractProducts, mapProductCard } from "@/lib/product-mapper";
+import { extractProducts, mapProductCard, hasAttribute } from "@/lib/product-mapper";
 import heroContent from "../../../content/hero.json";
 import { localizedAlternates } from "@/lib/site";
 import { getGooglePlace } from "@/lib/google-places";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -32,29 +32,51 @@ async function fetchStaticBanners(locale = "ro") {
   } catch { return {}; }
 }
 
-async function fetchHomeProducts(locale: string) {
-  const [popularData, promotionsData, newData] = await Promise.all([
-    getPopularProducts(locale, 8).catch(() => ({ items: [] })),
-    getPromotions(locale, 8).catch(() => ({ items: [] })),
-    getNewProducts(locale, 8).catch(() => ({ items: [] })),
+async function fetchAndEnrich(locale: string) {
+  const [publishedData, newData, promotionsData] = await Promise.all([
+    getPublishedProducts(locale, 80).catch(() => ({ items: [] })),
+    getNewProducts(locale, 12).catch(() => ({ items: [] })),
+    getPromotions(locale, 12).catch(() => ({ items: [] })),
   ]);
 
-  const sections = [
-    extractProducts(popularData),
-    extractProducts(promotionsData),
-    extractProducts(newData),
-  ];
-  const ids = [...new Set(sections.flat().map((product: any) => product.id))];
-  const details = await Promise.allSettled(ids.map((id) => getProductById(id, locale)));
-  const productsById = new Map<number, any>();
-  details.forEach((result, index) => {
-    if (result.status === "fulfilled") productsById.set(ids[index], mapProductCard(result.value));
+  const published = extractProducts(publishedData);
+  const newList = extractProducts(newData);
+  const promotionList = extractProducts(promotionsData);
+  const allProducts = [...published, ...newList, ...promotionList];
+
+  const ids = [...new Set(allProducts.map((p: any) => p.id))];
+  const details = await Promise.allSettled(
+    ids.map((id: number) => getProductById(id, locale).catch(() => null))
+  );
+  const detailMap = new Map<number, any>();
+  details.forEach((r, i) => {
+    if (r.status === "fulfilled" && r.value) detailMap.set(ids[i], r.value);
   });
 
+  const enriched = allProducts.map((p: any) => {
+    const detail = detailMap.get(p.id);
+    if (!detail) return p;
+    const mapped = mapProductCard(detail);
+    return {
+      ...p,
+      price: mapped.price || p.price,
+      old_price: mapped.old_price || p.old_price,
+      badge: mapped.badge,
+      badge_type: mapped.badge_type,
+      badge_gradient: mapped.badge_gradient,
+      condition: mapped.condition,
+      specs: mapped.specs || p.specs,
+      images: mapped.images || p.images,
+      is_popular: hasAttribute(detail, "popular"),
+    };
+  });
+
+  const deduped = [...new Map(enriched.map((p: any) => [p.id, p])).values()] as any[];
+
   return {
-    popular: sections[0].map((product) => productsById.get(product.id) || product),
-    promotions: sections[1].map((product) => productsById.get(product.id) || product),
-    newProducts: sections[2].map((product) => productsById.get(product.id) || product),
+    popular: deduped.filter((p: any) => p.is_popular).slice(0, 8),
+    promotions: deduped.filter((p: any) => p.old_price && p.old_price > p.price).sort((a: any, b: any) => ((b.old_price - b.price) / b.old_price) - ((a.old_price - a.price) / a.old_price)).slice(0, 8),
+    newProducts: deduped.filter((p: any) => newList.some((n: any) => n.id === p.id)).slice(0, 8),
   };
 }
 
@@ -159,7 +181,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   const tr = getDict(locale);
   const [{ popular, promotions, newProducts }, carousel, staticBanners, googlePlace] = await Promise.all([
-    fetchHomeProducts(locale),
+    fetchAndEnrich(locale),
     fetchCarousel(locale),
     fetchStaticBanners(locale),
     getGooglePlace(locale),

@@ -5,7 +5,7 @@ import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { ADAMO_COMPANY } from "@/lib/company";
 import { createFanCourierAwb } from "@/lib/fancourier";
 import { createPostaAwb } from "@/lib/posta-rapida";
-import { createBpayPayment } from "@/lib/bpay";
+import { createBpayPayment, isBpayConfigured } from "@/lib/bpay";
 import { rateLimit, redis } from "@/lib/redis";
 
 type PayMode = "CASH" | "BANK_TRANSFER" | "RATE" | "BPAY";
@@ -78,10 +78,6 @@ function errorResponse(code: CheckoutErrorCode, status: number, headers?: Header
 
 function shortHash(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 32);
-}
-
-function isBpayEnabled() {
-  return false;
 }
 
 // CRM face `prisma.contact.create()` la checkout și crapă cu 500 (P2002) când
@@ -313,8 +309,9 @@ export async function POST(request: NextRequest) {
   }
   const checkout = validateCheckout(rawBody);
   if (typeof checkout === "string") return errorResponse(checkout, 400);
-  // Do not accept online card payments before BPay is integrated with the CRM.
-  if (checkout.payMode === "BPAY" && !isBpayEnabled()) return errorResponse("checkoutUnavailable", 503);
+  if (checkout.payMode === "BPAY" && checkout.deliveryMethod !== "PICKUP") return errorResponse("pickupRequired", 400);
+  if (checkout.payMode === "BPAY" && !isBpayConfigured()) return errorResponse("checkoutUnavailable", 503);
+  if (checkout.payMode === "BPAY" && !redis) return errorResponse("checkoutUnavailable", 503);
 
   const requestHash = shortHash(JSON.stringify(checkout));
   const operationKey = `checkout:v1:${shortHash(idempotencyKey)}`;
@@ -398,7 +395,7 @@ export async function POST(request: NextRequest) {
       const orderId = positiveInt(data?.order?.id ?? data?.id ?? data?.orderId);
       if (!orderId) throw new Error("CRM did not return an order ID");
 
-      const shipment = checkout.deliveryMethod === "COURIER"
+      const shipment = checkout.deliveryMethod === "COURIER" && checkout.payMode !== "BPAY"
         ? await createShipment({ ...data?.order, id: orderId }, checkout)
         : null;
 
