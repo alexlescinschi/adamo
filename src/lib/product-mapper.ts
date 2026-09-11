@@ -37,7 +37,20 @@ export function hasAttribute(item: any, label: string): boolean {
 
 export function extractSpecs(item: any): string[] {
   const raw = item.specs || item.shortSpecs || item.attributes || [];
-  if (!Array.isArray(raw)) return [];
+  if (!Array.isArray(raw)) {
+    const cardSpecs = typeof item.cardSpecs === "string" ? item.cardSpecs.split("|").map((part: string) => part.trim()) : [];
+    if (cardSpecs.length < 13) return [];
+    return [
+      cardSpecs[2],
+      cardSpecs[4],
+      [cardSpecs[3], cardSpecs[5]].filter(Boolean).join(" "),
+      [cardSpecs[6], cardSpecs[7]].filter(Boolean).join(" "),
+      cardSpecs[8],
+      cardSpecs[10],
+      cardSpecs[9],
+      cardSpecs[12],
+    ];
+  }
   const values = SPEC_LABELS.map((code) => {
     const spec = raw.find((candidate: any) => {
       const screenTypeLabel = /^(tip ecran|тип экрана|screen type)$/i.test(String(candidate.label || "").trim());
