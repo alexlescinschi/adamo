@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { CrmApiError, createOrder, crmFetch, getOrderInvoice, type CheckoutPayload } from "@/lib/crm-api";
 import { resolvePaymentMethod, type CourierProvider } from "@/lib/checkout";
 import { ADAMO_COMPANY } from "@/lib/company";
-import { createFanCourierAwb } from "@/lib/fancourier";
-import { createPostaAwb } from "@/lib/posta-rapida";
 import { createBpayPayment } from "@/lib/bpay";
 import { rateLimit, redis } from "@/lib/redis";
 
@@ -225,74 +223,6 @@ function validateCheckout(body: any): ValidCheckout | CheckoutErrorCode {
   };
 }
 
-async function createShipment(order: any, checkout: ValidCheckout) {
-  if (!checkout.courier) return null;
-
-  if (checkout.courier.provider === "FANCOURIER" && order?.fan_courier_awb_no) {
-    return { provider: "FANCOURIER", status: "existing", number: String(order.fan_courier_awb_no) };
-  }
-
-  const orderId = positiveInt(order?.id);
-  const amount = Number(order?.amount);
-  if (!orderId || (checkout.payMode === "CASH" && (!Number.isFinite(amount) || amount <= 0))) {
-    return { provider: checkout.courier.provider, status: "failed" };
-  }
-  if (!redis) return { provider: checkout.courier.provider, status: "pending" };
-
-  const key = `shipment:v1:${checkout.courier.provider}:${orderId}`;
-  const existing = await redis.get<Record<string, unknown>>(key);
-  if (existing) return existing;
-  const claimed = await redis.set(key, { provider: checkout.courier.provider, status: "processing" }, { nx: true, ex: OPERATION_TTL });
-  if (!claimed) return (await redis.get<Record<string, unknown>>(key)) || { provider: checkout.courier.provider, status: "pending" };
-
-  const cod = checkout.payMode === "CASH" ? amount : 0;
-  const orderRef = process.env.DEPLOY_ENV === "staging" ? `STAGING-${orderId}` : String(orderId);
-
-  try {
-    const result = checkout.courier.provider === "POSTA_RAPIDA"
-      ? await createPostaAwb({
-          toName: checkout.contact.full_name,
-          toPhone: checkout.contact.phone,
-          toEmail: checkout.contact.email,
-          regionId: checkout.courier.regionId,
-          cityId: checkout.courier.cityId,
-          street: checkout.courier.street,
-          block: checkout.courier.block,
-          zipCode: checkout.courier.zipCode,
-          orderRef,
-          cod,
-        })
-      : await createFanCourierAwb({
-          toName: checkout.contact.full_name,
-          toCity: checkout.courier.city,
-          toZipcode: checkout.courier.postalCode,
-          toStreet: checkout.courier.street,
-          toNr: checkout.courier.number,
-          toBl: checkout.courier.building,
-          toAp: checkout.courier.apartment,
-          toPhone: checkout.contact.phone,
-          toEmail: checkout.contact.email,
-          orderRef,
-          cod,
-        });
-
-    const shipment = checkout.courier.provider === "POSTA_RAPIDA"
-      ? { provider: checkout.courier.provider, status: "created", number: (result as any).shippingNumber, awb: (result as any).awb }
-      : { provider: checkout.courier.provider, status: "created", number: (result as any).awb, trackingUrl: (result as any).trackingUrl };
-    await redis.set(key, shipment, { ex: 30 * 24 * 60 * 60 });
-    return shipment;
-  } catch (error) {
-    console.error("[checkout] shipment creation failed", {
-      provider: checkout.courier.provider,
-      orderId,
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-    const failed = { provider: checkout.courier.provider, status: "failed" };
-    await redis.set(key, failed, { ex: OPERATION_TTL });
-    return failed;
-  }
-}
-
 export async function POST(request: NextRequest) {
   const contentLength = Number(request.headers.get("content-length") || 0);
   if (contentLength > MAX_BODY_BYTES) return errorResponse("requestTooLarge", 413);
@@ -398,8 +328,9 @@ export async function POST(request: NextRequest) {
       const orderId = positiveInt(data?.order?.id ?? data?.id ?? data?.orderId);
       if (!orderId) throw new Error("CRM did not return an order ID");
 
-      const shipment = checkout.deliveryMethod === "COURIER"
-        ? await createShipment({ ...data?.order, id: orderId }, checkout)
+      // AWBs are created manually until courier dispatch is re-enabled.
+      const shipment = checkout.deliveryMethod === "COURIER" && checkout.courier
+        ? { provider: checkout.courier.provider, status: "pending" }
         : null;
 
       let invoice = null;
